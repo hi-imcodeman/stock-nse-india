@@ -1,0 +1,24 @@
+<!DOCTYPE>
+<html lang="en">
+
+<head>
+    <title>
+        Homepage
+    </title>
+    <script src='/../bundle.js'></script>
+</head>
+
+<body>
+    <script>
+        window.onload = () => {
+            const Calculation = CalculationBundle.default
+            const calc = new Calculation()
+            calc.on('done', (operation) => {
+                console.log(`${operation} done successfully`);
+            })
+            console.log(calc.add(2, 3))
+        }
+    </script>
+</body>
+
+</html>
