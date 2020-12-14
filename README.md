@@ -1,11 +1,3 @@
-# Typescript Template
+# API for NSE India (Stock exchange)
 
-This is the template repo of typescript project.
-
-Download this repo and start using it as base template of your project.
-
-Pre-installed and confiured with followings:
-
-- [Typescript](https://www.typescriptlang.org/)
-- [Jest](https://jestjs.io/)
-- [Webpack](https://webpack.js.org/)
+This package will help us to get data from NSE India stock exchange.
