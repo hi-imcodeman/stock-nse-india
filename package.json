@@ -22,7 +22,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && yarn coverage"
+      "pre-commit": "lint-staged"
     }
   },
   "devDependencies": {
@@ -42,5 +42,10 @@
   },
   "dependencies": {
     "axios": "^0.21.0"
-  }
+  },
+  "keywords": ["nse", "nseindia", "stock", "exchange", "stock market", "stock market api", "api", "stock market data", "historical"],
+  "bugs": {
+    "url": "https://github.com/hi-imcodeman/stock-nse-india/issues"
+  },
+  "homepage": "https://hi-imcodeman.github.io/stock-nse-india"
 }
