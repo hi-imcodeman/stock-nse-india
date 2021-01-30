@@ -1,14 +1,20 @@
 import axios from 'axios'
 
 export enum ApiList {
+    GLOSSARY = '/api/cmsContent?url=/glossary',
     HOLIDAY_TRADING = '/api/holiday-master?type=trading',
     HOLIDAY_CLEARING = '/api/holiday-master?type=clearing',
     MARKET_STATUS = '/api/marketStatus',
     MARKET_TURNOVER = '/api/market-turnover',
+    ALL_INDICES = '/api/allIndices',
     INDEX_NAMES = '/api/index-names',
     CIRCULARS = '/api/circulars',
     LATEST_CIRCULARS = '/api/latest-circular',
-    EQUITY_MASTER = '/api/equity-master'
+    EQUITY_MASTER = '/api/equity-master',
+    MARKET_DATA_PRE_OPEN = '/api/market-data-pre-open?key=ALL',
+    MERGED_DAILY_REPORTS_CAPITAL = '/api/merged-daily-reports?key=favCapital',
+    MERGED_DAILY_REPORTS_DERIVATIVES = '/api/merged-daily-reports?key=favDerivatives',
+    MERGED_DAILY_REPORTS_DEBT = '/api/merged-daily-reports?key=favDebt'
 }
 export default class NseIndia {
     private baseUrl = 'https://www.nseindia.com'
@@ -39,13 +45,13 @@ export default class NseIndia {
     }
     async getAllStockSymbols() {
         try {
-            const responseData = await this.getData(`${this.baseUrl}/api/market-data-pre-open?key=ALL`)
+            const responseData = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
             return responseData.data.map((obj: { metadata: { symbol: string } }) => obj.metadata.symbol).sort()
         } catch (error) {
             Promise.reject(error)
         }
     }
-    private async getData(url: string) {
+    async getData(url: string) {
         try {
             const response = await axios.get(url, {
                 headers: {
@@ -60,6 +66,64 @@ export default class NseIndia {
     async getDataByEndpoint(apiEndpoint: string) {
         try {
             return await this.getData(`${this.baseUrl}${apiEndpoint}`)
+        } catch (error) {
+            Promise.reject(error)
+        }
+    }
+    async getEquityDetails(symbol: string) {
+        try {
+            return await this.getData(`${this.baseUrl}/api/quote-equity?symbol=${symbol}`)
+        } catch (error) {
+            Promise.reject(error)
+        }
+    }
+    async getEquityTradeInfo(symbol: string) {
+        try {
+            return await this.getData(`${this.baseUrl}/api/quote-equity?symbol=${symbol}&section=trade_info`)
+        } catch (error) {
+            Promise.reject(error)
+        }
+    }
+
+    async getEquityCorporateInfo(symbol: string) {
+        try {
+            return await this.getData(`${this.baseUrl}/api/quote-equity?symbol=${symbol}&section=corp_info`)
+        } catch (error) {
+            Promise.reject(error)
+        }
+    }
+    async getEquityIntradayData(symbol: string, isPreOpenData = false) {
+        try {
+            const details = await this.getEquityDetails(symbol)
+            const identifier = details.info.identifier
+            let url = `${this.baseUrl}/api/chart-databyindex?index=${identifier}`
+            if (isPreOpenData)
+                url += '&preopen=true'
+            return await this.getData(url)
+        } catch (error) {
+            Promise.reject(error)
+        }
+    }
+    async getEquityHistoricalData(symbol: string) {
+        try {
+            return await this.getData(`${this.baseUrl}/api/historical/cm/equity?symbol=${symbol}`)
+        } catch (error) {
+            Promise.reject(error)
+        }
+    }
+    async getEquitySeries(symbol: string) {
+        try {
+            return await this.getData(`${this.baseUrl}/api/historical/cm/equity/series?symbol=${symbol}`)
+        } catch (error) {
+            Promise.reject(error)
+        }
+    }
+    async getIndexIntradayData(index: string, isPreOpenData = false) {
+        try {
+            let url = `${this.baseUrl}/api/chart-databyindex?index=${index}&indices=true`
+            if (isPreOpenData)
+                url += '&preopen=true'
+            return await this.getData(url)
         } catch (error) {
             Promise.reject(error)
         }
