@@ -2,63 +2,60 @@ import NseIndia, { ApiList } from "./index";
 
 jest.setTimeout(999999)
 
-const sleep = (ms: number) => {
-    return new Promise<void>(resolve => {
-        setTimeout(() => {
-            resolve()
-        }, ms)
-    })
-}
-
 describe('class: NseIndia', () => {
+    const symbol='ITC'
     const nseIndia = new NseIndia()
     test('getAllStockSymbols', async () => {
         const symbols = await nseIndia.getAllStockSymbols()
         expect(symbols.length).toBeGreaterThan(1000)
     })
     test('getEquityDetails', async () => {
-        const symbols = await nseIndia.getAllStockSymbols()
-        const details = await nseIndia.getEquityDetails(symbols[0])
-        expect(details.info.symbol).toBe(symbols[0])
+        const details = await nseIndia.getEquityDetails(symbol)
+        expect(details.info.symbol).toBe(symbol)
     })
     test('getEquityTradeInfo', async () => {
-        const symbols = await nseIndia.getAllStockSymbols()
-        const tradeInfo = await nseIndia.getEquityDetails(symbols[0])
+        const tradeInfo = await nseIndia.getEquityDetails(symbol)
         expect(Object.keys(tradeInfo).length).toBeGreaterThan(3)
     })
     test('getEquityCorporateInfo', async () => {
-        const symbols = await nseIndia.getAllStockSymbols()
-        const corpInfo = await nseIndia.getEquityCorporateInfo(symbols[0])
+        const corpInfo = await nseIndia.getEquityCorporateInfo(symbol)
         expect(Object.keys(corpInfo.corporate).length).toBeGreaterThan(5)
     })
     test('getEquityIntradayData', async () => {
-        const symbols = await nseIndia.getAllStockSymbols()
-        const intradayData = await nseIndia.getEquityIntradayData(symbols[0])
-        expect(intradayData.name).toBe(symbols[0])
+        const intradayData = await nseIndia.getEquityIntradayData(symbol)
+        expect(intradayData.name).toBe(symbol)
     })
     test('getEquityIntradayData:preOpen', async () => {
-        const symbols = await nseIndia.getAllStockSymbols()
-        const intradayData = await nseIndia.getEquityIntradayData(symbols[0], true)
-        expect(intradayData.identifier).toBe(`Pre Open ${symbols[0]}`)
+        const intradayData = await nseIndia.getEquityIntradayData(symbol, true)
+        expect(intradayData.identifier).toBe(`Pre Open ${symbol}`)
     })
     test('getEquityHistoricalData', async () => {
-        const symbols = await nseIndia.getAllStockSymbols()
-        const historicalData = await nseIndia.getEquityHistoricalData(symbols[0])
-        expect(historicalData.data[0].CH_SYMBOL).toBe(symbols[0])
+        const historicalData = await nseIndia.getEquityHistoricalData(symbol)
+        expect(historicalData.length).toBeGreaterThan(1)
+        expect(historicalData[historicalData.length-1].data[0].CH_SYMBOL).toBe(symbol)
+    })
+    test('getEquityHistoricalData with Date range', async () => {
+        const range = {
+            start: new Date("2021-03-10"),
+            end: new Date("2021-03-20")
+        }
+        const historicalData = await nseIndia.getEquityHistoricalData(symbol, range)
+        expect(historicalData[0].data[0].CH_SYMBOL).toBe(symbol)
+        expect(historicalData[0].meta.fromDate).toBe('10-03-2021')
+        expect(historicalData[0].meta.toDate).toBe('20-03-2021')
     })
     test('getEquitySeries', async () => {
-        const symbols = await nseIndia.getAllStockSymbols()
-        const seriesData = await nseIndia.getEquitySeries(symbols[0])
+        const seriesData = await nseIndia.getEquitySeries(symbol)
         expect(seriesData.data.length).toBeGreaterThanOrEqual(1)
     })
     test('getIndexIntradayData', async () => {
-        const index= 'NIFTY AUTO'
+        const index = 'NIFTY AUTO'
         const intradayData = await nseIndia.getIndexIntradayData(index)
         expect(intradayData.name).toBe(index)
     })
     test('getIndexIntradayData:proOpen', async () => {
-        const index= 'NIFTY FIN SERVICE'
-        const intradayData = await nseIndia.getIndexIntradayData(index,true)
+        const index = 'NIFTY FIN SERVICE'
+        const intradayData = await nseIndia.getIndexIntradayData(index, true)
         expect(intradayData.identifier).toBe(`Pre Open ${index}`)
     })
     describe('ApiList', () => {

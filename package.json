@@ -41,9 +41,21 @@
     "typescript": "^3.9.3"
   },
   "dependencies": {
-    "axios": "^0.21.0"
+    "axios": "^0.21.0",
+    "moment": "^2.29.1",
+    "moment-range": "^4.0.2"
   },
-  "keywords": ["nse", "nseindia", "stock", "exchange", "stock market", "stock market api", "api", "stock market data", "historical"],
+  "keywords": [
+    "nse",
+    "nseindia",
+    "stock",
+    "exchange",
+    "stock market",
+    "stock market api",
+    "api",
+    "stock market data",
+    "historical"
+  ],
   "bugs": {
     "url": "https://github.com/hi-imcodeman/stock-nse-india/issues"
   },

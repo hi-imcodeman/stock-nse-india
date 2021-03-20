@@ -1,4 +1,6 @@
 import axios from 'axios'
+import moment from 'moment'
+import { getDateRangeChunks } from './utils'
 
 export enum ApiList {
     GLOSSARY = '/api/cmsContent?url=/glossary',
@@ -15,6 +17,11 @@ export enum ApiList {
     MERGED_DAILY_REPORTS_CAPITAL = '/api/merged-daily-reports?key=favCapital',
     MERGED_DAILY_REPORTS_DERIVATIVES = '/api/merged-daily-reports?key=favDerivatives',
     MERGED_DAILY_REPORTS_DEBT = '/api/merged-daily-reports?key=favDebt'
+}
+
+export interface DateRange {
+    start: Date
+    end: Date
 }
 export default class NseIndia {
     private baseUrl = 'https://www.nseindia.com'
@@ -104,12 +111,18 @@ export default class NseIndia {
             Promise.reject(error)
         }
     }
-    async getEquityHistoricalData(symbol: string) {
-        try {
-            return await this.getData(`${this.baseUrl}/api/historical/cm/equity?symbol=${symbol}`)
-        } catch (error) {
-            Promise.reject(error)
+    async getEquityHistoricalData(symbol: string, range?: DateRange) {
+        if (!range) {
+            const data = await this.getEquityDetails(symbol)
+            range = { start: new Date(data.metadata.listingDate), end: new Date() }
         }
+        const dateRanges = getDateRangeChunks(range.start, range.end, 66)
+        const promises = dateRanges.map(dateRange => {
+            return this.getData(`${this.baseUrl}/api/historical/cm/equity?symbol=${symbol}&series=[%22EQ%22]&from=${dateRange.start}&to=${dateRange.end}`)
+        })
+        const results = await Promise.all(promises)
+        return results
+
     }
     async getEquitySeries(symbol: string) {
         try {
