@@ -1,9 +1,9 @@
-import NseIndia, { ApiList } from "./index";
+import { NseIndia, ApiList } from "./index";
 
 jest.setTimeout(999999)
 
 describe('class: NseIndia', () => {
-    const symbol='ITC'
+    const symbol = 'ITC'
     const nseIndia = new NseIndia()
     test('getAllStockSymbols', async () => {
         const symbols = await nseIndia.getAllStockSymbols()
@@ -14,7 +14,7 @@ describe('class: NseIndia', () => {
         expect(details.info.symbol).toBe(symbol)
     })
     test('getEquityTradeInfo', async () => {
-        const tradeInfo = await nseIndia.getEquityDetails(symbol)
+        const tradeInfo = await nseIndia.getEquityTradeInfo(symbol)
         expect(Object.keys(tradeInfo).length).toBeGreaterThan(3)
     })
     test('getEquityCorporateInfo', async () => {
@@ -32,7 +32,7 @@ describe('class: NseIndia', () => {
     test('getEquityHistoricalData', async () => {
         const historicalData = await nseIndia.getEquityHistoricalData(symbol)
         expect(historicalData.length).toBeGreaterThan(1)
-        expect(historicalData[historicalData.length-1].data[0].CH_SYMBOL).toBe(symbol)
+        expect(historicalData[historicalData.length - 1].data[0].CH_SYMBOL).toBe(symbol)
     })
     test('getEquityHistoricalData with Date range', async () => {
         const range = {

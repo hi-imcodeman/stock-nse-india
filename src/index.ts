@@ -1,5 +1,4 @@
 import axios from 'axios'
-import moment from 'moment'
 import { getDateRangeChunks } from './utils'
 
 export enum ApiList {
@@ -23,7 +22,7 @@ export interface DateRange {
     start: Date
     end: Date
 }
-export default class NseIndia {
+export class NseIndia {
     private baseUrl = 'https://www.nseindia.com'
     private cookies = ''
     private cookieUsedCount = 0
@@ -50,66 +49,40 @@ export default class NseIndia {
         this.cookieUsedCount++
         return this.cookies
     }
-    async getAllStockSymbols() {
-        try {
-            const responseData = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
-            return responseData.data.map((obj: { metadata: { symbol: string } }) => obj.metadata.symbol).sort()
-        } catch (error) {
-            Promise.reject(error)
-        }
-    }
+
     async getData(url: string) {
-        try {
-            const response = await axios.get(url, {
-                headers: {
-                    'Cookie': await this.getNseCookies()
-                }
-            })
-            return response.data
-        } catch (error) {
-            return Promise.reject(error)
-        }
-    }
-    async getDataByEndpoint(apiEndpoint: string) {
-        try {
-            return await this.getData(`${this.baseUrl}${apiEndpoint}`)
-        } catch (error) {
-            Promise.reject(error)
-        }
-    }
-    async getEquityDetails(symbol: string) {
-        try {
-            return await this.getData(`${this.baseUrl}/api/quote-equity?symbol=${symbol}`)
-        } catch (error) {
-            Promise.reject(error)
-        }
-    }
-    async getEquityTradeInfo(symbol: string) {
-        try {
-            return await this.getData(`${this.baseUrl}/api/quote-equity?symbol=${symbol}&section=trade_info`)
-        } catch (error) {
-            Promise.reject(error)
-        }
+        const response = await axios.get(url, {
+            headers: {
+                'Cookie': await this.getNseCookies()
+            }
+        })
+        return response.data
     }
 
-    async getEquityCorporateInfo(symbol: string) {
-        try {
-            return await this.getData(`${this.baseUrl}/api/quote-equity?symbol=${symbol}&section=corp_info`)
-        } catch (error) {
-            Promise.reject(error)
-        }
+    getDataByEndpoint(apiEndpoint: string) {
+        return this.getData(`${this.baseUrl}${apiEndpoint}`)
+    }
+
+    async getAllStockSymbols() {
+        const responseData = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
+        return responseData.data.map((obj: { metadata: { symbol: string } }) => obj.metadata.symbol).sort()
+    }
+    getEquityDetails(symbol: string) {
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${symbol}`)
+    }
+    getEquityTradeInfo(symbol: string) {
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${symbol}&section=trade_info`)
+    }
+    getEquityCorporateInfo(symbol: string) {
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${symbol}&section=corp_info`)
     }
     async getEquityIntradayData(symbol: string, isPreOpenData = false) {
-        try {
-            const details = await this.getEquityDetails(symbol)
-            const identifier = details.info.identifier
-            let url = `${this.baseUrl}/api/chart-databyindex?index=${identifier}`
-            if (isPreOpenData)
-                url += '&preopen=true'
-            return await this.getData(url)
-        } catch (error) {
-            Promise.reject(error)
-        }
+        const details = await this.getEquityDetails(symbol)
+        const identifier = details.info.identifier
+        let url = `/api/chart-databyindex?index=${identifier}`
+        if (isPreOpenData)
+            url += '&preopen=true'
+        return this.getDataByEndpoint(url)
     }
     async getEquityHistoricalData(symbol: string, range?: DateRange) {
         if (!range) {
@@ -118,27 +91,18 @@ export default class NseIndia {
         }
         const dateRanges = getDateRangeChunks(range.start, range.end, 66)
         const promises = dateRanges.map(dateRange => {
-            return this.getData(`${this.baseUrl}/api/historical/cm/equity?symbol=${symbol}&series=[%22EQ%22]&from=${dateRange.start}&to=${dateRange.end}`)
+            return this.getDataByEndpoint(`/api/historical/cm/equity?symbol=${symbol}` +
+                `&series=[%22EQ%22]&from=${dateRange.start}&to=${dateRange.end}`)
         })
-        const results = await Promise.all(promises)
-        return results
-
+        return Promise.all(promises)
     }
-    async getEquitySeries(symbol: string) {
-        try {
-            return await this.getData(`${this.baseUrl}/api/historical/cm/equity/series?symbol=${symbol}`)
-        } catch (error) {
-            Promise.reject(error)
-        }
+    getEquitySeries(symbol: string) {
+        return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${symbol}`)
     }
-    async getIndexIntradayData(index: string, isPreOpenData = false) {
-        try {
-            let url = `${this.baseUrl}/api/chart-databyindex?index=${index}&indices=true`
-            if (isPreOpenData)
-                url += '&preopen=true'
-            return await this.getData(url)
-        } catch (error) {
-            Promise.reject(error)
-        }
+    getIndexIntradayData(index: string, isPreOpenData = false) {
+        let url = `/api/chart-databyindex?index=${index}&indices=true`
+        if (isPreOpenData)
+            url += '&preopen=true'
+        return this.getDataByEndpoint(url)
     }
 }
