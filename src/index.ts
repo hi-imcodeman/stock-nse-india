@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getDateRangeChunks } from './utils'
+import { getDateRangeChunks, sleep } from './utils'
 
 export enum ApiList {
     GLOSSARY = '/api/cmsContent?url=/glossary',
@@ -28,6 +28,7 @@ export class NseIndia {
     private cookieUsedCount = 0
     private cookieMaxAge = 60 // should be in seconds
     private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
+    private noOfConnections = 0
 
     private async getNseCookies() {
         if (this.cookies === '' || this.cookieUsedCount > 10 || this.cookieExpiry <= new Date().getTime()) {
@@ -51,24 +52,40 @@ export class NseIndia {
     }
 
     async getData(url: string) {
-        const response = await axios.get(url, {
-            headers: {
-                'Cookie': await this.getNseCookies()
+        let retries = 0
+        let hasError = false
+        do {
+            while (this.noOfConnections >= 5) {
+                await sleep(500)
             }
-        })
-        return response.data
+            this.noOfConnections++
+            try {
+                const response = await axios.get(url, {
+                    headers: {
+                        'Cookie': await this.getNseCookies()
+                    }
+                })
+                this.noOfConnections--
+                return response.data
+            } catch (error) {
+                hasError=true
+                retries++
+                this.noOfConnections--
+                /* istanbul ignore if */
+                if (retries >= 10)
+                    throw error
+            }
+        } while (hasError);
     }
-
-    getDataByEndpoint(apiEndpoint: string) {
+    async getDataByEndpoint(apiEndpoint: string) {
         return this.getData(`${this.baseUrl}${apiEndpoint}`)
     }
-
-    async getAllStockSymbols() {
-        const responseData = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
-        return responseData.data.map((obj: { metadata: { symbol: string } }) => obj.metadata.symbol).sort()
+    async getAllStockSymbols(): Promise<string[]> {
+        const { data } = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
+        return data.map((obj: { metadata: { symbol: string } }) => obj.metadata.symbol).sort()
     }
     getEquityDetails(symbol: string) {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${symbol}`)
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}`)
     }
     getEquityTradeInfo(symbol: string) {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${symbol}&section=trade_info`)

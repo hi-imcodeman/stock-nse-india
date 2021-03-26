@@ -15,3 +15,11 @@ export const getDateRangeChunks = (startDate: Date, endDate: Date, chunkInDays: 
     }
     return dateRanges
 }
+
+export const sleep = (ms: number) => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve('')
+        }, ms)
+    })
+}

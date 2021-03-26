@@ -81,7 +81,7 @@
     "excludeExternals": true,
     "excludePrivate": true,
     "includeVersion": true,
-    "inputFiles": ["./src/index.ts"],
+    "inputFiles": ["./src"],
     "mode": "file",
     "out": "docs"
   }
