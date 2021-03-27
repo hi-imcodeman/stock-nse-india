@@ -77,12 +77,9 @@
     "**/__mocks__"
   ],
   "typedocOptions": {
-    "stripInternal": true,
-    "excludeExternals": true,
+    "exclude": "**/*+(.spec|.e2e).ts",
     "excludePrivate": true,
     "includeVersion": true,
-    "inputFiles": ["./src"],
-    "mode": "file",
-    "out": "docs"
+    "entryPoints": ["src"]
   }
 }
