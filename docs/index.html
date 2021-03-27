@@ -7,6 +7,7 @@
 	<meta name="description" content="Documentation for stock-nse-india - v1.0.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
 </head>
 <body>
 <header>
@@ -38,8 +39,8 @@
 							</div>
 							<input type="checkbox" id="tsd-filter-inherited" checked />
 							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
-							<input type="checkbox" id="tsd-filter-only-exported" />
-							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
 						</div>
 					</div>
 					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
@@ -49,11 +50,6 @@
 	</div>
 	<div class="tsd-page-title">
 		<div class="container">
-			<ul class="tsd-breadcrumb">
-				<li>
-					<a href="globals.html">Globals</a>
-				</li>
-			</ul>
 			<h1>stock-nse-india - v1.0.0</h1>
 		</div>
 	</div>
@@ -62,31 +58,61 @@
 	<div class="row">
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
-				<a href="#api-for-nse-india-stock-exchange" id="api-for-nse-india-stock-exchange" style="color: inherit; text-decoration: none;">
-					<h1>API for NSE India (Stock exchange)</h1>
+				<p><a href="https://nodei.co/npm/stock-nse-india/"><img src="https://nodei.co/npm/stock-nse-india.png" alt="NPM"></a></p>
+				<a href="#national-stock-exchange---india-unofficial" id="national-stock-exchange---india-unofficial" style="color: inherit; text-decoration: none;">
+					<h1>National Stock Exchange - India (Unofficial)</h1>
 				</a>
-				<p>This package will help us to get data from NSE India stock exchange.</p>
+				<p><img src="https://github.com/hi-imcodeman/stock-nse-india/workflows/CI/badge.svg" alt=""></p>
+				<p>This package will help us to get equity details and historical data from National Stock Exchange of India.</p>
+				<p>Please refer <a href="https://hi-imcodeman.github.io/stock-nse-india">API Documentation</a> here.</p>
+				<p>See the <a href="https://github.com/hi-imcodeman/stock-nse-india/tree/master/examples">Examples</a> here</p>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h2>Installation</h2>
+				</a>
+				<p>Install using &#39;npm&#39;</p>
+				<pre><code class="language-sh"><span style="color: #000000">npm i stock-nse-india</span>
+</code></pre>
+				<p>Install using &#39;yarn&#39;</p>
+				<pre><code class="language-sh"><span style="color: #000000">yarn add stock-nse-india</span>
+</code></pre>
+				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+					<h2>Usage</h2>
+				</a>
+				<pre><code class="language-javascript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">NseIndia</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;stock-nse-india&quot;</span><span style="color: #000000">;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">nseIndia</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">NseIndia</span><span style="color: #000000">()</span>
+
+<span style="color: #008000">// To get all symbols from NSE</span>
+<span style="color: #001080">nseIndia</span><span style="color: #000000">.</span><span style="color: #795E26">getAllStockSymbols</span><span style="color: #000000">().</span><span style="color: #795E26">then</span><span style="color: #000000">(</span><span style="color: #001080">symbols</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">symbols</span><span style="color: #000000">)</span>
+<span style="color: #000000">})</span>
+
+<span style="color: #008000">// To get equity details for specific symbol</span>
+<span style="color: #001080">nseIndia</span><span style="color: #000000">.</span><span style="color: #795E26">getEquityDetails</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;IRCTC&#039;</span><span style="color: #000000">).</span><span style="color: #795E26">then</span><span style="color: #000000">(</span><span style="color: #001080">details</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">details</span><span style="color: #000000">)</span>
+<span style="color: #000000">})</span>
+</code></pre>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 			<nav class="tsd-navigation primary">
 				<ul>
-					<li class="globals  ">
-						<a href="globals.html"><em>Globals</em></a>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/index.html">index</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/interface.html">interface</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/utils.html">utils</a>
 					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-enum">
-						<a href="enums/apilist.html" class="tsd-kind-icon">Api<wbr>List</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/nseindia.html" class="tsd-kind-icon">Nse<wbr>India</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#sleep" class="tsd-kind-icon">sleep</a>
-					</li>
 				</ul>
 			</nav>
 		</div>
@@ -97,7 +123,16 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
 			</ul>
 		</div>
 	</div>
@@ -107,6 +142,5 @@
 </div>
 <div class="overlay"></div>
 <script src="assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
 </body>
 </html>
