@@ -1,5 +1,14 @@
 import axios from 'axios'
 import { getDateRangeChunks, sleep } from './utils'
+import {
+    DateRange,
+    IntradayData,
+    EquityDetails,
+    EquityTradeInfo,
+    EquityCorporateInfo,
+    HistoricalData,
+    SeriesData
+} from './interface'
 
 export enum ApiList {
     GLOSSARY = '/api/cmsContent?url=/glossary',
@@ -16,11 +25,6 @@ export enum ApiList {
     MERGED_DAILY_REPORTS_CAPITAL = '/api/merged-daily-reports?key=favCapital',
     MERGED_DAILY_REPORTS_DERIVATIVES = '/api/merged-daily-reports?key=favDerivatives',
     MERGED_DAILY_REPORTS_DEBT = '/api/merged-daily-reports?key=favDebt'
-}
-
-export interface DateRange {
-    start: Date
-    end: Date
 }
 export class NseIndia {
     private baseUrl = 'https://www.nseindia.com'
@@ -68,7 +72,7 @@ export class NseIndia {
                 this.noOfConnections--
                 return response.data
             } catch (error) {
-                hasError=true
+                hasError = true
                 retries++
                 this.noOfConnections--
                 /* istanbul ignore if */
@@ -84,16 +88,16 @@ export class NseIndia {
         const { data } = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
         return data.map((obj: { metadata: { symbol: string } }) => obj.metadata.symbol).sort()
     }
-    getEquityDetails(symbol: string) {
+    getEquityDetails(symbol: string): Promise<EquityDetails> {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}`)
     }
-    getEquityTradeInfo(symbol: string) {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${symbol}&section=trade_info`)
+    getEquityTradeInfo(symbol: string): Promise<EquityTradeInfo> {
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=trade_info`)
     }
-    getEquityCorporateInfo(symbol: string) {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${symbol}&section=corp_info`)
+    getEquityCorporateInfo(symbol: string): Promise<EquityCorporateInfo> {
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=corp_info`)
     }
-    async getEquityIntradayData(symbol: string, isPreOpenData = false) {
+    async getEquityIntradayData(symbol: string, isPreOpenData = false): Promise<IntradayData> {
         const details = await this.getEquityDetails(symbol)
         const identifier = details.info.identifier
         let url = `/api/chart-databyindex?index=${identifier}`
@@ -101,22 +105,24 @@ export class NseIndia {
             url += '&preopen=true'
         return this.getDataByEndpoint(url)
     }
-    async getEquityHistoricalData(symbol: string, range?: DateRange) {
+    async getEquityHistoricalData(symbol: string, range?: DateRange): Promise<HistoricalData[]> {
         if (!range) {
             const data = await this.getEquityDetails(symbol)
             range = { start: new Date(data.metadata.listingDate), end: new Date() }
         }
         const dateRanges = getDateRangeChunks(range.start, range.end, 66)
-        const promises = dateRanges.map(dateRange => {
-            return this.getDataByEndpoint(`/api/historical/cm/equity?symbol=${symbol}` +
-                `&series=[%22EQ%22]&from=${dateRange.start}&to=${dateRange.end}`)
+        const promises = dateRanges.map(async (dateRange) => {
+            const url = `/api/historical/cm/equity?symbol=${encodeURIComponent(symbol)}` +
+                `&series=[%22EQ%22]&from=${dateRange.start}&to=${dateRange.end}`
+            const data: HistoricalData = await this.getDataByEndpoint(url)
+            return data
         })
         return Promise.all(promises)
     }
-    getEquitySeries(symbol: string) {
-        return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${symbol}`)
+    getEquitySeries(symbol: string): Promise<SeriesData> {
+        return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol)}`)
     }
-    getIndexIntradayData(index: string, isPreOpenData = false) {
+    getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
         let url = `/api/chart-databyindex?index=${index}&indices=true`
         if (isPreOpenData)
             url += '&preopen=true'
