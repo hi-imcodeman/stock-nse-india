@@ -1,46 +1,59 @@
 {
-  "name": "typescript-template",
-  "version": "1.1.0",
-  "main": "dist/bundle.js",
-  "repository": "https://github.com/hi-imcodeman/typescript-template.git",
+  "name": "stock-nse-india",
+  "version": "1.0.0",
+  "main": "build/index.js",
+  "repository": "https://github.com/hi-imcodeman/stock-nse-india.git",
   "author": "Asraf Ali <asraf.cse@gmail.com>",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "compile": "webpack",
     "docs": "typedoc",
-    "test": "jest",
-    "coverage": "jest --coverage",
+    "test": "jest --coverage",
     "lint": "eslint . --ext .ts",
     "gpr-setup": "node ./scripts/setup-gpr.js"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx,js,jsx}": [
       "yarn lint --fix",
-      "git add",
-      "yarn docs"
+      "git add"
     ]
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && yarn coverage"
+      "pre-commit": "lint-staged"
     }
   },
   "devDependencies": {
-    "@types/jest": "^25.2.3",
-    "@typescript-eslint/eslint-plugin": "^3.0.2",
-    "@typescript-eslint/parser": "^3.0.2",
-    "copy-webpack-plugin": "^6.0.1",
-    "eslint": "^7.1.0",
-    "husky": "^4.2.5",
-    "jest": "^26.0.1",
-    "lint-staged": "^10.2.7",
-    "ts-jest": "^26.0.0",
-    "ts-loader": "^7.0.4",
-    "typedoc": "^0.17.7",
-    "typescript": "^3.9.3",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
+    "@types/jest": "^26.0.19",
+    "@types/node": "^14.14.13",
+    "@typescript-eslint/eslint-plugin": "^4.14.2",
+    "@typescript-eslint/parser": "^4.14.2",
+    "eslint": "^7.19.0",
+    "husky": "^4.3.8",
+    "jest": "^26.6.3",
+    "lint-staged": "^10.5.4",
+    "ts-jest": "^26.5.0",
+    "typedoc": "^0.20.23",
+    "typescript": "^4.1.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "axios": "^0.21.1",
+    "moment": "^2.29.1",
+    "moment-range": "^4.0.2"
+  },
+  "keywords": [
+    "nse",
+    "nseindia",
+    "stock",
+    "exchange",
+    "stock market",
+    "stock market api",
+    "api",
+    "stock market data",
+    "historical"
+  ],
+  "bugs": {
+    "url": "https://github.com/hi-imcodeman/stock-nse-india/issues"
+  },
+  "homepage": "https://hi-imcodeman.github.io/stock-nse-india"
 }
