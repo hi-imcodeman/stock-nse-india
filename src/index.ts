@@ -75,7 +75,6 @@ export class NseIndia {
                 hasError = true
                 retries++
                 this.noOfConnections--
-                /* istanbul ignore if */
                 if (retries >= 10)
                     throw error
             }

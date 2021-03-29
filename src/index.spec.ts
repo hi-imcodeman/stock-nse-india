@@ -58,6 +58,24 @@ describe('class: NseIndia', () => {
         const intradayData = await nseIndia.getIndexIntradayData(index, true)
         expect(intradayData.identifier).toBe(`Pre Open ${index}`)
     })
+    test('Multiple request to getaData', async () => {
+        const limit = 15
+        const symbols = await nseIndia.getAllStockSymbols()
+        const selectedSymbols = symbols.filter((_symbol, index) => index < limit)
+        const promises = selectedSymbols.map(async (symbol) => {
+            const data = await nseIndia.getEquityDetails(symbol)
+            return { symbol, data }
+        })
+        const allData = await Promise.all(promises)
+        expect(allData.length).toBe(limit)
+    })
+    test('Invalid API call', async ()=>{
+        try {
+            await nseIndia.getDataByEndpoint('/api/invalidapi')
+        } catch (error) {
+           expect(error.message).toBe('Request failed with status code 404') 
+        } 
+    })
     describe('ApiList', () => {
         Object.entries(ApiList).forEach(entry => {
             test(`should return content for ${entry[0]}`, async () => {
