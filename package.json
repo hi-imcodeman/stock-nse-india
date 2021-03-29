@@ -1,7 +1,7 @@
 {
   "name": "stock-nse-india",
-  "version": "1.0.0",
-  "main": "build/index.js",
+  "version": "1.0.1",
+  "main": "dist/index.js",
   "repository": "https://github.com/hi-imcodeman/stock-nse-india.git",
   "author": "Asraf Ali <asraf.cse@gmail.com>",
   "license": "MIT",
@@ -50,7 +50,10 @@
     "stock market api",
     "api",
     "stock market data",
-    "historical"
+    "historical",
+    "historical data",
+    "share",
+    "share market"
   ],
   "bugs": {
     "url": "https://github.com/hi-imcodeman/stock-nse-india/issues"
