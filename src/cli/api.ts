@@ -1,16 +1,14 @@
-const {
-    NseIndia
-} = require('../dist/index')
-const ora = require('ora')
-const chalk = require('chalk')
-const ohlc = require('ohlc')
-const moment = require('moment')
-const asciichart = require('asciichart')
+import { NseIndia } from '../index'
+import ora from 'ora'
+import chalk from 'chalk'
+import ohlc from 'ohlc'
+import moment from 'moment'
+import asciichart from 'asciichart'
 
 const rupee = '₹'
 const nse = new NseIndia()
 
-async function showEquityDetails(argv) {
+export async function showEquityDetails(argv: any) {
     const {
         symbol
     } = argv
@@ -60,15 +58,19 @@ async function showEquityDetails(argv) {
                 [`Total Market Capital (${rupee} Lakhs)`]: tradeInfo.totalMarketCap
             }
 
-            console.table(tableData)
-
             const changeStatus = changePrice <= 0 ? `${rupee}${changePrice} (${changePercent}%)${chalk.red('▼')}` :
                 `${rupee}${changePrice} (${changePercent}%)${chalk.green('▲')}`
 
-            const derivativeStatus = securityInfo.derivatives === 'Yes' ? chalk.black.bgGreen(' Derivatives ') : chalk.black.bgRed(' Derivatives ')
-            const slbStatus = securityInfo.slb === 'Yes' ? chalk.black.bgGreen(' SLB ') : chalk.black.bgRed(' SLB ')
-            const ltpStatus = changePrice <= 0 ? chalk.black.bgRed(` LTP: ${priceInfo.lastPrice} `) : chalk.black.bgGreen(` LTP: ${priceInfo.lastPrice} `)
+            const derivativeStatus = securityInfo.derivatives === 'Yes' ?
+                chalk.black.bgGreen(' Derivatives ') : chalk.black.bgRed(' Derivatives ')
 
+            const slbStatus = securityInfo.slb === 'Yes' ?
+                chalk.black.bgGreen(' SLB ') : chalk.black.bgRed(' SLB ')
+                
+            const ltpStatus = changePrice <= 0 ? chalk.black.bgRed(` LTP: ${priceInfo.lastPrice} `) :
+                chalk.black.bgGreen(` LTP: ${priceInfo.lastPrice} `)
+
+            console.table(tableData)
             console.log(`Change: ${changeStatus}`)
             console.log(`${ltpStatus} ${derivativeStatus} ${slbStatus}`);
         } else {
@@ -81,7 +83,7 @@ async function showEquityDetails(argv) {
     }
 }
 
-async function showHistorical(argv) {
+export async function showHistorical(argv: any) {
     console.time('Done In')
     const {
         symbol
@@ -89,10 +91,11 @@ async function showHistorical(argv) {
     const spinner = ora()
     spinner.text = 'Loading Historical Data'
     spinner.start()
-    const results = await nse.getEquityHistoricalData(symbol)
+    const startDate = moment().subtract(3, 'months').format('YYYY-MM-DD')
+    const results = await nse.getEquityHistoricalData(symbol, { start: new Date(startDate), end: new Date() })
     spinner.text = ''
     spinner.stop()
-    const ohlcData = []
+    const ohlcData: any[] = []
     results.forEach(({
         data: historicalData
     }) => {
@@ -109,25 +112,19 @@ async function showHistorical(argv) {
     })
     const fullOhlcData = ohlc(ohlcData)
     console.log();
-    const dateBefore3Months = moment().subtract(3, 'months').format('YYYY-MM-DD')
-    const last3MonthsOhlc = fullOhlcData.start(dateBefore3Months).sma(5).toDaily()
-    const sma5 = last3MonthsOhlc.map(obj => obj.sma5)
-    const Volume = last3MonthsOhlc.map(obj => obj.Volume / 100000)
+    const ohlcDataFromStartDate = fullOhlcData.start(startDate).sma(5).toDaily()
+    const CloseData = ohlcDataFromStartDate.map((obj: any) => obj.Close)
+    const Volume = ohlcDataFromStartDate.map((obj: any) => obj.Volume / 100000)
     const chartConfig = {
         height: 10
     }
     console.log(chalk.black.bgCyan(' Price Chart - SMA5 (Last 3 months) '));
     console.log();
-    console.log(asciichart.plot(sma5, {...chartConfig,colors:[asciichart.cyan]}));
+    console.log(asciichart.plot(CloseData, { ...chartConfig, colors: [asciichart.cyan] }));
     console.log();
     console.log(chalk.black.bgYellow(' Volume Chart - In Lakhs (Last 3 months) '));
     console.log();
-    console.log(asciichart.plot(Volume, {...chartConfig,colors:[asciichart.yellow]}));
+    console.log(asciichart.plot(Volume, { ...chartConfig, colors: [asciichart.yellow] }));
     console.log();
     console.timeEnd('Done In')
-}
-
-module.exports = {
-    showEquityDetails,
-    showHistorical
 }

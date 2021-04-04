@@ -6,7 +6,7 @@
   "author": "Asraf Ali <asraf.cse@gmail.com>",
   "license": "MIT",
   "bin": {
-    "nseindia": "bin/index.js"
+    "nseindia": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
