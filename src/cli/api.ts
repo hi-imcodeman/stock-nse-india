@@ -1,4 +1,4 @@
-import { NseIndia } from '../index'
+import { NseIndia, ApiList } from '../index'
 import ora from 'ora'
 import chalk from 'chalk'
 import ohlc from 'ohlc'
@@ -7,6 +7,77 @@ import asciichart from 'asciichart'
 
 const rupee = '₹'
 const nse = new NseIndia()
+
+export async function showIndexOverview() {
+    const spinner = ora()
+    spinner.text = 'Loading Indices deatils'
+    spinner.start()
+    const { data: allIndexData } = await nse.getDataByEndpoint(ApiList.ALL_INDICES)
+    spinner.text = ''
+    spinner.stop()
+    const indexTypes = [
+        'BROAD MARKET INDICES',
+        'SECTORAL INDICES',
+        // 'STRATEGY INDICES',
+        // 'THEMATIC INDICES',
+        // 'FIXED INCOME INDICES'
+    ]
+    indexTypes.forEach(indexType => {
+        const allIndexTableData = allIndexData
+            .filter((item: any) => item.key === indexType)
+            .map((item: any) => {
+                return {
+                    // 'Index Name': item.index,
+                    'Index Symbol': item.indexSymbol,
+                    'Last Price': item.last,
+                    'Previous Close': item.previousClose,
+                    'Change': item.variation,
+                    'Change Percent': item.percentChange,
+                    'Open': item.open,
+                    'High': item.high,
+                    'Low': item.low,
+                }
+            })
+        console.log(`${indexType} Details`);
+        console.table(allIndexTableData)
+    })
+}
+export async function showIndexDetails(argv: any) {
+    const { indexSymbol: index } = argv
+    const spinner = ora()
+    spinner.text = `Loading ${index} Details`
+    spinner.start()
+    const { data } = await nse.getEquityStockIndices(index)
+    spinner.text = ''
+    spinner.stop()
+    if (data) {
+        const indexTableData = data.map((item: any) => {
+            return {
+                'Symbol': item.symbol,
+                'Open': item.open,
+                'High': item.dayHigh,
+                'Low': item.dayLow,
+                'Last Price': item.lastPrice,
+                'Previous Close': item.previousClose,
+                'Change': Number(item.change.toFixed(2)),
+                'Change Percent': item.pChange
+            }
+        })
+        console.log(`${index} deatils`);
+        console.table(indexTableData);
+    } else {
+        console.log(chalk.red(`${index} index symbol is invalid. Try to enclose the index symbols with quotes.`));
+    }
+}
+export async function showMarketStatus() {
+    const spinner = ora()
+    spinner.text = 'Loading Market status'
+    spinner.start()
+    const { marketState } = await nse.getDataByEndpoint(ApiList.MARKET_STATUS)
+    spinner.text = ''
+    spinner.stop()
+    console.table(marketState);
+}
 
 export async function showEquityDetails(argv: any) {
     const {
@@ -66,7 +137,7 @@ export async function showEquityDetails(argv: any) {
 
             const slbStatus = securityInfo.slb === 'Yes' ?
                 chalk.black.bgGreen(' SLB ') : chalk.black.bgRed(' SLB ')
-                
+
             const ltpStatus = changePrice <= 0 ? chalk.black.bgRed(` LTP: ${priceInfo.lastPrice} `) :
                 chalk.black.bgGreen(` LTP: ${priceInfo.lastPrice} `)
 

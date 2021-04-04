@@ -121,6 +121,9 @@ export class NseIndia {
     getEquitySeries(symbol: string): Promise<SeriesData> {
         return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol)}`)
     }
+    getEquityStockIndices(index: string): Promise<any> {
+        return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index)}`)
+    }
     getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
         let url = `/api/chart-databyindex?index=${index}&indices=true`
         if (isPreOpenData)
