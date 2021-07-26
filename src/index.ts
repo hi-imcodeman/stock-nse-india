@@ -7,7 +7,8 @@ import {
     EquityTradeInfo,
     EquityCorporateInfo,
     HistoricalData,
-    SeriesData
+    SeriesData,
+    IndexDetails
 } from './interface'
 
 export enum ApiList {
@@ -113,15 +114,14 @@ export class NseIndia {
         const promises = dateRanges.map(async (dateRange) => {
             const url = `/api/historical/cm/equity?symbol=${encodeURIComponent(symbol)}` +
                 `&series=[%22EQ%22]&from=${dateRange.start}&to=${dateRange.end}`
-            const data: HistoricalData = await this.getDataByEndpoint(url)
-            return data
+            return this.getDataByEndpoint(url)
         })
         return Promise.all(promises)
     }
     getEquitySeries(symbol: string): Promise<SeriesData> {
         return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol)}`)
     }
-    getEquityStockIndices(index: string): Promise<any> {
+    getEquityStockIndices(index: string): Promise<IndexDetails> {
         return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index)}`)
     }
     getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
