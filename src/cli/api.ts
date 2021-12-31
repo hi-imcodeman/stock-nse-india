@@ -147,7 +147,7 @@ export async function showEquityDetails(argv: any) {
         } else {
             console.log(chalk.red('Please provide valid NSE symbol.'));
         }
-    } catch (error) {
+    } catch (error:any) {
         spinner.text = ''
         spinner.stop()
         console.log(chalk.red(error.message))
