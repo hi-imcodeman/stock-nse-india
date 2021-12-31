@@ -53,6 +53,11 @@ describe('class: NseIndia', () => {
         const intradayData = await nseIndia.getIndexIntradayData(index)
         expect(intradayData.name).toBe(index)
     })
+    test('getEquityStockIndices', async () => {
+        const index = 'NIFTY AUTO'
+        const indexData = await nseIndia.getEquityStockIndices(index)
+        expect(indexData.metadata.indexName).toBe(index)
+    })
     test('getIndexIntradayData:proOpen', async () => {
         const index = 'NIFTY FIN SERVICE'
         const intradayData = await nseIndia.getIndexIntradayData(index, true)

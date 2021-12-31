@@ -39,3 +39,45 @@ nseIndia.getEquityDetails('IRCTC').then(details => {
     console.log(details)
 })
 ```
+## CLI
+
+We can use this package in CLI.
+
+Install for CLI
+
+```sh
+npm i -g stock-nse-india
+```
+
+### CLI Usage
+
+To get CLI help
+
+```sh
+nseindia --help
+```
+
+To get market status
+```sh
+nseindia
+```
+
+To get the current equity details of the NSE symbol
+```sh
+nseindia equity IRCTC
+```
+
+To get the historical details of the NSE symbol
+```sh
+nseindia historical IRCTC
+```
+
+To get the details of the indices
+```sh
+nseindia index
+```
+
+To get the details of the specific index
+```sh
+nseindia index "NIFTY AUTO"
+```
