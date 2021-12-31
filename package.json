@@ -1,6 +1,6 @@
 {
   "name": "stock-nse-india",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "repository": "https://github.com/hi-imcodeman/stock-nse-india.git",
   "author": "Asraf Ali <asraf.cse@gmail.com>",
