@@ -81,3 +81,21 @@ To get the details of the specific index
 ```sh
 nseindia index "NIFTY AUTO"
 ```
+## Docker
+### Start a instance
+```sh
+docker run --rm -d -p 3001:3001 imcodeman/nseindia
+```
+### Test the instance
+Open the browser and hit http://localhoast:3001
+
+### Docker Hub link
+https://hub.docker.com/r/imcodeman/nseindia
+
+## Testing
+
+Run the below command for testing and coverage.
+
+```sh
+yarn test
+```
