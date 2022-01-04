@@ -74,13 +74,14 @@ describe('class: NseIndia', () => {
         const allData = await Promise.all(promises)
         expect(allData.length).toBe(limit)
     })
-    test('Invalid API call', async ()=>{
+    test('Invalid API call', async () => {
         try {
             await nseIndia.getDataByEndpoint('/api/invalidapi')
         } catch (error) {
-           expect(error.message).toBe('Request failed with status code 404') 
-        } 
+            expect(error.message).toBe('Request failed with status code 404')
+        }
     })
+
     describe('ApiList', () => {
         Object.entries(ApiList).forEach(entry => {
             test(`should return content for ${entry[0]}`, async () => {
