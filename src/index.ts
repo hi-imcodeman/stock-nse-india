@@ -36,7 +36,7 @@ export class NseIndia {
     private noOfConnections = 0
     private baseHeaders = {
         'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'Accept-Encoding',
+        'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive'
     }
 
