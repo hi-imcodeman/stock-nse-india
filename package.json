@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prestart": "yarn build",
     "start": "node dist/server.js",
     "docs": "typedoc",
     "test": "jest --coverage",

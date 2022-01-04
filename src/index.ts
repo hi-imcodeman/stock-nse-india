@@ -34,10 +34,17 @@ export class NseIndia {
     private cookieMaxAge = 60 // should be in seconds
     private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
     private noOfConnections = 0
+    private baseHeaders = {
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'Accept-Encoding',
+        'Connection': 'keep-alive'
+    }
 
     private async getNseCookies() {
         if (this.cookies === '' || this.cookieUsedCount > 10 || this.cookieExpiry <= new Date().getTime()) {
-            const response = await axios.get(this.baseUrl)
+            const response = await axios.get(this.baseUrl, {
+                headers: this.baseHeaders
+            })
             const setCookies = response.headers['set-cookie']
             const cookies: string[] = []
             setCookies.forEach((cookie: string) => {
@@ -67,7 +74,8 @@ export class NseIndia {
             try {
                 const response = await axios.get(url, {
                     headers: {
-                        'Cookie': await this.getNseCookies()
+                        ...this.baseHeaders,
+                        'Cookie': await this.getNseCookies(),
                     }
                 })
                 this.noOfConnections--
