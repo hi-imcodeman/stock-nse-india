@@ -27,4 +27,3 @@ export const getMostActiveEquities = async (indexSymbol: string) => {
 
     }
 }
-
