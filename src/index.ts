@@ -41,7 +41,7 @@ export class NseIndia {
             const setCookies = response.headers['set-cookie']
             const cookies: string[] = []
             setCookies.forEach((cookie: string) => {
-                const requiredCookies: string[] = ['nsit', 'nseappid']
+                const requiredCookies: string[] = ['nsit', 'nseappid', 'ak_bmsc', 'AKA_A2']
                 const cookieKeyValue = cookie.split(';')[0]
                 const cookieEntry = cookieKeyValue.split('=')
                 if (requiredCookies.includes(cookieEntry[0])) {
