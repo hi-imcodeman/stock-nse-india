@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "yarn build && node dist/server.js",
     "docs": "typedoc",
     "test": "jest --coverage",
     "lint": "eslint . --ext .ts",

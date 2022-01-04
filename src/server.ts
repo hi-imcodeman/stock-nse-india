@@ -9,8 +9,10 @@ app.get('/', async (_req, res) => {
     try {
         const marketStatus = await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS)
         res.json(marketStatus)
-    } catch (error) {
-        res.json(error)
+    } catch (error:any) {
+        res.json({
+            axiosError:error
+        })
     }
 })
 
