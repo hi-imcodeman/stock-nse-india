@@ -3,6 +3,8 @@ import {
     getMostActiveEquities
 } from './helpers'
 
+jest.setTimeout(999999)
+
 describe('Helpers', () => {
     test('getGainersAndLosersByIndex', async () => {
         const data = await getGainersAndLosersByIndex("NIFTY 50")
