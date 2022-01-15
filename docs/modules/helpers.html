@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>utils | stock-nse-india - v1.0.3</title>
+	<title>helpers | stock-nse-india - v1.0.3</title>
 	<meta name="description" content="Documentation for stock-nse-india - v1.0.3">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,10 +55,10 @@
 					<a href="../modules.html">stock-nse-india - v1.0.3</a>
 				</li>
 				<li>
-					<a href="utils.html">utils</a>
+					<a href="helpers.html">helpers</a>
 				</li>
 			</ul>
-			<h1>Module utils</h1>
+			<h1>Module helpers</h1>
 		</div>
 	</div>
 </header>
@@ -72,8 +72,8 @@
 						<section class="tsd-index-section ">
 							<h3>Functions</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-function tsd-parent-kind-module"><a href="utils.html#getdaterangechunks" class="tsd-kind-icon">get<wbr>Date<wbr>Range<wbr>Chunks</a></li>
-								<li class="tsd-kind-function tsd-parent-kind-module"><a href="utils.html#sleep" class="tsd-kind-icon">sleep</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="helpers.html#getgainersandlosersbyindex" class="tsd-kind-icon">get<wbr>Gainers<wbr>And<wbr>Losers<wbr>ByIndex</a></li>
+								<li class="tsd-kind-function tsd-parent-kind-module"><a href="helpers.html#getmostactiveequities" class="tsd-kind-icon">get<wbr>Most<wbr>Active<wbr>Equities</a></li>
 							</ul>
 						</section>
 					</div>
@@ -82,54 +82,48 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Functions</h2>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
-					<a name="getdaterangechunks" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> get<wbr>Date<wbr>Range<wbr>Chunks</h3>
+					<a name="getgainersandlosersbyindex" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> get<wbr>Gainers<wbr>And<wbr>Losers<wbr>ByIndex</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Date<wbr>Range<wbr>Chunks<span class="tsd-signature-symbol">(</span>startDate<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Date</span>, endDate<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Date</span>, chunkInDays<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>end<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>start<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Gainers<wbr>And<wbr>Losers<wbr>ByIndex<span class="tsd-signature-symbol">(</span>indexSymbol<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>gainers<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.indexequityinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexEquityInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span>losers<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.indexequityinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexEquityInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/67521fb/src/utils.ts#L6">utils.ts:6</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/67521fb/src/helpers.ts#L6">helpers.ts:6</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>startDate: <span class="tsd-signature-type">Date</span></h5>
-								</li>
-								<li>
-									<h5>endDate: <span class="tsd-signature-type">Date</span></h5>
-								</li>
-								<li>
-									<h5>chunkInDays: <span class="tsd-signature-type">number</span></h5>
+									<h5>indexSymbol: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span>end<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>start<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>gainers<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.indexequityinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexEquityInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span>losers<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.indexequityinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexEquityInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
-					<a name="sleep" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> sleep</h3>
+					<a name="getmostactiveequities" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagConst">Const</span> get<wbr>Most<wbr>Active<wbr>Equities</h3>
 					<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
-						<li class="tsd-signature tsd-kind-icon">sleep<span class="tsd-signature-symbol">(</span>ms<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Most<wbr>Active<wbr>Equities<span class="tsd-signature-symbol">(</span>indexSymbol<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>byValue<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.indexequityinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexEquityInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span>byVolume<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.indexequityinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexEquityInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/67521fb/src/utils.ts#L19">utils.ts:19</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/67521fb/src/helpers.ts#L22">helpers.ts:22</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>ms: <span class="tsd-signature-type">number</span></h5>
+									<h5>indexSymbol: <span class="tsd-signature-type">string</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>byValue<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.indexequityinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexEquityInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span>byVolume<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.indexequityinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexEquityInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -141,7 +135,7 @@
 					<li class=" ">
 						<a href="../modules.html">Exports</a>
 					</li>
-					<li class=" tsd-kind-module">
+					<li class="current tsd-kind-module">
 						<a href="helpers.html">helpers</a>
 					</li>
 					<li class=" tsd-kind-module">
@@ -153,7 +147,7 @@
 					<li class=" tsd-kind-module">
 						<a href="server.html">server</a>
 					</li>
-					<li class="current tsd-kind-module">
+					<li class=" tsd-kind-module">
 						<a href="utils.html">utils</a>
 					</li>
 				</ul>
@@ -161,10 +155,10 @@
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="utils.html#getdaterangechunks" class="tsd-kind-icon">get<wbr>Date<wbr>Range<wbr>Chunks</a>
+						<a href="helpers.html#getgainersandlosersbyindex" class="tsd-kind-icon">get<wbr>Gainers<wbr>And<wbr>Losers<wbr>ByIndex</a>
 					</li>
 					<li class=" tsd-kind-function tsd-parent-kind-module">
-						<a href="utils.html#sleep" class="tsd-kind-icon">sleep</a>
+						<a href="helpers.html#getmostactiveequities" class="tsd-kind-icon">get<wbr>Most<wbr>Active<wbr>Equities</a>
 					</li>
 				</ul>
 			</nav>
