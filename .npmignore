@@ -8,3 +8,4 @@ examples/
 .eslintrc
 .eslintignore
 *.map
+Dockerfile

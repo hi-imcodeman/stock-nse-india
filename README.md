@@ -22,6 +22,20 @@ Install using 'yarn'
 ```sh
 yarn add stock-nse-india
 ```
+## Run
+Start the application using 'npm'
+
+```sh
+npm start
+```
+
+Start the application using 'yarn'
+
+```sh
+yarn start
+```
+
+**Then open the URL http://localhost:3000 in browser**
 
 ## Usage
 ```javascript
