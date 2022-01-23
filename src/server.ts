@@ -30,8 +30,30 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
  */
 app.get('/', async (_req, res) => {
     try {
-        const marketStatus = await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS)
-        res.json(marketStatus)
+        res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /glossary:
+ *   get:
+ *     description: To get glossary of NSE India
+ *     tags:
+ *       - Common
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of glossary for NSE India
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+app.get('/glossary', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getDataByEndpoint(ApiList.GLOSSARY))
     } catch (error) {
         res.status(400).json(error)
     }
@@ -54,8 +76,7 @@ app.get('/', async (_req, res) => {
  */
 app.get('/api/marketStatus', async (_req, res) => {
     try {
-        const marketStatus = await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS)
-        res.json(marketStatus)
+        res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS))
     } catch (error) {
         res.status(400).json(error)
     }
@@ -76,10 +97,142 @@ app.get('/api/marketStatus', async (_req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/marketTurnover', async (_req, res) => {
+app.get('/api/marketTurnover', async (_req, res) => {
     try {
-        const marketTurnover = await nseIndia.getDataByEndpoint(ApiList.MARKET_TURNOVER)
-        res.json(marketTurnover)
+        res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_TURNOVER))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/equityMaster:
+ *   get:
+ *     description: To get equity master
+ *     tags:
+ *       - Common
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of NSE equity master
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/equityMaster', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getDataByEndpoint(ApiList.EQUITY_MASTER))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/holidays:
+ *   get:
+ *     description: To get holidays of NSE India
+ *     tags:
+ *       - Common
+ *     parameters:
+ *       - name: type
+ *         in: query
+ *         description: Holiday list for
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [trading,clearing]
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of NSE India's holidays
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+app.get('/api/holidays', async (req, res) => {
+    try {
+        const { type } = req.query
+        if (type === 'clearing') {
+            res.json(await nseIndia.getDataByEndpoint(ApiList.HOLIDAY_CLEARING))
+        } else {
+            res.json(await nseIndia.getDataByEndpoint(ApiList.HOLIDAY_TRADING))
+        }
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/circulars:
+ *   get:
+ *     description: To get NSE India's circulars
+ *     tags:
+ *       - Common
+ *     parameters:
+ *       - name: isLatest
+ *         in: query
+ *         description: Boolean value get latest circulars
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of NSE India's circulars
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/circulars', async (req, res) => {
+    try {
+        const { isLatest } = req.query
+        if (isLatest === 'true') {
+            res.json(await nseIndia.getDataByEndpoint(ApiList.LATEST_CIRCULARS))
+        } else {
+            res.json(await nseIndia.getDataByEndpoint(ApiList.CIRCULARS))
+        }
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/mergedDailyReports:
+ *   get:
+ *     description: To get merged daily reports
+ *     tags:
+ *       - Common
+ *     parameters:
+ *       - name: key
+ *         in: query
+ *         description: Key for merged daily reports
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [capital,derivatives,debt]
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of NSE India's merged daily reports
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+app.get('/api/mergedDailyReports', async (req, res) => {
+    try {
+        const { key } = req.query
+        if (key === 'debt') {
+            res.json(await nseIndia.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DEBT))
+        } else if (key === 'derivatives') {
+            res.json(await nseIndia.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DERIVATIVES))
+        } else {
+            res.json(await nseIndia.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_CAPITAL))
+        }
     } catch (error) {
         res.status(400).json(error)
     }
@@ -100,7 +253,7 @@ app.get('/api/marketStatus', async (_req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/allIndices', async (_req, res) => {
+app.get('/api/allIndices', async (_req, res) => {
     try {
         const allIndices = await nseIndia.getDataByEndpoint(ApiList.ALL_INDICES)
         res.json(allIndices)
@@ -124,7 +277,7 @@ app.get('/api/marketStatus', async (_req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/indexNames', async (_req, res) => {
+app.get('/api/indexNames', async (_req, res) => {
     try {
         const indexNames = await nseIndia.getDataByEndpoint(ApiList.INDEX_NAMES)
         res.json(indexNames)
@@ -211,7 +364,7 @@ app.get('/api/equity/:symbol', async (req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/equity/series/:symbol', async (req, res) => {
+app.get('/api/equity/series/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquitySeries(req.params.symbol))
     } catch (error) {
@@ -408,7 +561,7 @@ app.get('/api/equity/historical/:symbol', async (req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/index/:indexSymbol', async (req, res) => {
+app.get('/api/index/:indexSymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityStockIndices(req.params.indexSymbol))
     } catch (error) {
@@ -446,7 +599,7 @@ app.get('/api/equity/historical/:symbol', async (req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
+app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
     try {
         const isPreOpen = req.query.preOpen as string
         if (isPreOpen === "true") {
@@ -463,5 +616,5 @@ app.listen(port, () => {
     console.log(`NseIndia App started in port ${port}`);
     console.log(`Open ${hostUrl} in browser.`);
     console.log(`For API docs: ${hostUrl}/api-docs`);
-    
+
 })
