@@ -1,11 +1,12 @@
 import express from 'express'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsDoc from 'swagger-jsdoc'
-import {swaggerDocOptions} from './swaggerDocOptions'
+import { swaggerDocOptions } from './swaggerDocOptions'
 import { NseIndia, ApiList } from './index'
 
 const app = express()
 const port = process.env.PORT || 3000
+const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
 const nseIndia = new NseIndia()
 
 const openapiSpecification = swaggerJsDoc(swaggerDocOptions);
@@ -51,10 +52,82 @@ app.get('/', async (_req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/marketStatus', async (_req, res) => {
+app.get('/api/marketStatus', async (_req, res) => {
     try {
         const marketStatus = await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS)
         res.json(marketStatus)
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/marketTurnover:
+ *   get:
+ *     description: To get market turn over
+ *     tags:
+ *       - Common
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of NSE market turn over
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/marketTurnover', async (_req, res) => {
+    try {
+        const marketTurnover = await nseIndia.getDataByEndpoint(ApiList.MARKET_TURNOVER)
+        res.json(marketTurnover)
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/allIndices:
+ *   get:
+ *     description: To get all NSE indices
+ *     tags:
+ *       - Common
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of all NSE indices
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/allIndices', async (_req, res) => {
+    try {
+        const allIndices = await nseIndia.getDataByEndpoint(ApiList.ALL_INDICES)
+        res.json(allIndices)
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/indexNames:
+ *   get:
+ *     description: To get all NSE index names
+ *     tags:
+ *       - Common
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of all NSE index names
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/indexNames', async (_req, res) => {
+    try {
+        const indexNames = await nseIndia.getDataByEndpoint(ApiList.INDEX_NAMES)
+        res.json(indexNames)
     } catch (error) {
         res.status(400).json(error)
     }
@@ -71,11 +144,11 @@ app.get('/', async (_req, res) => {
  *       - application/json
  *     responses:
  *       200:
- *         description: Returns an array of equity symbols
+ *         description: Returns an array of NSE equity symbols
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/allSymbols', async (_req, res) => {
+app.get('/api/allSymbols', async (_req, res) => {
     try {
         const symbols = await nseIndia.getAllStockSymbols()
         res.json(symbols)
@@ -90,7 +163,7 @@ app.get('/', async (_req, res) => {
  *   get:
  *     description: To get details of the NSE symbol
  *     tags:
- *       - Common
+ *       - Equity
  *     produces:
  *       - application/json
  *     parameters:
@@ -100,14 +173,14 @@ app.get('/', async (_req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *           format: string
+ *           format: any
  *     responses:
  *       200:
- *         description: Returns a details of NSE symbol
+ *         description: Returns a details of the NSE symbol
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/equity/:symbol', async (req, res) => {
+app.get('/api/equity/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityDetails(req.params.symbol))
     } catch (error) {
@@ -115,6 +188,280 @@ app.get('/', async (_req, res) => {
     }
 })
 
+/**
+ * @openapi
+ * /api/equity/series/{symbol}:
+ *   get:
+ *     description: To get equity series of the NSE symbol
+ *     tags:
+ *       - Equity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     responses:
+ *       200:
+ *         description: Returns a equity series of the NSE symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/equity/series/:symbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getEquitySeries(req.params.symbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/equity/tradeInfo/{symbol}:
+ *   get:
+ *     description: To get trade info of the NSE symbol
+ *     tags:
+ *       - Equity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     responses:
+ *       200:
+ *         description: Returns a trade info of the NSE symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+app.get('/api/equity/tradeInfo/:symbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getEquityTradeInfo(req.params.symbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/equity/corporateInfo/{symbol}:
+ *   get:
+ *     description: To get corporate info of the NSE symbol
+ *     tags:
+ *       - Equity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     responses:
+ *       200:
+ *         description: Returns a corporate info of the NSE symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+app.get('/api/equity/corporateInfo/:symbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getEquityCorporateInfo(req.params.symbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/equity/intraday/{symbol}:
+ *   get:
+ *     description: To get intraday trade info of the NSE symbol
+ *     tags:
+ *       - Equity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *       - name: preOpen
+ *         in: query
+ *         description: Boolean to get preOpen data
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *     responses:
+ *       200:
+ *         description: Returns a intraday trade info of the NSE symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+app.get('/api/equity/intraday/:symbol', async (req, res) => {
+    try {
+        const isPreOpen = req.query.preOpen as string
+        if (isPreOpen === "true") {
+            res.json(await nseIndia.getEquityIntradayData(req.params.symbol, true))
+        } else {
+            res.json(await nseIndia.getEquityIntradayData(req.params.symbol))
+        }
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/equity/historical/{symbol}:
+ *   get:
+ *     description: To get details of the NSE symbol
+ *     tags:
+ *       - Equity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *       - name: dateStart
+ *         in: query
+ *         description: "Start date to pull historical data (format: YYYY-MM-DD)"
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: dateEnd
+ *         in: query
+ *         description: "End date to pull historical data (format: YYYY-MM-DD)"
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Returns a historical data of the NSE symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+app.get('/api/equity/historical/:symbol', async (req, res) => {
+    try {
+        const dateStart = req.query.dateStart as string
+        const dateEnd = req.query.dateEnd as string
+        if (dateStart && dateEnd) {
+            const start = new Date(dateStart)
+            const end = new Date(dateEnd)
+            if (start.getTime() > 0 && end.getTime() > 0) {
+                const range = {
+                    start,
+                    end
+                }
+                res.json(await nseIndia.getEquityHistoricalData(req.params.symbol, range))
+            } else {
+                res.status(400).json({ error: 'Invalid date format. Please use the format (YYYY-MM-DD)' })
+            }
+        } else {
+            res.json(await nseIndia.getEquityHistoricalData(req.params.symbol))
+        }
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/index/{indexSymbol}:
+ *   get:
+ *     description: To get detailsof the NSE index
+ *     tags:
+ *       - Index
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: indexSymbol
+ *         in: path
+ *         description: NSE index symbol
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     responses:
+ *       200:
+ *         description: Returns a details of the NSE index symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/index/:indexSymbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getEquityStockIndices(req.params.indexSymbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/index/intraday/{indexSymbol}:
+ *   get:
+ *     description: To get intraday trade info of the NSE index symbol
+ *     tags:
+ *       - Index
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE index symbol
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *       - name: preOpen
+ *         in: query
+ *         description: Boolean to get preOpen data
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *     responses:
+ *       200:
+ *         description: Returns a intraday trade info of the NSE index symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
+    try {
+        const isPreOpen = req.query.preOpen as string
+        if (isPreOpen === "true") {
+            res.json(await nseIndia.getIndexIntradayData(req.params.indexSymbol, true))
+        } else {
+            res.json(await nseIndia.getIndexIntradayData(req.params.indexSymbol))
+        }
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
 app.listen(port, () => {
     console.log(`NseIndia App started in port ${port}`);
+    console.log(`Open ${hostUrl} in browser.`);
+    console.log(`For API docs: ${hostUrl}/api-docs`);
+    
 })

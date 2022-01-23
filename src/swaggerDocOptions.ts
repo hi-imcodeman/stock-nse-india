@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 const port = process.env.PORT || 3000
+const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
 export const swaggerDocOptions = {
     definition: {
         "openapi": "3.0.0",
@@ -17,7 +18,7 @@ export const swaggerDocOptions = {
         },
         "servers": [
             {
-                "url": `http://localhost:${port}`
+                "url": hostUrl
             }
         ],
         "tags":[
@@ -28,6 +29,14 @@ export const swaggerDocOptions = {
             {
                 "name": "Common",
                 "description": "Contains all common APIs of NSE India"
+            },
+            {
+                "name": "Equity",
+                "description": "Contains all equity related APIs of NSE India"
+            },
+            {
+                "name": "Index",
+                "description": "Contains all index related APIs of NSE India"
             }
         ]
     },
