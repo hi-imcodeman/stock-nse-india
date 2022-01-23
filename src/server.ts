@@ -426,7 +426,7 @@ app.get('/api/equity/historical/:symbol', async (req, res) => {
  *     produces:
  *       - application/json
  *     parameters:
- *       - name: symbol
+ *       - name: indexSymbol
  *         in: path
  *         description: NSE index symbol
  *         required: true
