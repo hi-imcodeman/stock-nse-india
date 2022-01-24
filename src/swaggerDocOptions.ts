@@ -5,7 +5,7 @@ export const swaggerDocOptions = {
     definition: {
         "openapi": "3.0.0",
         "info": {
-            "version": "1.0.3",
+            "version": "1.1.0",
             "title": "National Stock Exchange - India (Unofficial)",
             "description": "This package will help us to get equity details and historical data from National Stock Exchange of India.",
             "contact": {

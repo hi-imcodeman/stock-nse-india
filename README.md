@@ -36,6 +36,7 @@ yarn start
 ```
 
 **Then open the URL http://localhost:3000 in browser.**
+
 For API service documentation please hit http://localhoast:3000/api-docs
 
 ## Usage
@@ -108,6 +109,7 @@ docker run --rm -d -p 3001:3001 imcodeman/nseindia
 ```
 ### Test the instance
 Open the browser and hit http://localhoast:3001
+
 For API service documentation please hit http://localhoast:3001/api-docs
 
 ### Docker Hub link
@@ -117,6 +119,7 @@ https://hub.docker.com/r/imcodeman/nseindia
 Please the use below links for the demo.
 
 **Demo URL:** http://stock-nse-india.herokuapp.com/
+
 **API Docs URL:** http://stock-nse-india.herokuapp.com/api-docs
 
 ## Testing
