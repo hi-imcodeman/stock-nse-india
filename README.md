@@ -118,9 +118,9 @@ https://hub.docker.com/r/imcodeman/nseindia
 ## Demo
 Please the use below links for the demo.
 
-**Demo URL:** http://stock-nse-india.herokuapp.com/
+**Demo URL:** https://stock-nse-india.herokuapp.com/
 
-**API Docs URL:** http://stock-nse-india.herokuapp.com/api-docs
+**API Docs URL:** https://stock-nse-india.herokuapp.com/api-docs
 
 ## Testing
 
