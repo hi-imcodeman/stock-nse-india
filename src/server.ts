@@ -3,6 +3,10 @@ import swaggerUi from 'swagger-ui-express'
 import swaggerJsDoc from 'swagger-jsdoc'
 import { swaggerDocOptions } from './swaggerDocOptions'
 import { NseIndia, ApiList } from './index'
+import {
+    getGainersAndLosersByIndex,
+    getMostActiveEquities
+} from './helpers'
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -38,7 +42,24 @@ app.get('/', async (_req, res) => {
 
 /**
  * @openapi
- * /glossary:
+ * /api/v1/swagger.json:
+ *   get:
+ *     description: To get open api specification for swagger documentation
+ *     tags:
+ *       - Base
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of open api specification
+ */
+ app.get('/api/v1/swagger.json',(_req,res)=>{
+    res.json(openapiSpecification)
+})
+
+/**
+ * @openapi
+ * /api/glossary:
  *   get:
  *     description: To get glossary of NSE India
  *     tags:
@@ -51,7 +72,7 @@ app.get('/', async (_req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
-app.get('/glossary', async (_req, res) => {
+app.get('/api/glossary', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.GLOSSARY))
     } catch (error) {
@@ -120,7 +141,7 @@ app.get('/api/marketTurnover', async (_req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/equityMaster', async (_req, res) => {
+app.get('/api/equityMaster', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.EQUITY_MASTER))
     } catch (error) {
@@ -187,7 +208,7 @@ app.get('/api/holidays', async (req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/circulars', async (req, res) => {
+app.get('/api/circulars', async (req, res) => {
     try {
         const { isLatest } = req.query
         if (isLatest === 'true') {
@@ -607,6 +628,68 @@ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
         } else {
             res.json(await nseIndia.getIndexIntradayData(req.params.indexSymbol))
         }
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/gainersAndLosers/{indexSymbol}:
+ *   get:
+ *     description: To get gainers and losers of the specific index
+ *     tags:
+ *       - Helpers
+ *     parameters:
+ *       - name: indexSymbol
+ *         in: path
+ *         description: NSE index symbol
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of the specified index's gainers and losers
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/gainersAndLosers/:indexSymbol', async (req, res) => {
+    try {
+        res.json(await getGainersAndLosersByIndex(req.params.indexSymbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/mostActive/{indexSymbol}:
+ *   get:
+ *     description: To get most active equities of the specific index
+ *     tags:
+ *       - Helpers
+ *     parameters:
+ *       - name: indexSymbol
+ *         in: path
+ *         description: NSE index symbol
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON object of most active equities of the specified index
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/mostActive/:indexSymbol', async (req, res) => {
+    try {
+        res.json(await getMostActiveEquities(req.params.indexSymbol))
     } catch (error) {
         res.status(400).json(error)
     }
