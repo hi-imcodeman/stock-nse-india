@@ -5,7 +5,7 @@
 
 This package will help us to get equity details and historical data from National Stock Exchange of India.
 
-Please refer [API Documentation](https://hi-imcodeman.github.io/stock-nse-india) here.
+Please refer [Documentation](https://hi-imcodeman.github.io/stock-nse-india) here.
 
 See the [Examples](https://github.com/hi-imcodeman/stock-nse-india/tree/master/examples) here
 
@@ -35,7 +35,8 @@ Start the application using 'yarn'
 yarn start
 ```
 
-**Then open the URL http://localhost:3000 in browser**
+**Then open the URL http://localhost:3000 in browser.**
+For API service documentation please hit http://localhoast:3000/api-docs
 
 ## Usage
 ```javascript
@@ -96,15 +97,27 @@ To get the details of the specific index
 nseindia index "NIFTY AUTO"
 ```
 ## Docker
+### Build & Run in local
+Build and run the docker instance in local machine.
+```sh
+docker build -t nseindia . && docker run --rm -d -p 3001:3001 nseindia:latest
+```
 ### Start a instance
 ```sh
 docker run --rm -d -p 3001:3001 imcodeman/nseindia
 ```
 ### Test the instance
 Open the browser and hit http://localhoast:3001
+For API service documentation please hit http://localhoast:3001/api-docs
 
 ### Docker Hub link
 https://hub.docker.com/r/imcodeman/nseindia
+
+## Demo
+Please the use below links for the demo.
+
+**Demo URL:** http://stock-nse-india.herokuapp.com/
+**API Docs URL:** http://stock-nse-india.herokuapp.com/api-docs
 
 ## Testing
 
