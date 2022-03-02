@@ -8,7 +8,8 @@ import {
     EquityCorporateInfo,
     HistoricalData,
     SeriesData,
-    IndexDetails
+    IndexDetails,
+    GainersLoosersDetails
 } from './interface'
 
 export enum ApiList {
@@ -105,6 +106,9 @@ export class NseIndia {
     getEquityCorporateInfo(symbol: string): Promise<EquityCorporateInfo> {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=corp_info`)
     }
+    getEquityCorporateActionsDividend(symbol: string): Promise<EquityCorporateInfo> {
+        return this.getDataByEndpoint(`/api/corporates-corporateActions?index=equities&symbol=${encodeURIComponent(symbol)}&subject=DIVIDEND`)
+    }
     async getEquityIntradayData(symbol: string, isPreOpenData = false): Promise<IntradayData> {
         const details = await this.getEquityDetails(symbol)
         const identifier = details.info.identifier
@@ -131,6 +135,11 @@ export class NseIndia {
     }
     getEquityStockIndices(index: string): Promise<IndexDetails> {
         return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index)}`)
+    }
+    async getEquityGainersLoosers(): Promise<GainersLoosersDetails> {
+        const gainers = await this.getDataByEndpoint(`/api/live-analysis-variations?index=gainers`)
+        const loosers = await this.getDataByEndpoint(`/api/live-analysis-variations?index=loosers`)
+        return { gainers: gainers.allSec.data, loosers: loosers.allSec.data }
     }
     getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
         let url = `/api/chart-databyindex?index=${index}&indices=true`

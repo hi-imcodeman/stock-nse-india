@@ -454,6 +454,36 @@ app.get('/api/equity/corporateInfo/:symbol', async (req, res) => {
         res.status(400).json(error)
     }
 })
+/**
+ * @openapi
+ * /api/equity/dividend/{symbol}:
+ *   get:
+ *     description: To get dividend of the NSE symbol
+ *     tags:
+ *       - Equity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     responses:
+ *       200:
+ *         description: Returns a dividend info of the NSE symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/equity/dividend/:symbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getEquityCorporateActionsDividend(req.params.symbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
 
 /**
  * @openapi
@@ -643,8 +673,9 @@ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
  *     parameters:
  *       - name: indexSymbol
  *         in: path
- *         description: NSE index symbol
+ *         description: NSE index symbol ('all' for All sectors)
  *         required: true
+ *         default: all
  *         schema:
  *           type: string
  *           format: any
