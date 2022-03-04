@@ -160,6 +160,17 @@ export interface DirectoryDetails {
     fax: string
     email: string
 }
+export interface CorporateActions {
+    series: string
+    faceVal: string
+    subject: string
+    exDate: string
+    recDate: string
+    bcStartDate: string
+    bcEndDate: string
+    ndStartDate: string
+    ndEndDate: string
+}
 export interface EquityCorporateInfo {
     corporate: {
         announcements: {
@@ -175,17 +186,7 @@ export interface EquityCorporateInfo {
             bm_date: string
             bm_timestamp: string
         }[]
-        corporateActions: {
-            series: string
-            faceVal: string
-            subject: string
-            exDate: string
-            recDate: string
-            bcStartDate: string
-            bcEndDate: string
-            ndStartDate: string
-            ndEndDate: string
-        }[]
+        corporateActions: CorporateActions[]
         governance: any[]
         financialResults: any[]
         shareholdingPatterns: {
@@ -346,6 +347,6 @@ export interface GLDetails {
     turnover: number;
 }
 export interface GainersLoosersDetails {
-    gainers: GLDetails[];
-    loosers: GLDetails[];
+    gainers: GLDetails[]|any;
+    loosers: GLDetails[]|any;
 }

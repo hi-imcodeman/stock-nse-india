@@ -16,7 +16,7 @@ export const getGainersAndLosersByIndex = async (indexSymbol: string) => {
         })
         return {
             gainers: gainers.sort((a, b) => b.pChange - a.pChange),
-            losers: losers.sort((a, b) => a.pChange - b.pChange)
+            loosers: losers.sort((a, b) => a.pChange - b.pChange)
         }
     } else {
         return nseIndia.getEquityGainersLoosers()

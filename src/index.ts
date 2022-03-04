@@ -9,7 +9,8 @@ import {
     HistoricalData,
     SeriesData,
     IndexDetails,
-    GainersLoosersDetails
+    GainersLoosersDetails,
+    CorporateActions
 } from './interface'
 
 export enum ApiList {
@@ -106,7 +107,7 @@ export class NseIndia {
     getEquityCorporateInfo(symbol: string): Promise<EquityCorporateInfo> {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=corp_info`)
     }
-    getEquityCorporateActionsDividend(symbol: string): Promise<EquityCorporateInfo> {
+    getEquityCorporateActionsDividend(symbol: string): Promise<CorporateActions[]> {
         return this.getDataByEndpoint(`/api/corporates-corporateActions?index=equities&symbol=${encodeURIComponent(symbol)}&subject=DIVIDEND`)
     }
     async getEquityIntradayData(symbol: string, isPreOpenData = false): Promise<IntradayData> {
