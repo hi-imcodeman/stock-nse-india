@@ -21,6 +21,10 @@ describe('class: NseIndia', () => {
         const corpInfo = await nseIndia.getEquityCorporateInfo(symbol)
         expect(Object.keys(corpInfo.corporate).length).toBeGreaterThan(5)
     })
+    test('getEquityCorporateInfo', async () => {
+        const dividendDetails = await nseIndia.getEquityCorporateActionsDividend(symbol)
+        expect(dividendDetails.length).toBeGreaterThan(5)
+    })
     test('getEquityIntradayData', async () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol)
         expect(intradayData.name).toBe(symbol)
@@ -80,6 +84,11 @@ describe('class: NseIndia', () => {
         } catch (error) {
             expect(error.message).toBe('Request failed with status code 404')
         }
+    })
+    test('getEquityGainersLoosers', async ()=>{
+        const equityGainersLoosers = await nseIndia.getEquityGainersLoosers()
+        expect(equityGainersLoosers.gainers.length).toBe(20)
+        expect(equityGainersLoosers.loosers.length).toBe(20)
     })
 
     describe('ApiList', () => {

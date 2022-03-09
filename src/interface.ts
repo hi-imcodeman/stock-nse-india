@@ -160,6 +160,17 @@ export interface DirectoryDetails {
     fax: string
     email: string
 }
+export interface CorporateActions {
+    series: string
+    faceVal: string
+    subject: string
+    exDate: string
+    recDate: string
+    bcStartDate: string
+    bcEndDate: string
+    ndStartDate: string
+    ndEndDate: string
+}
 export interface EquityCorporateInfo {
     corporate: {
         announcements: {
@@ -175,17 +186,7 @@ export interface EquityCorporateInfo {
             bm_date: string
             bm_timestamp: string
         }[]
-        corporateActions: {
-            series: string
-            faceVal: string
-            subject: string
-            exDate: string
-            recDate: string
-            bcStartDate: string
-            bcEndDate: string
-            ndStartDate: string
-            ndEndDate: string
-        }[]
+        corporateActions: CorporateActions[]
         governance: any[]
         financialResults: any[]
         shareholdingPatterns: {
@@ -279,23 +280,23 @@ export interface IndexEquityInfo {
     chart30dPath: string
     chartTodayPath: string
     meta: {
-      symbol: string
-      companyName: string
-      industry: string
-      activeSeries: string[]
-      debtSeries: any[]
-      tempSuspendedSeries: any[]
-      isFNOSec: boolean
-      isCASec: boolean
-      isSLBSec: boolean
-      isDebtSec: boolean
-      isSuspended: boolean
-      isETFSec: boolean
-      isDelisted: boolean
-      isin: string
+        symbol: string
+        companyName: string
+        industry: string
+        activeSeries: string[]
+        debtSeries: any[]
+        tempSuspendedSeries: any[]
+        isFNOSec: boolean
+        isCASec: boolean
+        isSLBSec: boolean
+        isDebtSec: boolean
+        isSuspended: boolean
+        isETFSec: boolean
+        isDelisted: boolean
+        isin: string
     }
-  }
-  export interface IndexDetails {
+}
+export interface IndexDetails {
     name: string,
     advance: { declines: string, advances: string, unchanged: string },
     timestamp: string,
@@ -315,8 +316,8 @@ export interface IndexEquityInfo {
         totalTradedVolume: number
         totalTradedValue: number
         ffmc_sum: number
-      },
-      marketStatus: {
+    },
+    marketStatus: {
         market: string,
         marketStatus: string,
         tradeDate: string,
@@ -325,7 +326,27 @@ export interface IndexEquityInfo {
         variation: number
         percentChange: number
         marketStatusMessage: string
-      },
-      date30dAgo: string,
-      date365dAgo: string
-  }
+    },
+    date30dAgo: string,
+    date365dAgo: string
+}
+export interface GLDetails {
+    ca_ex_dt: string;
+    ca_purpose: string;
+    high_price: number;
+    low_price: number;
+    ltp: number;
+    market_type: string;
+    net_price: number;
+    open_price: number;
+    perChange: number;
+    prev_price: number;
+    series: string;
+    symbol: string;
+    trade_quantity: number;
+    turnover: number;
+}
+export interface GainersLoosersDetails {
+    gainers: GLDetails[]|any;
+    loosers: GLDetails[]|any;
+}
