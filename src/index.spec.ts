@@ -63,6 +63,28 @@ describe('class: NseIndia', () => {
         const intradayData = await nseIndia.getIndexIntradayData(index, true)
         expect(intradayData.identifier).toBe(`Pre Open ${index}`)
     })
+    test('getIndexHistoricalData', async () => {
+        const index = 'NIFTY 50'
+        const range = {
+            start: new Date("2020-01-01"),
+            end: new Date("2022-04-14")
+        }
+        const data = await nseIndia.getIndexHistoricalData(index,range)
+        expect(data.index).toBe(index)
+        expect(data.fromDate).toBe(range.start)
+        expect(data.toDate).toBe(range.end)
+        expect(data.historicalData.length).toBe(3)
+        expect(data.historicalData[0][0]).toEqual({
+            date: new Date('2020-01-01T12:00:00.000Z'),
+            open: 12202.15,
+            high: 12222.2,
+            low: 12165.3,
+            close: 12182.5,
+            volume: 304078039,
+            turnoverInCrore: 10445.68
+          })
+        
+    })
     test('Multiple request to getaData', async () => {
         const limit = 15
         const symbols = await nseIndia.getAllStockSymbols()

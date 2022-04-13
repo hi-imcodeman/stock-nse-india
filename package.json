@@ -48,6 +48,7 @@
     "asciichart": "^1.5.25",
     "axios": "^0.21.2",
     "chalk": "^4.1.0",
+    "cheerio": "^1.0.0-rc.10",
     "express": "^4.17.2",
     "moment": "^2.29.1",
     "moment-range": "^4.0.2",

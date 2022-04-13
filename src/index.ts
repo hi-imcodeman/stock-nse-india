@@ -1,4 +1,5 @@
 import axios from 'axios'
+import cheerio from 'cheerio'
 import { getDateRangeChunks, sleep } from './utils'
 import {
     DateRange,
@@ -29,6 +30,7 @@ export enum ApiList {
 }
 export class NseIndia {
     private baseUrl = 'https://www.nseindia.com'
+    private legacyBaseUrl = 'https://www1.nseindia.com'
     private cookies = ''
     private cookieUsedCount = 0
     private cookieMaxAge = 60 // should be in seconds
@@ -89,8 +91,11 @@ export class NseIndia {
             }
         } while (hasError);
     }
-    async getDataByEndpoint(apiEndpoint: string) {
-        return this.getData(`${this.baseUrl}${apiEndpoint}`)
+    async getDataByEndpoint(apiEndpoint: string, isLegacy = false) {
+        if (!isLegacy)
+            return this.getData(`${this.baseUrl}${apiEndpoint}`)
+        else
+            return this.getData(`${this.legacyBaseUrl}${apiEndpoint}`)
     }
     async getAllStockSymbols(): Promise<string[]> {
         const { data } = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
@@ -133,9 +138,45 @@ export class NseIndia {
         return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index)}`)
     }
     getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
-        let url = `/api/chart-databyindex?index=${index}&indices=true`
+        let endpoint = `/api/chart-databyindex?index=${index}&indices=true`
         if (isPreOpenData)
-            url += '&preopen=true'
-        return this.getDataByEndpoint(url)
+            endpoint += '&preopen=true'
+        return this.getDataByEndpoint(endpoint)
+    }
+    async getIndexHistoricalData(index: string, range: DateRange) {
+        const dateRanges = getDateRangeChunks(range.start, range.end, 360)
+        const promises = dateRanges.map(async (dateRange) => {
+            const endpoint = '/products/dynaContent/equities/indices/historicalindices.jsp' +
+                `?indexType=${encodeURIComponent(index)}&fromDate=${dateRange.start}&toDate=${dateRange.end}`
+            const html: string = await this.getDataByEndpoint(endpoint, true)
+            const $ = cheerio.load(html)
+            const historical: any[] = []
+            const historicalRecords = $('#csvContentDiv').text().split(':')
+            historicalRecords.forEach((record: string, index: number) => {
+                if (record && index > 0) {
+                    const [date, open, high, low, close, volume, turnover] = record.split(',').map(item => {
+                        item = item.replace(/[",\s]/g, '')
+                        return item
+                    })
+                    historical.push({
+                        date: new Date(`${date} 17:30:00 GMT+0530`),
+                        open: Number(open),
+                        high: Number(high),
+                        low: Number(low),
+                        close: Number(close),
+                        volume: Number(volume),
+                        turnoverInCrore: Number(turnover)
+                    })
+                }
+
+            })
+            return historical
+        })
+        return {
+            index,
+            fromDate:range.start,
+            toDate: range.end,
+            historicalData: await Promise.all(promises)
+        }
     }
 }
