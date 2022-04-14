@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>HistoricalData | stock-nse-india - v1.1.0</title>
+	<title>IndexHistoricalData | stock-nse-india - v1.1.0</title>
 	<meta name="description" content="Documentation for stock-nse-india - v1.1.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -58,10 +58,10 @@
 					<a href="../modules/interface.html">interface</a>
 				</li>
 				<li>
-					<a href="interface.historicaldata.html">HistoricalData</a>
+					<a href="interface.indexhistoricaldata.html">IndexHistoricalData</a>
 				</li>
 			</ul>
-			<h1>Interface HistoricalData</h1>
+			<h1>Interface IndexHistoricalData</h1>
 		</div>
 	</div>
 </header>
@@ -72,7 +72,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">HistoricalData</span>
+						<span class="target">IndexHistoricalData</span>
 					</li>
 				</ul>
 			</section>
@@ -83,8 +83,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.historicaldata.html#data" class="tsd-kind-icon">data</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.historicaldata.html#meta" class="tsd-kind-icon">meta</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.indexhistoricaldata.html#fromdate" class="tsd-kind-icon">from<wbr>Date</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.indexhistoricaldata.html#historicaldata" class="tsd-kind-icon">historical<wbr>Data</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.indexhistoricaldata.html#indexsymbol" class="tsd-kind-icon">index<wbr>Symbol</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.indexhistoricaldata.html#todate" class="tsd-kind-icon">to<wbr>Date</a></li>
 							</ul>
 						</section>
 					</div>
@@ -93,41 +95,44 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="data" class="tsd-anchor"></a>
-					<h3>data</h3>
-					<div class="tsd-signature tsd-kind-icon">data<span class="tsd-signature-symbol">:</span> <a href="interface.historicalinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">HistoricalInfo</a><span class="tsd-signature-symbol">[]</span></div>
+					<a name="fromdate" class="tsd-anchor"></a>
+					<h3>from<wbr>Date</h3>
+					<div class="tsd-signature tsd-kind-icon">from<wbr>Date<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Date</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/5d94830/src/interface.ts#L242">interface.ts:242</a></li>
+							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/8d8dbec/src/interface.ts#L253">interface.ts:253</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="meta" class="tsd-anchor"></a>
-					<h3>meta</h3>
-					<div class="tsd-signature tsd-kind-icon">meta<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>fromDate<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>series<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span>symbols<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span>toDate<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></div>
+					<a name="historicaldata" class="tsd-anchor"></a>
+					<h3>historical<wbr>Data</h3>
+					<div class="tsd-signature tsd-kind-icon">historical<wbr>Data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>close<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>date<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Date</span><span class="tsd-signature-symbol">; </span>high<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>low<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>open<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>turnoverInCrore<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>volume<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/5d94830/src/interface.ts#L243">interface.ts:243</a></li>
+							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/8d8dbec/src/interface.ts#L255">interface.ts:255</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter">
-								<h5>from<wbr>Date<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
-							</li>
-							<li class="tsd-parameter">
-								<h5>series<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
-							</li>
-							<li class="tsd-parameter">
-								<h5>symbols<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
-							</li>
-							<li class="tsd-parameter">
-								<h5>to<wbr>Date<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
-							</li>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="indexsymbol" class="tsd-anchor"></a>
+					<h3>index<wbr>Symbol</h3>
+					<div class="tsd-signature tsd-kind-icon">index<wbr>Symbol<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/8d8dbec/src/interface.ts#L252">interface.ts:252</a></li>
 						</ul>
-					</div>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="todate" class="tsd-anchor"></a>
+					<h3>to<wbr>Date</h3>
+					<div class="tsd-signature tsd-kind-icon">to<wbr>Date<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Date</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/8d8dbec/src/interface.ts#L254">interface.ts:254</a></li>
+						</ul>
+					</aside>
 				</section>
 			</section>
 		</div>
@@ -166,6 +171,12 @@
 						<a href="interface.equitydetails.html" class="tsd-kind-icon">Equity<wbr>Details</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="interface.equityhistoricaldata.html" class="tsd-kind-icon">Equity<wbr>Historical<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="interface.equityhistoricalinfo.html" class="tsd-kind-icon">Equity<wbr>Historical<wbr>Info</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.equityinfo.html" class="tsd-kind-icon">Equity<wbr>Info</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
@@ -183,30 +194,33 @@
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.equitytradeinfo.html" class="tsd-kind-icon">Equity<wbr>Trade<wbr>Info</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-module">
-						<a href="interface.historicaldata.html" class="tsd-kind-icon">Historical<wbr>Data</a>
-						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.historicaldata.html#data" class="tsd-kind-icon">data</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.historicaldata.html#meta" class="tsd-kind-icon">meta</a>
-							</li>
-						</ul>
-					</li>
-				</ul>
-				<ul class="after-current">
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
-						<a href="interface.historicalinfo.html" class="tsd-kind-icon">Historical<wbr>Info</a>
-					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.indexdetails.html" class="tsd-kind-icon">Index<wbr>Details</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.indexequityinfo.html" class="tsd-kind-icon">Index<wbr>Equity<wbr>Info</a>
 					</li>
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
+						<a href="interface.indexhistoricaldata.html" class="tsd-kind-icon">Index<wbr>Historical<wbr>Data</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.indexhistoricaldata.html#fromdate" class="tsd-kind-icon">from<wbr>Date</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.indexhistoricaldata.html#historicaldata" class="tsd-kind-icon">historical<wbr>Data</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.indexhistoricaldata.html#indexsymbol" class="tsd-kind-icon">index<wbr>Symbol</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.indexhistoricaldata.html#todate" class="tsd-kind-icon">to<wbr>Date</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.intradaydata.html" class="tsd-kind-icon">Intraday<wbr>Data</a>
 					</li>
