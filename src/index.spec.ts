@@ -73,8 +73,8 @@ describe('class: NseIndia', () => {
         expect(data.index).toBe(index)
         expect(data.fromDate).toBe(range.start)
         expect(data.toDate).toBe(range.end)
-        expect(data.historicalData.length).toBe(3)
-        expect(data.historicalData[0][0]).toEqual({
+        expect(data.historicalData.length).toBe(570)
+        expect(data.historicalData[0]).toEqual({
             date: new Date('2020-01-01T12:00:00.000Z'),
             open: 12202.15,
             high: 12222.2,

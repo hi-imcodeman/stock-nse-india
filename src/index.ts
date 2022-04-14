@@ -172,11 +172,16 @@ export class NseIndia {
             })
             return historical
         })
+        const historicalDataArray=await Promise.all(promises)
+        let historicalData:any[] = []
+        historicalDataArray.forEach(item=>{
+            historicalData = historicalData.concat(item)
+        })
         return {
             index,
             fromDate:range.start,
             toDate: range.end,
-            historicalData: await Promise.all(promises)
+            historicalData
         }
     }
 }
