@@ -2,7 +2,9 @@ import * as Moment from 'moment';
 import { extendMoment } from 'moment-range';
 
 const moment = extendMoment(Moment);
-
+/**
+ * @private
+ */
 export const getDateRangeChunks = (startDate: Date, endDate: Date, chunkInDays: number) => {
     const range = moment.range(startDate, endDate)
     const chunks = Array.from(range.by('days', { step: chunkInDays }))
@@ -15,7 +17,10 @@ export const getDateRangeChunks = (startDate: Date, endDate: Date, chunkInDays: 
     }
     return dateRanges
 }
-
+/**
+ * 
+ * @private
+ */
 export const sleep = (ms: number) => {
     return new Promise(resolve => {
         setTimeout(() => {

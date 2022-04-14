@@ -29,6 +29,7 @@ export enum ApiList {
     MERGED_DAILY_REPORTS_DERIVATIVES = '/api/merged-daily-reports?key=favDerivatives',
     MERGED_DAILY_REPORTS_DEBT = '/api/merged-daily-reports?key=favDebt'
 }
+
 export class NseIndia {
     private baseUrl = 'https://www.nseindia.com'
     private legacyBaseUrl = 'https://www1.nseindia.com'
@@ -65,7 +66,11 @@ export class NseIndia {
         this.cookieUsedCount++
         return this.cookies
     }
-
+    /**
+     * 
+     * @param url NSE API's URL
+     * @returns JSON data from NSE India
+     */
     async getData(url: string) {
         let retries = 0
         let hasError = false
@@ -92,25 +97,56 @@ export class NseIndia {
             }
         } while (hasError);
     }
+    /**
+     * 
+     * @param apiEndpoint 
+     * @param isLegacy 
+     * @returns 
+     */
     async getDataByEndpoint(apiEndpoint: string, isLegacy = false) {
         if (!isLegacy)
             return this.getData(`${this.baseUrl}${apiEndpoint}`)
         else
             return this.getData(`${this.legacyBaseUrl}${apiEndpoint}`)
     }
+    /**
+     * 
+     * @returns List of NSE equity symbols
+     */
     async getAllStockSymbols(): Promise<string[]> {
         const { data } = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
         return data.map((obj: { metadata: { symbol: string } }) => obj.metadata.symbol).sort()
     }
+    /**
+     * 
+     * @param symbol 
+     * @returns 
+     */
     getEquityDetails(symbol: string): Promise<EquityDetails> {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}`)
     }
+    /**
+     * 
+     * @param symbol 
+     * @returns 
+     */
     getEquityTradeInfo(symbol: string): Promise<EquityTradeInfo> {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=trade_info`)
     }
+    /**
+     * 
+     * @param symbol 
+     * @returns 
+     */
     getEquityCorporateInfo(symbol: string): Promise<EquityCorporateInfo> {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=corp_info`)
     }
+    /**
+     * 
+     * @param symbol 
+     * @param isPreOpenData 
+     * @returns 
+     */
     async getEquityIntradayData(symbol: string, isPreOpenData = false): Promise<IntradayData> {
         const details = await this.getEquityDetails(symbol)
         const identifier = details.info.identifier
@@ -119,6 +155,12 @@ export class NseIndia {
             url += '&preopen=true'
         return this.getDataByEndpoint(url)
     }
+    /**
+     * 
+     * @param symbol 
+     * @param range 
+     * @returns 
+     */
     async getEquityHistoricalData(symbol: string, range?: DateRange): Promise<EquityHistoricalData[]> {
         if (!range) {
             const data = await this.getEquityDetails(symbol)
@@ -132,18 +174,40 @@ export class NseIndia {
         })
         return Promise.all(promises)
     }
+    /**
+     * 
+     * @param symbol 
+     * @returns 
+     */
     getEquitySeries(symbol: string): Promise<SeriesData> {
         return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol)}`)
     }
+    /**
+     * 
+     * @param index 
+     * @returns 
+     */
     getEquityStockIndices(index: string): Promise<IndexDetails> {
         return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index)}`)
     }
+    /**
+     * 
+     * @param index 
+     * @param isPreOpenData 
+     * @returns 
+     */
     getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
         let endpoint = `/api/chart-databyindex?index=${index}&indices=true`
         if (isPreOpenData)
             endpoint += '&preopen=true'
         return this.getDataByEndpoint(endpoint)
     }
+    /**
+     * 
+     * @param index 
+     * @param range 
+     * @returns 
+     */
     async getIndexHistoricalData(index: string, range: DateRange):Promise<IndexHistoricalData> {
         const dateRanges = getDateRangeChunks(range.start, range.end, 360)
         const promises = dateRanges.map(async (dateRange) => {

@@ -77,7 +77,13 @@
     "**/__mocks__"
   ],
   "typedocOptions": {
-    "exclude": ["**/*+(.spec|.e2e).ts","**/cli","**/server.ts","**/swagger*.ts"],
+    "exclude": [
+      "**/*+(.spec|.e2e).ts",
+      "**/cli",
+      "**/server.ts",
+      "**/swagger*.ts",
+      "**/utils.ts"
+    ],
     "excludePrivate": true,
     "includeVersion": true,
     "entryPoints": ["src"]

@@ -1,8 +1,12 @@
-import { ApiList, NseIndia } from './index'
+import { NseIndia } from './index'
 import { IndexEquityInfo } from './interface'
 
 const nseIndia = new NseIndia()
-
+/**
+ * 
+ * @param indexSymbol 
+ * @returns 
+ */
 export const getGainersAndLosersByIndex = async (indexSymbol: string) => {
     const indexData = await nseIndia.getEquityStockIndices(indexSymbol)
     const gainers: IndexEquityInfo[] = []
@@ -18,7 +22,11 @@ export const getGainersAndLosersByIndex = async (indexSymbol: string) => {
         losers: losers.sort((a, b) => a.pChange - b.pChange)
     }
 }
-
+/**
+ * 
+ * @param indexSymbol 
+ * @returns 
+ */
 export const getMostActiveEquities = async (indexSymbol: string) => {
     const indexData = await nseIndia.getEquityStockIndices(indexSymbol)
     return {
