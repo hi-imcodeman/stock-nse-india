@@ -635,6 +635,67 @@ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
+ * /api/index/historical/{indexSymbol}:
+ *   get:
+ *     description: To get the historical data for the NSE index symbol
+ *     tags:
+ *       - Index
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: indexSymbol
+ *         in: path
+ *         description: NSE Index Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *       - name: dateStart
+ *         in: query
+ *         description: "Start date to pull historical data (format: YYYY-MM-DD)"
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: dateEnd
+ *         in: query
+ *         description: "End date to pull historical data (format: YYYY-MM-DD)"
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Returns a historical data of the NSE index symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+ app.get('/api/index/historical/:indexSymbol', async (req, res) => {
+    try {
+        const dateStart = req.query.dateStart as string
+        const dateEnd = req.query.dateEnd as string
+        if (dateStart && dateEnd) {
+            const start = new Date(dateStart)
+            const end = new Date(dateEnd)
+            if (start.getTime() > 0 && end.getTime() > 0) {
+                const range = {
+                    start,
+                    end
+                }
+                res.json(await nseIndia.getIndexHistoricalData(req.params.indexSymbol, range))
+            } else {
+                res.status(400).json({ error: 'Invalid date format. Please use the format (YYYY-MM-DD)' })
+            }
+        } else {
+            res.status(400).json({ error: 'Missing arguments "dateStart" or "dateEnd". Please pass those argumets.' })
+        }
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
  * /api/gainersAndLosers/{indexSymbol}:
  *   get:
  *     description: To get gainers and losers of the specific index

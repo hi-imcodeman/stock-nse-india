@@ -212,7 +212,7 @@ export interface EquityCorporateInfo {
     }
 }
 
-export interface HistoricalInfo {
+export interface EquityHistoricalInfo {
     _id: string
     CH_SYMBOL: string
     CH_SERIES: string
@@ -238,14 +238,29 @@ export interface HistoricalInfo {
     mTIMESTAMP: string
 }
 
-export interface HistoricalData {
-    data: HistoricalInfo[]
+export interface EquityHistoricalData {
+    data: EquityHistoricalInfo[]
     meta: {
         series: string[]
         fromDate: string
         toDate: string
         symbols: string[]
     }
+}
+
+export interface IndexHistoricalData {
+    indexSymbol: string
+    fromDate: Date
+    toDate: Date
+    historicalData: {
+        date: Date
+        open: number
+        high: number
+        low: number
+        close: number
+        volume: number
+        turnoverInCrore: number
+    }[]
 }
 
 export interface SeriesData {
@@ -279,23 +294,23 @@ export interface IndexEquityInfo {
     chart30dPath: string
     chartTodayPath: string
     meta: {
-      symbol: string
-      companyName: string
-      industry: string
-      activeSeries: string[]
-      debtSeries: any[]
-      tempSuspendedSeries: any[]
-      isFNOSec: boolean
-      isCASec: boolean
-      isSLBSec: boolean
-      isDebtSec: boolean
-      isSuspended: boolean
-      isETFSec: boolean
-      isDelisted: boolean
-      isin: string
+        symbol: string
+        companyName: string
+        industry: string
+        activeSeries: string[]
+        debtSeries: any[]
+        tempSuspendedSeries: any[]
+        isFNOSec: boolean
+        isCASec: boolean
+        isSLBSec: boolean
+        isDebtSec: boolean
+        isSuspended: boolean
+        isETFSec: boolean
+        isDelisted: boolean
+        isin: string
     }
-  }
-  export interface IndexDetails {
+}
+export interface IndexDetails {
     name: string,
     advance: { declines: string, advances: string, unchanged: string },
     timestamp: string,
@@ -315,8 +330,8 @@ export interface IndexEquityInfo {
         totalTradedVolume: number
         totalTradedValue: number
         ffmc_sum: number
-      },
-      marketStatus: {
+    },
+    marketStatus: {
         market: string,
         marketStatus: string,
         tradeDate: string,
@@ -325,7 +340,7 @@ export interface IndexEquityInfo {
         variation: number
         percentChange: number
         marketStatusMessage: string
-      },
-      date30dAgo: string,
-      date365dAgo: string
-  }
+    },
+    date30dAgo: string,
+    date365dAgo: string
+}

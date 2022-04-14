@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>DateRange | stock-nse-india - v1.1.0</title>
+	<title>EquityHistoricalData | stock-nse-india - v1.1.0</title>
 	<meta name="description" content="Documentation for stock-nse-india - v1.1.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -58,10 +58,10 @@
 					<a href="../modules/interface.html">interface</a>
 				</li>
 				<li>
-					<a href="interface.daterange.html">DateRange</a>
+					<a href="interface.equityhistoricaldata.html">EquityHistoricalData</a>
 				</li>
 			</ul>
-			<h1>Interface DateRange</h1>
+			<h1>Interface EquityHistoricalData</h1>
 		</div>
 	</div>
 </header>
@@ -72,7 +72,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">DateRange</span>
+						<span class="target">EquityHistoricalData</span>
 					</li>
 				</ul>
 			</section>
@@ -83,8 +83,8 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.daterange.html#end" class="tsd-kind-icon">end</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.daterange.html#start" class="tsd-kind-icon">start</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equityhistoricaldata.html#data" class="tsd-kind-icon">data</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equityhistoricaldata.html#meta" class="tsd-kind-icon">meta</a></li>
 							</ul>
 						</section>
 					</div>
@@ -93,24 +93,41 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="end" class="tsd-anchor"></a>
-					<h3>end</h3>
-					<div class="tsd-signature tsd-kind-icon">end<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Date</span></div>
+					<a name="data" class="tsd-anchor"></a>
+					<h3>data</h3>
+					<div class="tsd-signature tsd-kind-icon">data<span class="tsd-signature-symbol">:</span> <a href="interface.equityhistoricalinfo.html" class="tsd-signature-type" data-tsd-kind="Interface">EquityHistoricalInfo</a><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/8d8dbec/src/interface.ts#L9">interface.ts:9</a></li>
+							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/8d8dbec/src/interface.ts#L242">interface.ts:242</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="start" class="tsd-anchor"></a>
-					<h3>start</h3>
-					<div class="tsd-signature tsd-kind-icon">start<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Date</span></div>
+					<a name="meta" class="tsd-anchor"></a>
+					<h3>meta</h3>
+					<div class="tsd-signature tsd-kind-icon">meta<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>fromDate<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>series<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span>symbols<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span>toDate<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/8d8dbec/src/interface.ts#L8">interface.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/8d8dbec/src/interface.ts#L243">interface.ts:243</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter">
+								<h5>from<wbr>Date<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+							</li>
+							<li class="tsd-parameter">
+								<h5>series<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+							</li>
+							<li class="tsd-parameter">
+								<h5>symbols<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+							</li>
+							<li class="tsd-parameter">
+								<h5>to<wbr>Date<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+							</li>
+						</ul>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -136,21 +153,9 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.daterange.html" class="tsd-kind-icon">Date<wbr>Range</a>
-						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.daterange.html#end" class="tsd-kind-icon">end</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.daterange.html#start" class="tsd-kind-icon">start</a>
-							</li>
-						</ul>
 					</li>
-				</ul>
-				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.directorydetails.html" class="tsd-kind-icon">Directory<wbr>Details</a>
 					</li>
@@ -160,9 +165,21 @@
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.equitydetails.html" class="tsd-kind-icon">Equity<wbr>Details</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.equityhistoricaldata.html" class="tsd-kind-icon">Equity<wbr>Historical<wbr>Data</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.equityhistoricaldata.html#data" class="tsd-kind-icon">data</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.equityhistoricaldata.html#meta" class="tsd-kind-icon">meta</a>
+							</li>
+						</ul>
 					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.equityhistoricalinfo.html" class="tsd-kind-icon">Equity<wbr>Historical<wbr>Info</a>
 					</li>
