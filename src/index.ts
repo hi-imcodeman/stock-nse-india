@@ -7,9 +7,10 @@ import {
     EquityDetails,
     EquityTradeInfo,
     EquityCorporateInfo,
-    HistoricalData,
+    EquityHistoricalData,
     SeriesData,
-    IndexDetails
+    IndexDetails,
+    IndexHistoricalData
 } from './interface'
 
 export enum ApiList {
@@ -118,7 +119,7 @@ export class NseIndia {
             url += '&preopen=true'
         return this.getDataByEndpoint(url)
     }
-    async getEquityHistoricalData(symbol: string, range?: DateRange): Promise<HistoricalData[]> {
+    async getEquityHistoricalData(symbol: string, range?: DateRange): Promise<EquityHistoricalData[]> {
         if (!range) {
             const data = await this.getEquityDetails(symbol)
             range = { start: new Date(data.metadata.listingDate), end: new Date() }
@@ -143,7 +144,7 @@ export class NseIndia {
             endpoint += '&preopen=true'
         return this.getDataByEndpoint(endpoint)
     }
-    async getIndexHistoricalData(index: string, range: DateRange) {
+    async getIndexHistoricalData(index: string, range: DateRange):Promise<IndexHistoricalData> {
         const dateRanges = getDateRangeChunks(range.start, range.end, 360)
         const promises = dateRanges.map(async (dateRange) => {
             const endpoint = '/products/dynaContent/equities/indices/historicalindices.jsp' +
@@ -172,14 +173,14 @@ export class NseIndia {
             })
             return historical
         })
-        const historicalDataArray=await Promise.all(promises)
-        let historicalData:any[] = []
-        historicalDataArray.forEach(item=>{
+        const historicalDataArray = await Promise.all(promises)
+        let historicalData: any[] = []
+        historicalDataArray.forEach(item => {
             historicalData = historicalData.concat(item)
         })
         return {
-            index,
-            fromDate:range.start,
+            indexSymbol: index,
+            fromDate: range.start,
             toDate: range.end,
             historicalData
         }

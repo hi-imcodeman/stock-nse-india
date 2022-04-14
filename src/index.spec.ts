@@ -70,7 +70,7 @@ describe('class: NseIndia', () => {
             end: new Date("2022-04-14")
         }
         const data = await nseIndia.getIndexHistoricalData(index,range)
-        expect(data.index).toBe(index)
+        expect(data.indexSymbol).toBe(index)
         expect(data.fromDate).toBe(range.start)
         expect(data.toDate).toBe(range.end)
         expect(data.historicalData.length).toBe(570)
