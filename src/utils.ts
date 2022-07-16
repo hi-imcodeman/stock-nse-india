@@ -55,28 +55,3 @@ export const getObjectKeysDeep = (obj: any): any[] | string => {
         return `${key}: ${typeof value}`
     })
 }
-
-// const getStatergyDate = (date: Date) => {
-//     const mnt = moment.default
-//     const tMinus1 = mnt(date).subtract(2, 'months').endOf('month').format('YYYY-MM-DD')
-//     const tMinus12 = mnt(date).subtract(12, 'months').startOf('month').format('YYYY-MM-DD')
-//     return {
-//         tMinus1,
-//         tMinus12
-//     }
-// }
-// export const momentumStatergy = async (indexSymbol: string, startDate: Date) => {
-//     const mnt = moment.default
-//     const nseIndia = new NseIndia()
-//     console.log('Index Symbol:', indexSymbol);
-//     console.log('StartDate:', startDate);
-//     const indexEquities = (await nseIndia.getEquityStockIndices(indexSymbol)).data
-//         .map(item => item.symbol)
-//         .filter(symbol => symbol !== indexSymbol)
-//     console.log(indexEquities);
-
-//     // do {
-//     //     startDate=mnt(startDate).add(1,'month').toDate()
-
-//     // } while (startDate<new Date());
-// }

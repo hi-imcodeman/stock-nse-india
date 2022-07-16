@@ -3,15 +3,14 @@ import {
     getMostActiveEquities
 } from './helpers'
 import { getObjectKeysDeep } from './utils'
+import { API_RESPONSE_VALIDATION } from './config'
 
 jest.setTimeout(999999)
-
-const apiResponeValidation='API Response Validation'
 
 describe('Helpers', () => {
     test('getGainersAndLosersByIndex', async () => {
         const data = await getGainersAndLosersByIndex("NIFTY 50")
-        expect(getObjectKeysDeep(data)).toMatchSnapshot(apiResponeValidation)
+        expect(getObjectKeysDeep(data)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         const isLosers = data.losers.every((equityDetails) => equityDetails.pChange <= 0)
         const isGainers = data.gainers.every((equityDetails) => equityDetails.pChange > 0)
         expect(isLosers).toBeTruthy()
@@ -20,7 +19,7 @@ describe('Helpers', () => {
 
     test('getMostActiveEquities', async () => {
         const data = await getMostActiveEquities("NIFTY 50")
-        expect(getObjectKeysDeep(data)).toMatchSnapshot(apiResponeValidation)
+        expect(getObjectKeysDeep(data)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(data.byVolume[0] >= data.byVolume[1]).toBeTruthy()
         expect(data.byValue[0] >= data.byValue[1]).toBeTruthy()
     })
