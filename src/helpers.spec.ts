@@ -5,8 +5,6 @@ import {
 import { getDataSchema } from './utils'
 import { API_RESPONSE_VALIDATION } from './constants'
 
-jest.setTimeout(999999)
-
 describe('Helpers', () => {
     test('getGainersAndLosersByIndex', async () => {
         const data = await getGainersAndLosersByIndex("NIFTY 50")

@@ -2,8 +2,6 @@ import { NseIndia, ApiList } from "./index";
 import { getDataSchema } from './utils'
 import { API_RESPONSE_VALIDATION } from './constants'
 
-jest.setTimeout(999999)
-
 describe('Class: NseIndia', () => {
     const symbol = 'ITC'
     const nseIndia = new NseIndia()
