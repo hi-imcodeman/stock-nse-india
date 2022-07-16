@@ -18,7 +18,6 @@ export const getDateRangeChunks = (startDate: Date, endDate: Date, chunkInDays: 
     return dateRanges
 }
 /**
- * 
  * @private
  */
 export const sleep = (ms: number) => {
@@ -26,5 +25,37 @@ export const sleep = (ms: number) => {
         setTimeout(() => {
             resolve('')
         }, ms)
+    })
+}
+
+/**
+ * @private
+ * @param obj 
+ * @returns 
+ */
+export const getDataSchema = (data: any): any[] | string => {
+    if (typeof data !== 'object')
+        return `${typeof data}`
+
+    return Object.entries(data).map(([key, value]) => {
+        if (value === null)
+            return `${key}: null`
+
+        if (Moment.isDate(value))
+            return `${key}: Date`
+
+        if (typeof value !== 'string' && Array.isArray(value)) {
+            return {
+                [`${key}`]: value.length ? getDataSchema(value[0]) : []
+            }
+        }
+
+        if (typeof value === 'object') {
+            return {
+                [`${key}`]: getDataSchema(value)
+            }
+        }
+
+        return `${key}: ${typeof value}`
     })
 }

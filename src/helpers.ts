@@ -18,8 +18,8 @@ export const getGainersAndLosersByIndex = async (indexSymbol: string) => {
             losers.push(equityInfo)
     })
     return {
-        gainers: gainers.sort((a, b) => b.pChange - a.pChange),
-        losers: losers.sort((a, b) => a.pChange - b.pChange)
+        gainers: [...gainers].sort((a, b) => b.pChange - a.pChange),
+        losers: [...losers].sort((a, b) => a.pChange - b.pChange)
     }
 }
 /**
@@ -30,8 +30,8 @@ export const getGainersAndLosersByIndex = async (indexSymbol: string) => {
 export const getMostActiveEquities = async (indexSymbol: string) => {
     const indexData = await nseIndia.getEquityStockIndices(indexSymbol)
     return {
-        byVolume: indexData.data.sort((a, b) => b.totalTradedVolume - a.totalTradedVolume),
-        byValue: indexData.data.sort((a, b) => b.totalTradedValue - a.totalTradedValue)
+        byVolume: [...indexData.data].sort((a, b) => b.totalTradedVolume - a.totalTradedVolume),
+        byValue: [...indexData.data].sort((a, b) => b.totalTradedValue - a.totalTradedValue)
 
     }
 }
