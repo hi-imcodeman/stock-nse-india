@@ -18,7 +18,6 @@ export const getDateRangeChunks = (startDate: Date, endDate: Date, chunkInDays: 
     return dateRanges
 }
 /**
- * 
  * @private
  */
 export const sleep = (ms: number) => {
@@ -29,11 +28,16 @@ export const sleep = (ms: number) => {
     })
 }
 
-export const getObjectKeysDeep = (obj: any): any[] | string => {
-    if (typeof obj !== 'object')
-        return `${typeof obj}`
+/**
+ * @private
+ * @param obj 
+ * @returns 
+ */
+export const getDataSchema = (data: any): any[] | string => {
+    if (typeof data !== 'object')
+        return `${typeof data}`
 
-    return Object.entries(obj).map(([key, value]) => {
+    return Object.entries(data).map(([key, value]) => {
         if (value === null)
             return `${key}: null`
 
@@ -42,13 +46,13 @@ export const getObjectKeysDeep = (obj: any): any[] | string => {
 
         if (typeof value !== 'string' && Array.isArray(value)) {
             return {
-                [`${key}`]: value.length ? getObjectKeysDeep(value[0]) : []
+                [`${key}`]: value.length ? getDataSchema(value[0]) : []
             }
         }
 
         if (typeof value === 'object') {
             return {
-                [`${key}`]: getObjectKeysDeep(value)
+                [`${key}`]: getDataSchema(value)
             }
         }
 
