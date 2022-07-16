@@ -82,7 +82,8 @@
       "**/cli",
       "**/server.ts",
       "**/swagger*.ts",
-      "**/utils.ts"
+      "**/utils.ts",
+      "**/constants.ts"
     ],
     "excludePrivate": true,
     "includeVersion": true,
