@@ -217,8 +217,8 @@ export class NseIndia {
             const $ = cheerio.load(html)
             const historical: any[] = []
             const historicalRecords = $('#csvContentDiv').text().split(':')
-            historicalRecords.forEach((record: string, index: number) => {
-                if (record && index > 0) {
+            historicalRecords.forEach((record: string, i: number) => {
+                if (record && i > 0) {
                     const [date, open, high, low, close, volume, turnover] = record.split(',').map(item => {
                         item = item.replace(/[",\s]/g, '')
                         return item
