@@ -1,6 +1,9 @@
 import express from 'express'
+import http from 'http';
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsDoc from 'swagger-jsdoc'
+import { ApolloServer } from 'apollo-server-express';
+import { ApolloServerPluginDrainHttpServer, gql } from 'apollo-server-core';
 import { swaggerDocOptions } from './swaggerDocOptions'
 import { NseIndia, ApiList } from './index'
 import {
@@ -53,7 +56,7 @@ app.get('/', async (_req, res) => {
  *       200:
  *         description: Returns a JSON object of open api specification
  */
- app.get('/api/v1/swagger.json',(_req,res)=>{
+app.get('/api/v1/swagger.json', (_req, res) => {
     res.json(openapiSpecification)
 })
 
@@ -670,7 +673,7 @@ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/index/historical/:indexSymbol', async (req, res) => {
+app.get('/api/index/historical/:indexSymbol', async (req, res) => {
     try {
         const dateStart = req.query.dateStart as string
         const dateEnd = req.query.dateEnd as string
@@ -717,7 +720,7 @@ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/gainersAndLosers/:indexSymbol', async (req, res) => {
+app.get('/api/gainersAndLosers/:indexSymbol', async (req, res) => {
     try {
         res.json(await getGainersAndLosersByIndex(req.params.indexSymbol))
     } catch (error) {
@@ -748,7 +751,7 @@ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
- app.get('/api/mostActive/:indexSymbol', async (req, res) => {
+app.get('/api/mostActive/:indexSymbol', async (req, res) => {
     try {
         res.json(await getMostActiveEquities(req.params.indexSymbol))
     } catch (error) {
@@ -756,9 +759,50 @@ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
     }
 })
 
-app.listen(port, () => {
-    console.log(`NseIndia App started in port ${port}`);
-    console.log(`Open ${hostUrl} in browser.`);
-    console.log(`For API docs: ${hostUrl}/api-docs`);
+const typeDefs = gql`
+type Query {
+  hello(name:String!): Subquery
+}
 
+type Subquery {
+    greetings: String
+    percent: Float
+    hra(basic: Int!): Int
+}
+`
+const resolvers = {
+    Query: {
+        hello: (_parent: any, params:any) => {
+            return {
+                greetings: `Hello ${params.name}!!!`,
+                percent: 0.2,
+                params
+            }
+        }
+    },
+    Subquery:{
+        hra: (parent:any, params:any) => {
+            console.log('Parent Data:', parent);
+            console.log('Params:', params);
+            return params.basic as number
+        }
+    }
+};
+
+const httpServer = http.createServer(app);
+
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+});
+
+server.start().then(() => {
+    server.applyMiddleware({ app });
+    app.listen(port, () => {
+        console.log(`NseIndia App started in port ${port}`);
+        console.log(`Open ${hostUrl} in browser.`);
+        console.log(`For API docs: ${hostUrl}/api-docs`);
+        console.log(`For graphql: ${hostUrl}${server.graphqlPath}`);
+    })
 })
