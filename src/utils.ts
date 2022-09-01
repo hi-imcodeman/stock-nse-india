@@ -38,11 +38,11 @@ export const getDataSchema = (data: any): any[] | string => {
         return `${typeof data}`
 
     return Object.entries(data).map(([key, value]) => {
-        if (value === null)
-            return `${key}: null`
-
         if (Moment.isDate(value))
             return `${key}: Date`
+
+        if (value === null || typeof value === 'string')
+            return `${key}: string | null`
 
         if (typeof value !== 'string' && Array.isArray(value)) {
             return {
