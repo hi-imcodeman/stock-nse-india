@@ -292,16 +292,10 @@ Array [
 exports[`Class: NseIndia ApiList should return content for INDEX_NAMES: API Response Validation 1`] = `
 Array [
   Object {
-    "stn": Array [
-      "0: string | null",
-      "1: string | null",
-    ],
+    "stn": "string[]",
   },
   Object {
-    "nts": Array [
-      "0: string | null",
-      "1: string | null",
-    ],
+    "nts": "string[]",
   },
 ]
 `;
@@ -7501,29 +7495,23 @@ Array [
 
 exports[`Class: NseIndia getEquityIntradayData: API Response Validation 1`] = `
 Array [
-  "identifier: string | null",
-  "name: string | null",
+  "identifier: any",
+  "name: any",
   Object {
-    "grapthData": Array [
-      "0: number",
-      "1: number",
-    ],
+    "grapthData": "any",
   },
-  "closePrice: number",
+  "closePrice: any",
 ]
 `;
 
 exports[`Class: NseIndia getEquityIntradayData:preOpen: API Response Validation 1`] = `
 Array [
-  "identifier: string | null",
-  "name: string | null",
+  "identifier: any",
+  "name: any",
   Object {
-    "grapthData": Array [
-      "0: number",
-      "1: number",
-    ],
+    "grapthData": "any",
   },
-  "closePrice: number",
+  "closePrice: any",
 ]
 `;
 
@@ -7688,28 +7676,22 @@ Array [
 
 exports[`Class: NseIndia getIndexIntradayData: API Response Validation 1`] = `
 Array [
-  "identifier: string | null",
-  "name: string | null",
+  "identifier: any",
+  "name: any",
   Object {
-    "grapthData": Array [
-      "0: number",
-      "1: number",
-    ],
+    "grapthData": "any",
   },
-  "closePrice: number",
+  "closePrice: any",
 ]
 `;
 
-exports[`Class: NseIndia getIndexIntradayData:proOpen: API Response Validation 1`] = `
+exports[`Class: NseIndia getIndexIntradayData:preOpen: API Response Validation 1`] = `
 Array [
-  "identifier: string | null",
-  "name: string | null",
+  "identifier: any",
+  "name: any",
   Object {
-    "grapthData": Array [
-      "0: number",
-      "1: number",
-    ],
+    "grapthData": "any",
   },
-  "closePrice: number",
+  "closePrice: any",
 ]
 `;

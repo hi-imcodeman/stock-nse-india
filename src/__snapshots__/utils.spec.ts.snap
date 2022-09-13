@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Utils getDataSchema for date value having typeStrict:false 1`] = `
+Array [
+  "date: any",
+]
+`;
