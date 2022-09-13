@@ -26,12 +26,12 @@ describe('Class: NseIndia', () => {
     })
     test('getEquityIntradayData', async () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol)
-        expect(getDataSchema(intradayData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(intradayData,false)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(intradayData.name).toBe(symbol)
     })
     test('getEquityIntradayData:preOpen', async () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol, true)
-        expect(getDataSchema(intradayData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(intradayData,false)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(intradayData.identifier).toBe(`Pre Open ${symbol}`)
     })
     test('getEquityHistoricalData', async () => {
@@ -59,7 +59,7 @@ describe('Class: NseIndia', () => {
     test('getIndexIntradayData', async () => {
         const index = 'NIFTY AUTO'
         const intradayData = await nseIndia.getIndexIntradayData(index)
-        expect(getDataSchema(intradayData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(intradayData,false)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(intradayData.name).toBe(index)
     })
     test('getEquityStockIndices', async () => {
@@ -68,10 +68,10 @@ describe('Class: NseIndia', () => {
         expect(getDataSchema(indexData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(indexData.metadata.indexName).toBe(index)
     })
-    test('getIndexIntradayData:proOpen', async () => {
+    test('getIndexIntradayData:preOpen', async () => {
         const index = 'NIFTY FIN SERVICE'
         const intradayData = await nseIndia.getIndexIntradayData(index, true)
-        expect(getDataSchema(intradayData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(intradayData, false)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(intradayData.identifier).toBe(`Pre Open ${index}`)
     })
     test('getIndexHistoricalData', async () => {
