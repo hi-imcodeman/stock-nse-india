@@ -1,6 +1,6 @@
 import { NseIndia, ApiList } from "./index";
 import { getDataSchema } from './utils'
-import { API_RESPONSE_VALIDATION } from './constants'
+import { API_RESPONSE_VALIDATION, IS_TYPE_STRICT } from './constants'
 
 describe('Class: NseIndia', () => {
     const symbol = 'ITC'
@@ -11,32 +11,32 @@ describe('Class: NseIndia', () => {
     })
     test('getEquityDetails', async () => {
         const details = await nseIndia.getEquityDetails(symbol)
-        expect(getDataSchema(details)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(details.info.symbol).toBe(symbol)
     })
     test('getEquityTradeInfo', async () => {
         const tradeInfo = await nseIndia.getEquityTradeInfo(symbol)
-        expect(getDataSchema(tradeInfo)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(tradeInfo,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(Object.keys(tradeInfo).length).toBeGreaterThan(3)
     })
     test('getEquityCorporateInfo', async () => {
         const corpInfo = await nseIndia.getEquityCorporateInfo(symbol)
-        expect(getDataSchema(corpInfo)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(corpInfo,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(Object.keys(corpInfo.corporate).length).toBeGreaterThan(5)
     })
     test('getEquityIntradayData', async () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol)
-        expect(getDataSchema(intradayData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(intradayData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(intradayData.name).toBe(symbol)
     })
     test('getEquityIntradayData:preOpen', async () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol, true)
-        expect(getDataSchema(intradayData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(intradayData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(intradayData.identifier).toBe(`Pre Open ${symbol}`)
     })
     test('getEquityHistoricalData', async () => {
         const historicalData = await nseIndia.getEquityHistoricalData(symbol)
-        expect(getDataSchema(historicalData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(historicalData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(historicalData.length).toBeGreaterThan(1)
         expect(historicalData[historicalData.length - 1].data[0].CH_SYMBOL).toBe(symbol)
     })
@@ -46,32 +46,32 @@ describe('Class: NseIndia', () => {
             end: new Date("2021-03-20")
         }
         const historicalData = await nseIndia.getEquityHistoricalData(symbol, range)
-        expect(getDataSchema(historicalData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(historicalData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(historicalData[0].data[0].CH_SYMBOL).toBe(symbol)
         expect(historicalData[0].meta.fromDate).toBe('10-03-2021')
         expect(historicalData[0].meta.toDate).toBe('20-03-2021')
     })
     test('getEquitySeries', async () => {
         const seriesData = await nseIndia.getEquitySeries(symbol)
-        expect(getDataSchema(seriesData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(seriesData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(seriesData.data.length).toBeGreaterThanOrEqual(1)
     })
     test('getIndexIntradayData', async () => {
         const index = 'NIFTY AUTO'
         const intradayData = await nseIndia.getIndexIntradayData(index)
-        expect(getDataSchema(intradayData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(intradayData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(intradayData.name).toBe(index)
     })
     test('getEquityStockIndices', async () => {
         const index = 'NIFTY AUTO'
         const indexData = await nseIndia.getEquityStockIndices(index)
-        expect(getDataSchema(indexData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(indexData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(indexData.metadata.indexName).toBe(index)
     })
-    test('getIndexIntradayData:proOpen', async () => {
+    test('getIndexIntradayData:preOpen', async () => {
         const index = 'NIFTY FIN SERVICE'
         const intradayData = await nseIndia.getIndexIntradayData(index, true)
-        expect(getDataSchema(intradayData)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(intradayData, IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(intradayData.identifier).toBe(`Pre Open ${index}`)
     })
     test('getIndexHistoricalData', async () => {
@@ -81,7 +81,7 @@ describe('Class: NseIndia', () => {
             end: new Date("2022-04-14")
         }
         const data = await nseIndia.getIndexHistoricalData(index, range)
-        expect(getDataSchema(data)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(data.indexSymbol).toBe(index)
         expect(data.fromDate).toBe(range.start)
         expect(data.toDate).toBe(range.end)
@@ -120,7 +120,7 @@ describe('Class: NseIndia', () => {
         Object.entries(ApiList).forEach(entry => {
             test(`should return content for ${entry[0]}`, async () => {
                 const data = await nseIndia.getDataByEndpoint(entry[1])
-                expect(getDataSchema(data)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+                expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
                 const contentLength = JSON.stringify(data).length
                 expect(contentLength).not.toBe(0)
             })

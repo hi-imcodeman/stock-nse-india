@@ -33,29 +33,34 @@ export const sleep = (ms: number) => {
  * @param obj 
  * @returns 
  */
-export const getDataSchema = (data: any): any[] | string => {
+export const getDataSchema = (data: any, isTypeStrict=true): any[] | string => {
     if (typeof data !== 'object')
-        return `${typeof data}`
+        return isTypeStrict ? `${typeof data}` : 'any'
+    
+    if(Array.isArray(data) && typeof data[0] !== 'object'){
+        return isTypeStrict ? `${typeof data[0]}[]` : 'any'
+    }
 
     return Object.entries(data).map(([key, value]) => {
-        if (value === null)
-            return `${key}: null`
-
         if (Moment.isDate(value))
-            return `${key}: Date`
+            return `${key}: ${isTypeStrict ? 'Date': 'any'}`
+
+        if (value === null || typeof value === 'string')
+            return `${key}: ${isTypeStrict ? 'string | null': 'any'}`
 
         if (typeof value !== 'string' && Array.isArray(value)) {
+            const typeForEmpty = isTypeStrict ? [] : 'any'
             return {
-                [`${key}`]: value.length ? getDataSchema(value[0]) : []
+                [`${key}`]: value.length ? getDataSchema(value[0],isTypeStrict) : typeForEmpty
             }
         }
 
         if (typeof value === 'object') {
             return {
-                [`${key}`]: getDataSchema(value)
+                [`${key}`]: getDataSchema(value,isTypeStrict)
             }
         }
 
-        return `${key}: ${typeof value}`
+        return `${key}: ${isTypeStrict ? typeof value : 'any'}`
     })
 }
