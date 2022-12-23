@@ -10,12 +10,15 @@
     "nseindia": "build/cli/index.js"
   },
   "scripts": {
-    "prebuild": "rimraf ./build",
+    "remove-build": "rimraf ./build",
+    "copy-graphql": "copyfiles -f ./src/**/*.graphql build/graphql-schema",
+    "prebuild": "yarn remove-build",
     "build": "tsc",
-    "postbuild": "copyfiles -f ./src/**/*.graphql build/graphql-schema",
+    "postbuild": "yarn copy-graphql",
     "prestart": "yarn build",
     "start": "node build/server.js",
-    "start:dev": "tsc-watch --onSuccess 'node build/server.js'",
+    "prestart:dev":"yarn remove-build",
+    "start:dev": "tsc-watch --onCompilationComplete 'yarn copy-graphql' --onSuccess 'node build/server.js'",
     "docs": "typedoc",
     "test": "jest --coverage --testTimeout=600000",
     "lint": "eslint ./src/**/*.ts",
