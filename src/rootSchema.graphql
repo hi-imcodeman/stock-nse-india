@@ -1,0 +1,9 @@
+type Query {
+  hello(name:String!): Subquery
+}
+
+type Subquery {
+    greetings: String
+    percent: Float
+    hra(basic: Int!): Int
+}

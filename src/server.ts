@@ -3,13 +3,19 @@ import http from 'http';
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsDoc from 'swagger-jsdoc'
 import { ApolloServer } from 'apollo-server-express';
-import { ApolloServerPluginDrainHttpServer, gql } from 'apollo-server-core';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import { print } from 'graphql'
+import { loadSchemaSync } from '@graphql-tools/load'
+import { loadFilesSync } from '@graphql-tools/load-files'
+import { mergeTypeDefs, mergeResolvers } from '@graphql-tools/merge'
+import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { swaggerDocOptions } from './swaggerDocOptions'
 import { NseIndia, ApiList } from './index'
 import {
     getGainersAndLosersByIndex,
     getMostActiveEquities
 } from './helpers'
+import path from 'path';
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -759,35 +765,13 @@ app.get('/api/mostActive/:indexSymbol', async (req, res) => {
     }
 })
 
-const typeDefs = gql`
-type Query {
-  hello(name:String!): Subquery
-}
+const loadedTypeDefs = loadSchemaSync(path.join(__dirname, './**/*.graphql'), { loaders: [new GraphQLFileLoader()] })
+const loadedResolvers = loadFilesSync(path.join(__dirname, './**/*.resolver.{ts,js}'))
 
-type Subquery {
-    greetings: String
-    percent: Float
-    hra(basic: Int!): Int
-}
-`
-const resolvers = {
-    Query: {
-        hello: (_parent: any, params:any) => {
-            return {
-                greetings: `Hello ${params.name}!!!`,
-                percent: 0.2,
-                params
-            }
-        }
-    },
-    Subquery:{
-        hra: (parent:any, params:any) => {
-            console.log('Parent Data:', parent);
-            console.log('Params:', params);
-            return params.basic as number
-        }
-    }
-};
+const typeDefs = mergeTypeDefs(loadedTypeDefs)
+const printedTypeDefs = print(typeDefs)
+// console.log(printedTypeDefs)
+const resolvers = mergeResolvers(loadedResolvers)
 
 const httpServer = http.createServer(app);
 
