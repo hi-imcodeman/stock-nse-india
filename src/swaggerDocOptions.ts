@@ -1,4 +1,6 @@
 /* eslint-disable max-len */
+import swaggerJsDoc from 'swagger-jsdoc'
+
 const port = process.env.PORT || 3000
 const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
 export const swaggerDocOptions = {
@@ -44,5 +46,7 @@ export const swaggerDocOptions = {
             },
         ]
     },
-    apis: ['./dist/server.js']
+    apis: ['./build/routes.js']
 }
+
+export const openapiSpecification = swaggerJsDoc(swaggerDocOptions);
