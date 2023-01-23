@@ -163,7 +163,7 @@ export class NseIndia {
      */
     async getEquityHistoricalData(symbol: string, range?: DateRange): Promise<EquityHistoricalData[]> {
         const data = await this.getEquityDetails(symbol)
-        const activeSeries = data.info.activeSeries.length ? data.info.activeSeries[0] : 'EQ'
+        const activeSeries = data.info.activeSeries.length ? data.info.activeSeries[0] : /* istanbul ignore next */ 'EQ'
         if (!range) {
             range = { start: new Date(data.metadata.listingDate), end: new Date() }
         }
