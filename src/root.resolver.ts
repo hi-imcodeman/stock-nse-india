@@ -1,4 +1,4 @@
-import { NseIndia } from './index'
+import { ApiList, NseIndia } from './index'
 
 const nseIndia = new NseIndia()
 
@@ -19,7 +19,7 @@ function stringArrayFilter(input: string[], filter: StringArrayFilter) {
     if (startsWith) {
         data = data.filter(item => item.startsWith(startsWith))
     }
-    if(regex){
+    if (regex) {
         const re = new RegExp(regex)
         data = data.filter(item => re.test(item))
     }
@@ -35,11 +35,21 @@ function stringArrayFilter(input: string[], filter: StringArrayFilter) {
     if (neq) {
         data = data.filter(item => item !== neq)
     }
-    if(offset !== undefined){
+    if (offset !== undefined) {
         data = data.filter((_, index) => index > offset)
     }
     if (limit !== undefined) {
         data = data.filter((_, index) => index < limit)
+    }
+    return data
+}
+
+function objectArrayFilter(input: any, filterBy: string, filter: StringArrayFilter) {
+    const { regex } = filter
+    let data = [...input]
+    if (regex) {
+        const re = new RegExp(regex)
+        data = data.filter((item: { [x: string]: string }) => re.test(item[filterBy]))
     }
     return data
 }
@@ -49,6 +59,12 @@ export default {
         equities: async (_parent: any, { symbolFilter }: { symbolFilter: StringArrayFilter }) => {
             const results = await nseIndia.getAllStockSymbols()
             return stringArrayFilter(results, symbolFilter)
+        },
+        indices: async (_parent: any, { filter }: { filter: any }) => {
+            const indices = await nseIndia.getDataByEndpoint(ApiList.ALL_INDICES)
+            if (filter)
+                return objectArrayFilter(indices.data, filter.filterBy, filter.criteria)
+            return indices.data
         }
     },
     Equity: {

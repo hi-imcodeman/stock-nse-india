@@ -1,18 +1,3 @@
-input StringArrayFilter {
-  startsWith: String
-  regex: String
-  in: [String]
-  nin: [String]
-  eq: String,
-  neq: String
-  offset: Int
-  limit: Int
-}
-
-type Query {
-  equities(symbolFilter:StringArrayFilter!): [Equity]
-}
-
 type Equity {
   symbol: String!
   details: EqutiyDetail
