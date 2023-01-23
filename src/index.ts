@@ -162,14 +162,15 @@ export class NseIndia {
      * @returns 
      */
     async getEquityHistoricalData(symbol: string, range?: DateRange): Promise<EquityHistoricalData[]> {
+        const data = await this.getEquityDetails(symbol)
+        const activeSeries = data.info.activeSeries.length ? data.info.activeSeries[0] : 'EQ'
         if (!range) {
-            const data = await this.getEquityDetails(symbol)
             range = { start: new Date(data.metadata.listingDate), end: new Date() }
         }
         const dateRanges = getDateRangeChunks(range.start, range.end, 66)
         const promises = dateRanges.map(async (dateRange) => {
             const url = `/api/historical/cm/equity?symbol=${encodeURIComponent(symbol)}` +
-                `&series=[%22EQ%22]&from=${dateRange.start}&to=${dateRange.end}`
+                `&series=[%22${activeSeries}%22]&from=${dateRange.start}&to=${dateRange.end}`
             return this.getDataByEndpoint(url)
         })
         return Promise.all(promises)
