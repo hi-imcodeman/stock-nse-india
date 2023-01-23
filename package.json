@@ -15,7 +15,7 @@
     "start": "node dist/server.js",
     "docs": "typedoc",
     "test": "jest --coverage --testTimeout=600000",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint ./src --ext .ts",
     "gpr-setup": "node ./scripts/setup-gpr.js"
   },
   "lint-staged": {

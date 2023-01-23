@@ -32,6 +32,7 @@ Array [
       "previousDay: any",
       "oneWeekAgo: any",
       "oneMonthAgo: any",
+      "oneYearAgo: any",
     ],
   },
   "timestamp: any",
@@ -121,14 +122,6 @@ Array [
 exports[`Class: NseIndia ApiList should return content for HOLIDAY_CLEARING: API Response Validation 1`] = `
 Array [
   Object {
-    "CBM": Array [
-      "tradingDate: any",
-      "weekDay: any",
-      "description: any",
-      "Sr_no: any",
-    ],
-  },
-  Object {
     "CD": Array [
       "tradingDate: any",
       "weekDay: any",
@@ -138,14 +131,6 @@ Array [
   },
   Object {
     "CM": Array [
-      "tradingDate: any",
-      "weekDay: any",
-      "description: any",
-      "Sr_no: any",
-    ],
-  },
-  Object {
-    "COM": Array [
       "tradingDate: any",
       "weekDay: any",
       "description: any",
@@ -169,15 +154,7 @@ Array [
     ],
   },
   Object {
-    "MF": Array [
-      "tradingDate: any",
-      "weekDay: any",
-      "description: any",
-      "Sr_no: any",
-    ],
-  },
-  Object {
-    "NDM": Array [
+    "MFSS": Array [
       "tradingDate: any",
       "weekDay: any",
       "description: any",
@@ -695,7 +672,30 @@ Array [
             ],
           },
           Object {
-            "detail": "any",
+            "detail": Array [
+              "title: any",
+              "directorName: any",
+              "din: any",
+              "category: any",
+              "date: any",
+              "dateOfCessation: any",
+              "tenure: any",
+              "noOfDirShp: any",
+              "noOfMemberships: any",
+              "noOfChairperson: any",
+              "dateOfAppointment: any",
+              "dateOfInitialAppo: any",
+              "dob: any",
+              "dirIsdisqualified: any",
+              "startdateOfdisqualification: any",
+              "enddateOfdisqualification: any",
+              "detailsOfdisqualification: any",
+              "status: any",
+              "noOfindpntDirShp: any",
+              "splresolution: any",
+              "dateOfsplresolution: any",
+              "membershipinCommofCompany: any",
+            ],
           },
         ],
       },
@@ -720,11 +720,11 @@ Array [
           Object {
             "data": Array [
               "name: any",
+              "31-Dec-2022: any",
               "30-Sep-2022: any",
               "30-Jun-2022: any",
               "31-Mar-2022: any",
               "31-Dec-2021: any",
-              "30-Sep-2021: any",
             ],
           },
         ],
@@ -929,7 +929,12 @@ Array [
       "slb: any",
       "classOfShare: any",
       "derivatives: any",
-      "surveillance: any",
+      Object {
+        "surveillance": Array [
+          "surv: any",
+          "desc: any",
+        ],
+      },
       "faceValue: any",
       "issuedSize: any",
     ],
@@ -963,6 +968,8 @@ Array [
           "value: any",
         ],
       },
+      "iNavValue: any",
+      "checkINAV: any",
     ],
   },
   Object {
@@ -4410,7 +4417,31 @@ Array [
   Object {
     "145": Array [
       Object {
-        "data": "any",
+        "data": Array [
+          "_id: any",
+          "CH_SYMBOL: any",
+          "CH_SERIES: any",
+          "CH_MARKET_TYPE: any",
+          "CH_TRADE_HIGH_PRICE: any",
+          "CH_TRADE_LOW_PRICE: any",
+          "CH_OPENING_PRICE: any",
+          "CH_CLOSING_PRICE: any",
+          "CH_LAST_TRADED_PRICE: any",
+          "CH_PREVIOUS_CLS_PRICE: any",
+          "CH_TOT_TRADED_QTY: any",
+          "CH_TOT_TRADED_VAL: any",
+          "CH_52WEEK_HIGH_PRICE: any",
+          "CH_52WEEK_LOW_PRICE: any",
+          "CH_TOTAL_TRADES: any",
+          "CH_ISIN: any",
+          "CH_TIMESTAMP: any",
+          "TIMESTAMP: any",
+          "createdAt: any",
+          "updatedAt: any",
+          "__v: any",
+          "VWAP: any",
+          "mTIMESTAMP: any",
+        ],
       },
       Object {
         "meta": Array [
@@ -4429,7 +4460,31 @@ Array [
   Object {
     "146": Array [
       Object {
-        "data": "any",
+        "data": Array [
+          "_id: any",
+          "CH_SYMBOL: any",
+          "CH_SERIES: any",
+          "CH_MARKET_TYPE: any",
+          "CH_TRADE_HIGH_PRICE: any",
+          "CH_TRADE_LOW_PRICE: any",
+          "CH_OPENING_PRICE: any",
+          "CH_CLOSING_PRICE: any",
+          "CH_LAST_TRADED_PRICE: any",
+          "CH_PREVIOUS_CLS_PRICE: any",
+          "CH_TOT_TRADED_QTY: any",
+          "CH_TOT_TRADED_VAL: any",
+          "CH_52WEEK_HIGH_PRICE: any",
+          "CH_52WEEK_LOW_PRICE: any",
+          "CH_TOTAL_TRADES: any",
+          "CH_ISIN: any",
+          "CH_TIMESTAMP: any",
+          "TIMESTAMP: any",
+          "createdAt: any",
+          "updatedAt: any",
+          "__v: any",
+          "VWAP: any",
+          "mTIMESTAMP: any",
+        ],
       },
       Object {
         "meta": Array [
