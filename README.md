@@ -200,13 +200,6 @@ For API service documentation please hit http://localhoast:3001/api-docs
 
 https://hub.docker.com/r/imcodeman/nseindia
 
-## Demo
-
-Please the use below links for the demo.
-
-**Demo URL:** https://stock-nse-india.herokuapp.com/
-
-**API Docs URL:** https://stock-nse-india.herokuapp.com/api-docs
 
 ## Testing
 

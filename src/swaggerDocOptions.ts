@@ -44,5 +44,5 @@ export const swaggerDocOptions = {
             },
         ]
     },
-    apis: ['./dist/server.js']
+    apis: ['./build/server.js']
 }

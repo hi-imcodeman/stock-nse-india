@@ -2,7 +2,7 @@
 
 const {
     NseIndia
-} = require('../dist/index')
+} = require('../build/index')
 
 const nse = new NseIndia()
 
