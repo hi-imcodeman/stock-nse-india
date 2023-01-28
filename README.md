@@ -3,7 +3,7 @@
 
 # National Stock Exchange - India (Unofficial)
 
-![](https://github.com/hi-imcodeman/stock-nse-india/workflows/CI/badge.svg)
+![](https://github.com/hi-imcodeman/stock-nse-india/workflows/CI/badge.svg) ![npm](https://img.shields.io/npm/dt/stock-nse-india) ![NPM](https://img.shields.io/npm/l/stock-nse-india) ![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/hi-imcodeman/stock-nse-india) ![GitHub top language](https://img.shields.io/github/languages/top/hi-imcodeman/stock-nse-india)
 
 This package will help us to get equity/index details and historical data from National Stock Exchange of India.
 
