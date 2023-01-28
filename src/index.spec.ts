@@ -10,7 +10,7 @@ describe('Class: NseIndia', () => {
         expect(symbols.length).toBeGreaterThan(1000)
     })
     test('getEquityDetails', async () => {
-        const details = await nseIndia.getEquityDetails(symbol)
+        const details = await nseIndia.getEquityDetails(symbol.toLowerCase())
         expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(details.info.symbol).toBe(symbol)
     })

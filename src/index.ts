@@ -123,7 +123,7 @@ export class NseIndia {
      * @returns 
      */
     getEquityDetails(symbol: string): Promise<EquityDetails> {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}`)
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol.toUpperCase())}`)
     }
     /**
      * 
@@ -131,7 +131,8 @@ export class NseIndia {
      * @returns 
      */
     getEquityTradeInfo(symbol: string): Promise<EquityTradeInfo> {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=trade_info`)
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}&section=trade_info`)
     }
     /**
      * 
@@ -139,7 +140,8 @@ export class NseIndia {
      * @returns 
      */
     getEquityCorporateInfo(symbol: string): Promise<EquityCorporateInfo> {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=corp_info`)
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}&section=corp_info`)
     }
     /**
      * 
@@ -148,7 +150,7 @@ export class NseIndia {
      * @returns 
      */
     async getEquityIntradayData(symbol: string, isPreOpenData = false): Promise<IntradayData> {
-        const details = await this.getEquityDetails(symbol)
+        const details = await this.getEquityDetails(symbol.toUpperCase())
         const identifier = details.info.identifier
         let url = `/api/chart-databyindex?index=${identifier}`
         if (isPreOpenData)
@@ -162,14 +164,14 @@ export class NseIndia {
      * @returns 
      */
     async getEquityHistoricalData(symbol: string, range?: DateRange): Promise<EquityHistoricalData[]> {
-        const data = await this.getEquityDetails(symbol)
+        const data = await this.getEquityDetails(symbol.toUpperCase())
         const activeSeries = data.info.activeSeries.length ? data.info.activeSeries[0] : /* istanbul ignore next */ 'EQ'
         if (!range) {
             range = { start: new Date(data.metadata.listingDate), end: new Date() }
         }
         const dateRanges = getDateRangeChunks(range.start, range.end, 66)
         const promises = dateRanges.map(async (dateRange) => {
-            const url = `/api/historical/cm/equity?symbol=${encodeURIComponent(symbol)}` +
+            const url = `/api/historical/cm/equity?symbol=${encodeURIComponent(symbol.toUpperCase())}` +
                 `&series=[%22${activeSeries}%22]&from=${dateRange.start}&to=${dateRange.end}`
             return this.getDataByEndpoint(url)
         })
@@ -181,7 +183,8 @@ export class NseIndia {
      * @returns 
      */
     getEquitySeries(symbol: string): Promise<SeriesData> {
-        return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol)}`)
+        return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}`)
     }
     /**
      * 
@@ -189,7 +192,7 @@ export class NseIndia {
      * @returns 
      */
     getEquityStockIndices(index: string): Promise<IndexDetails> {
-        return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index)}`)
+        return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index.toUpperCase())}`)
     }
     /**
      * 
@@ -198,7 +201,7 @@ export class NseIndia {
      * @returns 
      */
     getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
-        let endpoint = `/api/chart-databyindex?index=${index}&indices=true`
+        let endpoint = `/api/chart-databyindex?index=${index.toUpperCase()}&indices=true`
         if (isPreOpenData)
             endpoint += '&preopen=true'
         return this.getDataByEndpoint(endpoint)
@@ -213,7 +216,8 @@ export class NseIndia {
         const dateRanges = getDateRangeChunks(range.start, range.end, 360)
         const promises = dateRanges.map(async (dateRange) => {
             const endpoint = '/products/dynaContent/equities/indices/historicalindices.jsp' +
-                `?indexType=${encodeURIComponent(index)}&fromDate=${dateRange.start}&toDate=${dateRange.end}`
+                `?indexType=${encodeURIComponent(index
+                    .toUpperCase())}&fromDate=${dateRange.start}&toDate=${dateRange.end}`
             const html: string = await this.getDataByEndpoint(endpoint, true)
             const $ = cheerio.load(html)
             const historical: any[] = []
