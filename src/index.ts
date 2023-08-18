@@ -99,7 +99,6 @@ export class NseIndia {
     /**
      * 
      * @param apiEndpoint 
-     * @param isLegacy 
      * @returns 
      */
     async getDataByEndpoint(apiEndpoint: string) {
