@@ -79,14 +79,14 @@ export interface EquityPriceInfo {
         value: number
     }
 }
-export interface PreOpenDetils {
+export interface PreOpenDetails {
     price: number
     buyQty: number
     sellQty: number
 }
 
 export interface EquityPreOpenMarket {
-    preopen: PreOpenDetils[]
+    preopen: PreOpenDetails[]
     ato: {
         buy: number
         sell: number
