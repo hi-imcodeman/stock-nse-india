@@ -204,7 +204,7 @@ export class NseIndia {
     }
     /**
      * 
-     * @param symbol 
+     * @param index 
      * @param range 
      * @returns 
      */

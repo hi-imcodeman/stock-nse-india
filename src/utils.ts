@@ -1,5 +1,5 @@
-import * as Moment from 'moment';
 import { extendMoment } from 'moment-range';
+import * as Moment from 'moment';
 
 const moment = extendMoment(Moment);
 /**
