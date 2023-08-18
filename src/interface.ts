@@ -79,14 +79,14 @@ export interface EquityPriceInfo {
         value: number
     }
 }
-export interface PreOpenDetils {
+export interface PreOpenDetails {
     price: number
     buyQty: number
     sellQty: number
 }
 
 export interface EquityPreOpenMarket {
-    preopen: PreOpenDetils[]
+    preopen: PreOpenDetails[]
     ato: {
         buy: number
         sell: number
@@ -249,18 +249,24 @@ export interface EquityHistoricalData {
 }
 
 export interface IndexHistoricalData {
-    indexSymbol: string
-    fromDate: Date
-    toDate: Date
-    historicalData: {
-        date: Date
-        open: number
-        high: number
-        low: number
-        close: number
-        volume: number
-        turnoverInCrore: number
-    }[]
+    data: {
+        indexCloseOnlineRecords:{
+            EOD_CLOSE_INDEX_VAL: number
+            EOD_HIGH_INDEX_VAL: number
+            EOD_INDEX_NAME: string
+            EOD_LOW_INDEX_VAL: number
+            EOD_OPEN_INDEX_VAL: number
+            EOD_TIMESTAMP: string
+            TIMESTAMP: string
+        }[]
+        indexTurnoverRecords:{
+            HIT_INDEX_NAME_UPPER: string
+            HIT_TIMESTAMP: string
+            HIT_TRADED_QTY: number
+            HIT_TURN_OVER: number
+            TIMESTAMP: string
+        }[]
+    }
 }
 
 export interface SeriesData {
