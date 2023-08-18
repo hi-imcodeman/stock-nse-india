@@ -3,6 +3,9 @@
 exports[`Utils getDataSchema for date value having typeStrict:false 1`] = `
 Array [
   "date: any",
+  Object {
+    "arrayOfArray": "any",
+  },
 ]
 `;
 
@@ -27,6 +30,9 @@ Array [
     ],
   },
   "e: Date",
+  Object {
+    "f": "number[]",
+  },
 ]
 `;
 
