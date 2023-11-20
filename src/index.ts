@@ -40,7 +40,8 @@ export class NseIndia {
     private baseHeaders = {
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive'
+        'Connection': 'keep-alive',
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0'
     }
 
     private async getNseCookies() {
@@ -51,7 +52,7 @@ export class NseIndia {
             const setCookies = response.headers['set-cookie']
             const cookies: string[] = []
             setCookies.forEach((cookie: string) => {
-                const requiredCookies: string[] = ['nsit', 'nseappid', 'ak_bmsc', 'AKA_A2']
+                const requiredCookies: string[] = ['nsit', 'nseappid', 'ak_bmsc', 'AKA_A2', 'bm_mi', 'bm_sv', 'RT']
                 const cookieKeyValue = cookie.split(';')[0]
                 const cookieEntry = cookieKeyValue.split('=')
                 if (requiredCookies.includes(cookieEntry[0])) {
