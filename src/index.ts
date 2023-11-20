@@ -6,7 +6,6 @@ import {
     IntradayData,
     EquityDetails,
     EquityTradeInfo,
-    EquityCorporateInfo,
     EquityHistoricalData,
     SeriesData,
     IndexDetails,
