@@ -18,9 +18,9 @@ describe('Class: NseIndia', () => {
         expect(Object.keys(tradeInfo).length).toBeGreaterThan(3)
     })
     test('getEquityCorporateInfo', async () => {
-        const corpInfo = await nseIndia.getEquityCorporateInfo(symbol)
-        // expect(getDataSchema(corpInfo,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(Object.keys(corpInfo.corporate).length).toBeGreaterThan(5)
+        const data = await nseIndia.getEquityCorporateInfo(symbol)
+        // expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(data.info.symbol).toBe(symbol)
     })
     test('getEquityIntradayData', async () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol)

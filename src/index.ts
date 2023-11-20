@@ -52,9 +52,10 @@ export class NseIndia {
             const setCookies = response.headers['set-cookie']
             const cookies: string[] = []
             setCookies.forEach((cookie: string) => {
-                const requiredCookies: string[] = ['nsit', 'nseappid', 'ak_bmsc', 'AKA_A2', 'bm_mi', 'bm_sv', 'RT']
+                const requiredCookies: string[] = ['nsit', 'nseappid', 'ak_bmsc', 'AKA_A2', 'bm_mi', 'bm_sv']
                 const cookieKeyValue = cookie.split(';')[0]
                 const cookieEntry = cookieKeyValue.split('=')
+                /* istanbul ignore else */
                 if (requiredCookies.includes(cookieEntry[0])) {
                     cookies.push(cookieKeyValue)
                 }
@@ -135,9 +136,9 @@ export class NseIndia {
      * @param symbol 
      * @returns 
      */
-    getEquityCorporateInfo(symbol: string): Promise<EquityCorporateInfo> {
+    getEquityCorporateInfo(symbol: string): Promise<any> {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol
-            .toUpperCase())}&section=corp_info`)
+            .toUpperCase())}`)
     }
     /**
      * 
