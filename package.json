@@ -12,6 +12,7 @@
   "scripts": {
     "build": "tsc",
     "prestart": "yarn build",
+    "freshLink": "rm -rf ./build && rm -rf ./node_modules && rm -rf ./yarn.lock && yarn install && tsc",
     "start": "node build/server.js",
     "docs": "typedoc",
     "test": "jest --coverage --testTimeout=600000",
@@ -57,7 +58,8 @@
     "ora": "^5.4.0",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.3.0",
-    "yargs": "^16.2.0"
+    "yargs": "^16.2.0",
+    "zlib": "^1.0.5"
   },
   "keywords": [
     "nse",

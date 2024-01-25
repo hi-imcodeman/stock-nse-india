@@ -324,7 +324,7 @@ app.get('/api/indexNames', async (_req, res) => {
  */
 app.get('/api/allSymbols', async (_req, res) => {
     try {
-        const symbols = await nseIndia.getAllStockSymbols()
+        const symbols = await nseIndia.getAllStockSymbols(true)
         res.json(symbols)
     } catch (error) {
         res.status(400).json(error)
@@ -354,9 +354,9 @@ app.get('/api/allSymbols', async (_req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
-app.get('/api/equity/:symbol', async (req, res) => {
+app.get('/api/equity/:symbol/:repute', async (req, res) => {
     try {
-        res.json(await nseIndia.getEquityDetails(req.params.symbol))
+        res.json(await nseIndia.getEquityDetails(req.params.symbol, (req.params.repute == "repute") ? true : false))
     } catch (error) {
         res.status(400).json(error)
     }
