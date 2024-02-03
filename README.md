@@ -50,6 +50,17 @@ nseIndia.getEquityHistoricalData(symbol, range).then(data => {
 })
 ```
 
+To run in cloud servers like (AWS, Google Cloud, Azure, etc...) pass `useSubProcess` as option parameter while create new NseIndia object.
+
+```javascript
+import { NseIndia } from  "stock-nse-india";
+const  nseIndia = new  NseIndia({ useSubProcess: true })
+// To get all symbols from NSE
+nseIndia.getAllStockSymbols().then(symbols  => {
+console.log(symbols)
+})
+```
+
 ## API Methods
 
 ### Common Methods
@@ -122,6 +133,18 @@ or
 yarn start
 ```
 
+To start the application in cloud servers like (AWS, Google Cloud, Azure, etc...)
+
+```sh
+IS_CLOUD_SERVER=true npm start
+```
+
+or
+
+```sh
+IS_CLOUD_SERVER=true yarn start
+```
+
 **Then open the URL http://localhost:3000 in browser.**
 
 For API service documentation please hit http://localhoast:3000/api-docs
@@ -174,6 +197,12 @@ To get the details of the specific index
 nseindia index "NIFTY AUTO"
 ```
 
+To run cli in cloud servers like (AWS, Google Cloud, Azure, etc...)
+
+```sh
+IS_CLOUD_SERVER=true nseindia index "NIFTY AUTO"
+```
+
 ## Docker
 
 ### Build & Run in local
@@ -208,3 +237,9 @@ Run the below command for testing and coverage.
 ```sh
 yarn test
 ```
+
+## Contributors
+
+<a href="https://github.com/hi-imcodeman/stock-nse-india/contributors">
+  <img src="https://contrib.rocks/image?repo=hi-imcodeman/stock-nse-india" />
+</a>

@@ -63,6 +63,7 @@ export class NseIndia {
                     // Find and extract the Set-Cookie header
                     setCookies = lines.filter(line => line.toLowerCase().startsWith('set-cookie'))
                         .map(line => line.split(':')[1].trim());
+                    // eslint-disable-next-line no-console
                     // console.log(`getNseCookies => got cookies ${setCookies}`)
                 } else {
                     response = await axios.get(this.baseUrl, {
@@ -123,7 +124,7 @@ export class NseIndia {
                 }
                 else {
                     // eslint-disable-next-line no-console
-                    console.log(`getData => Using CURL subProcess`)
+                    console.log(`getData => Using CURL subProcess for ${url}`)
                     const curlCommand = await this.constructCurlCommand(url);
                     const commnad = curlCommand[0]
                     const header = curlCommand.slice(1);
@@ -135,14 +136,17 @@ export class NseIndia {
                     }
                     else {
                         // eslint-disable-next-line no-console
-                        console.log(`getData => Got data from buffer`)
+                        console.log(`getData => Got data from buffer for ${url}`)
                         response = gunzipSync(result.stdout).toString('utf-8');
+                        // eslint-disable-next-line no-console
+                        console.log(`getData => unzip done for ${url}`)
                     }
                     response = JSON.parse(response);
                 }
                 this.noOfConnections--
                 return response
             } catch (error) {
+                console.error(error)
                 hasError = true
                 retries++
                 this.noOfConnections--

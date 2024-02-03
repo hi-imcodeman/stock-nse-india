@@ -8,7 +8,8 @@ import asciichart from 'asciichart'
 import { ApiList } from '../apiList'
 
 const rupee = '₹'
-const nse = new NseIndia()
+const useSubProcess = Boolean(process.env.IS_CLOUD_SERVER) || false
+const nse = new NseIndia({useSubProcess})
 
 export async function showIndexOverview() {
     const spinner = ora()
