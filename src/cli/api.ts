@@ -1,9 +1,11 @@
-import { NseIndia, ApiList } from '../index'
+/* eslint-disable no-console */
+import { NseIndia } from '../index'
 import ora from 'ora'
 import chalk from 'chalk'
 import ohlc from 'ohlc'
 import moment from 'moment'
 import asciichart from 'asciichart'
+import { ApiList } from '../apiList'
 
 const rupee = '₹'
 const nse = new NseIndia()

@@ -2,16 +2,18 @@ import express from 'express'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsDoc from 'swagger-jsdoc'
 import { swaggerDocOptions } from './swaggerDocOptions'
-import { NseIndia, ApiList } from './index'
+import { NseIndia } from './index'
 import {
     getGainersAndLosersByIndex,
     getMostActiveEquities
 } from './helpers'
+import { ApiList } from './apiList'
 
 const app = express()
 const port = process.env.PORT || 3000
 const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
-const nseIndia = new NseIndia()
+const useSubProcess = Boolean(process.env.IS_CLOUD_SERVER) || false
+const nseIndia = new NseIndia({ useSubProcess })
 
 const openapiSpecification = swaggerJsDoc(swaggerDocOptions);
 
@@ -324,7 +326,7 @@ app.get('/api/indexNames', async (_req, res) => {
  */
 app.get('/api/allSymbols', async (_req, res) => {
     try {
-        const symbols = await nseIndia.getAllStockSymbols(true)
+        const symbols = await nseIndia.getAllStockSymbols()
         res.json(symbols)
     } catch (error) {
         res.status(400).json(error)
@@ -354,9 +356,9 @@ app.get('/api/allSymbols', async (_req, res) => {
  *       400:
  *         description: Returns a JSON error object of API call
  */
-app.get('/api/equity/:symbol/:repute', async (req, res) => {
+app.get('/api/equity/:symbol', async (req, res) => {
     try {
-        res.json(await nseIndia.getEquityDetails(req.params.symbol, (req.params.repute == "repute") ? true : false))
+        res.json(await nseIndia.getEquityDetails(req.params.symbol))
     } catch (error) {
         res.status(400).json(error)
     }
@@ -757,8 +759,11 @@ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
 })
 
 app.listen(port, () => {
+    // eslint-disable-next-line no-console
     console.log(`NseIndia App started in port ${port}`);
+    // eslint-disable-next-line no-console
     console.log(`Open ${hostUrl} in browser.`);
+    // eslint-disable-next-line no-console
     console.log(`For API docs: ${hostUrl}/api-docs`);
 
 })

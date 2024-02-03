@@ -9,6 +9,7 @@ import {
 } from './api'
 import yargs from 'yargs'
 
+// eslint-disable-next-line no-unused-vars
 const _argv = yargs
     .command('$0', 'the default command', {}, showMarketStatus)
     .command('equity <symbol>', 'Get details of the symbol', (yargsBuilder: any) => {

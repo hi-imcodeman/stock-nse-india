@@ -1,4 +1,5 @@
-import { NseIndia, ApiList } from "./index";
+import { ApiList } from "./apiList";
+import { NseIndia } from "./index";
 
 describe('Class: NseIndia', () => {
     const symbol = 'ITC'
@@ -20,7 +21,7 @@ describe('Class: NseIndia', () => {
     test('getEquityCorporateInfo', async () => {
         const data = await nseIndia.getEquityCorporateInfo(symbol)
         // expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(data.info.symbol).toBe(symbol)
+        expect(data.length).toBeGreaterThan(0)
     })
     test('getEquityIntradayData', async () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol)
@@ -114,5 +115,18 @@ describe('Class: NseIndia', () => {
                 expect(contentLength).not.toBe(0)
             })
         })
+    })
+})
+describe('Class: NseIndia - useSubProcess', () => {
+    const symbol='TCS'
+    const nseIndia = new NseIndia({ useSubProcess: true })
+    test('getAllStockSymbols', async () => {
+        const symbols = await nseIndia.getAllStockSymbols()
+        expect(symbols.length).toBeGreaterThan(1000)
+    })
+    test('getEquityCorporateInfo', async () => {
+        const data = await nseIndia.getEquityCorporateInfo(symbol)
+        // expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(data.length).toBeGreaterThan(0)
     })
 })

@@ -160,57 +160,6 @@ export interface DirectoryDetails {
     fax: string
     email: string
 }
-export interface EquityCorporateInfo {
-    corporate: {
-        announcements: {
-            desc: string
-            attchmntText: string
-            attchmntFile: string
-            an_dt: string
-        }[]
-        boardMeetings: {
-            bm_purpose: string
-            bm_desc: string
-            attachment: string
-            bm_date: string
-            bm_timestamp: string
-        }[]
-        corporateActions: {
-            series: string
-            faceVal: string
-            subject: string
-            exDate: string
-            recDate: string
-            bcStartDate: string
-            bcEndDate: string
-            ndStartDate: string
-            ndEndDate: string
-        }[]
-        governance: any[]
-        financialResults: any[]
-        shareholdingPatterns: {
-            cols: any[]
-            data: any[]
-        }
-        insiderTrading: any[]
-        sastRegulations_29: any[]
-        sastRegulations_3132Post: any[]
-        votingResults: any[]
-        annualReport: {
-            companyName: string
-            fromYr: string
-            toYr: string
-            fileName: string
-        }[]
-        dailyBuyBack: any[]
-        companyDirectory: DirectoryDetails[]
-        transferAgentDetail: DirectoryDetails[]
-        investorComplaints: any[]
-        pledgedetails: any[]
-        corpEncumbrance: any[]
-        secretarialCamp: any[]
-    }
-}
 
 export interface EquityHistoricalInfo {
     _id: string
