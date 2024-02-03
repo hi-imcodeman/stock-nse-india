@@ -37,6 +37,16 @@ export class NseIndia {
     private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
     private noOfConnections = 0
     private baseHeaders = {
+        'Authority': 'www.nseindia.com',
+        'Referer': 'https://www.nseindia.com/',
+        'Accept': '*/*',
+        'Origin': 'https://www.nseindia.com',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Ch-Ua': '" Not A;Brand";v="99", "Chromium";v="109", "Google Chrome";v="109"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive',
