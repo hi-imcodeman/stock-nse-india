@@ -1,5 +1,5 @@
 import axios from 'axios'
-import cheerio from 'cheerio'
+import UserAgent from 'user-agents'
 import { getDateRangeChunks, sleep } from './utils'
 import {
     DateRange,
@@ -32,21 +32,32 @@ export enum ApiList {
 export class NseIndia {
     private baseUrl = 'https://www.nseindia.com'
     private cookies = ''
+    private userAgent = ''
     private cookieUsedCount = 0
     private cookieMaxAge = 60 // should be in seconds
     private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
     private noOfConnections = 0
     private baseHeaders = {
+        'Authority': 'www.nseindia.com',
+        'Referer': 'https://www.nseindia.com/',
+        'Accept': '*/*',
+        'Origin': this.baseUrl,
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Ch-Ua': '" Not A;Brand";v="99", "Chromium";v="109", "Google Chrome";v="109"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0'
+        'Connection': 'keep-alive'
     }
 
     private async getNseCookies() {
         if (this.cookies === '' || this.cookieUsedCount > 10 || this.cookieExpiry <= new Date().getTime()) {
+            this.userAgent = new UserAgent().toString()
             const response = await axios.get(this.baseUrl, {
-                headers: this.baseHeaders
+                headers: {...this.baseHeaders,'User-Agent': this.userAgent}
             })
             const setCookies = response.headers['set-cookie']
             const cookies: string[] = []
@@ -84,6 +95,7 @@ export class NseIndia {
                     headers: {
                         ...this.baseHeaders,
                         'Cookie': await this.getNseCookies(),
+                        'User-Agent': this.userAgent
                     }
                 })
                 this.noOfConnections--
