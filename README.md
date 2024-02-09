@@ -208,3 +208,9 @@ Run the below command for testing and coverage.
 ```sh
 yarn test
 ```
+
+## Contributors
+
+<a href="https://github.com/hi-imcodeman/stock-nse-india/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=hi-imcodeman/stock-nse-india" />
+</a>
