@@ -28,6 +28,67 @@ export interface EquityInfo {
     identifier: string
 }
 
+
+
+export interface OptionChainData {
+    records:  Records;
+    filtered: Filtered;
+}
+
+export interface Filtered {
+    data: Datum[];
+    CE:   FilteredCE;
+    PE:   FilteredCE;
+}
+
+export interface FilteredCE {
+    totOI:  number;
+    totVol: number;
+}
+
+export interface Datum {
+    strikePrice: number;
+    expiryDate:  string;
+    PE?:         DatumCE;
+    CE?:         DatumCE;
+}
+
+export interface DatumCE {
+    strikePrice:           number;
+    expiryDate:            string;
+    underlying:            Underlying;
+    identifier:            string;
+    openInterest:          number;
+    changeinOpenInterest:  number;
+    pchangeinOpenInterest: number;
+    totalTradedVolume:     number;
+    impliedVolatility:     number;
+    lastPrice:             number;
+    change:                number;
+    pChange:               number;
+    totalBuyQuantity:      number;
+    totalSellQuantity:     number;
+    bidQty:                number;
+    bidprice:              number;
+    askQty:                number;
+    askPrice:              number;
+    underlyingValue:       number;
+}
+
+
+export enum Underlying {
+    Nifty = "NIFTY",
+}
+
+export interface Records {
+    expiryDates:     string[];
+    data:            Datum[];
+    timestamp:       string;
+    underlyingValue: number;
+    strikePrices:    number[];
+}
+
+
 export interface EquityMetadata {
     series: string
     symbol: string

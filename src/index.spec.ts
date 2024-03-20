@@ -2,6 +2,8 @@ import { NseIndia, ApiList } from "./index";
 
 describe('Class: NseIndia', () => {
     const symbol = 'ITC'
+
+    const symbolChain = 'NIFTY'
     const nseIndia = new NseIndia()
     test('getAllStockSymbols', async () => {
         const symbols = await nseIndia.getAllStockSymbols()
@@ -11,6 +13,14 @@ describe('Class: NseIndia', () => {
         const details = await nseIndia.getEquityDetails(symbol.toLowerCase())
         // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(details.info.symbol).toBe(symbol)
+    })
+
+    test('getOptionChain', async () => {
+        const optionCHain = await nseIndia.getOptionChain(symbolChain)
+
+        console.log(optionCHain.filtered.data[0].PE?.underlying)
+        // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(optionCHain.filtered.data[0].PE?.underlying).toBe(symbolChain)
     })
     test('getEquityTradeInfo', async () => {
         const tradeInfo = await nseIndia.getEquityTradeInfo(symbol)

@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>EquitySecurityInfo | stock-nse-india - v1.1.5</title>
+	<title>Records | stock-nse-india - v1.1.5</title>
 	<meta name="description" content="Documentation for stock-nse-india - v1.1.5">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -58,10 +58,10 @@
 					<a href="../modules/interface.html">interface</a>
 				</li>
 				<li>
-					<a href="interface.equitysecurityinfo.html">EquitySecurityInfo</a>
+					<a href="interface.records.html">Records</a>
 				</li>
 			</ul>
-			<h1>Interface EquitySecurityInfo</h1>
+			<h1>Interface Records</h1>
 		</div>
 	</div>
 </header>
@@ -72,7 +72,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">EquitySecurityInfo</span>
+						<span class="target">Records</span>
 					</li>
 				</ul>
 			</section>
@@ -83,16 +83,11 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#boardstatus" class="tsd-kind-icon">board<wbr>Status</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#classofshare" class="tsd-kind-icon">class<wbr>OfShare</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#derivatives" class="tsd-kind-icon">derivatives</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#facevalue" class="tsd-kind-icon">face<wbr>Value</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#issuedcap" class="tsd-kind-icon">issued<wbr>Cap</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#sessionno" class="tsd-kind-icon">session<wbr>No</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#slb" class="tsd-kind-icon">slb</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#surveillance" class="tsd-kind-icon">surveillance</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#tradingsegment" class="tsd-kind-icon">trading<wbr>Segment</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.equitysecurityinfo.html#tradingstatus" class="tsd-kind-icon">trading<wbr>Status</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.records.html#data" class="tsd-kind-icon">data</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.records.html#expirydates" class="tsd-kind-icon">expiry<wbr>Dates</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.records.html#strikeprices" class="tsd-kind-icon">strike<wbr>Prices</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.records.html#timestamp" class="tsd-kind-icon">timestamp</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="interface.records.html#underlyingvalue" class="tsd-kind-icon">underlying<wbr>Value</a></li>
 							</ul>
 						</section>
 					</div>
@@ -101,102 +96,52 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="boardstatus" class="tsd-anchor"></a>
-					<h3>board<wbr>Status</h3>
-					<div class="tsd-signature tsd-kind-icon">board<wbr>Status<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="data" class="tsd-anchor"></a>
+					<h3>data</h3>
+					<div class="tsd-signature tsd-kind-icon">data<span class="tsd-signature-symbol">:</span> <a href="interface.datum.html" class="tsd-signature-type" data-tsd-kind="Interface">Datum</a><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L106">interface.ts:106</a></li>
+							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L85">interface.ts:85</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="classofshare" class="tsd-anchor"></a>
-					<h3>class<wbr>OfShare</h3>
-					<div class="tsd-signature tsd-kind-icon">class<wbr>OfShare<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="expirydates" class="tsd-anchor"></a>
+					<h3>expiry<wbr>Dates</h3>
+					<div class="tsd-signature tsd-kind-icon">expiry<wbr>Dates<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L111">interface.ts:111</a></li>
+							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L84">interface.ts:84</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="derivatives" class="tsd-anchor"></a>
-					<h3>derivatives</h3>
-					<div class="tsd-signature tsd-kind-icon">derivatives<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="strikeprices" class="tsd-anchor"></a>
+					<h3>strike<wbr>Prices</h3>
+					<div class="tsd-signature tsd-kind-icon">strike<wbr>Prices<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L112">interface.ts:112</a></li>
+							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L88">interface.ts:88</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="facevalue" class="tsd-anchor"></a>
-					<h3>face<wbr>Value</h3>
-					<div class="tsd-signature tsd-kind-icon">face<wbr>Value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="timestamp" class="tsd-anchor"></a>
+					<h3>timestamp</h3>
+					<div class="tsd-signature tsd-kind-icon">timestamp<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L114">interface.ts:114</a></li>
+							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L86">interface.ts:86</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="issuedcap" class="tsd-anchor"></a>
-					<h3>issued<wbr>Cap</h3>
-					<div class="tsd-signature tsd-kind-icon">issued<wbr>Cap<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="underlyingvalue" class="tsd-anchor"></a>
+					<h3>underlying<wbr>Value</h3>
+					<div class="tsd-signature tsd-kind-icon">underlying<wbr>Value<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L115">interface.ts:115</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="sessionno" class="tsd-anchor"></a>
-					<h3>session<wbr>No</h3>
-					<div class="tsd-signature tsd-kind-icon">session<wbr>No<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L109">interface.ts:109</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="slb" class="tsd-anchor"></a>
-					<h3>slb</h3>
-					<div class="tsd-signature tsd-kind-icon">slb<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L110">interface.ts:110</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="surveillance" class="tsd-anchor"></a>
-					<h3>surveillance</h3>
-					<div class="tsd-signature tsd-kind-icon">surveillance<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L113">interface.ts:113</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="tradingsegment" class="tsd-anchor"></a>
-					<h3>trading<wbr>Segment</h3>
-					<div class="tsd-signature tsd-kind-icon">trading<wbr>Segment<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L108">interface.ts:108</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="tradingstatus" class="tsd-anchor"></a>
-					<h3>trading<wbr>Status</h3>
-					<div class="tsd-signature tsd-kind-icon">trading<wbr>Status<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L107">interface.ts:107</a></li>
+							<li>Defined in <a href="https://github.com/DIBO237/stock-nse-india/blob/686e069/src/interface.ts#L87">interface.ts:87</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -260,45 +205,9 @@
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.equitypriceinfo.html" class="tsd-kind-icon">Equity<wbr>Price<wbr>Info</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.equitysecurityinfo.html" class="tsd-kind-icon">Equity<wbr>Security<wbr>Info</a>
-						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#boardstatus" class="tsd-kind-icon">board<wbr>Status</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#classofshare" class="tsd-kind-icon">class<wbr>OfShare</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#derivatives" class="tsd-kind-icon">derivatives</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#facevalue" class="tsd-kind-icon">face<wbr>Value</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#issuedcap" class="tsd-kind-icon">issued<wbr>Cap</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#sessionno" class="tsd-kind-icon">session<wbr>No</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#slb" class="tsd-kind-icon">slb</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#surveillance" class="tsd-kind-icon">surveillance</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#tradingsegment" class="tsd-kind-icon">trading<wbr>Segment</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="interface.equitysecurityinfo.html#tradingstatus" class="tsd-kind-icon">trading<wbr>Status</a>
-							</li>
-						</ul>
 					</li>
-				</ul>
-				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.equitytradeinfo.html" class="tsd-kind-icon">Equity<wbr>Trade<wbr>Info</a>
 					</li>
@@ -326,9 +235,30 @@
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.preopendetails.html" class="tsd-kind-icon">Pre<wbr>Open<wbr>Details</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.records.html" class="tsd-kind-icon">Records</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.records.html#data" class="tsd-kind-icon">data</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.records.html#expirydates" class="tsd-kind-icon">expiry<wbr>Dates</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.records.html#strikeprices" class="tsd-kind-icon">strike<wbr>Prices</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.records.html#timestamp" class="tsd-kind-icon">timestamp</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="interface.records.html#underlyingvalue" class="tsd-kind-icon">underlying<wbr>Value</a>
+							</li>
+						</ul>
 					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="interface.seriesdata.html" class="tsd-kind-icon">Series<wbr>Data</a>
 					</li>

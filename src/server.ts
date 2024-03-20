@@ -578,13 +578,55 @@ app.get('/api/equity/historical/:symbol', async (req, res) => {
  *           format: any
  *     responses:
  *       200:
- *         description: Returns a details of the NSE index symbol
+ *         description: Returns Data for OPTION CHAIN
  *       400:
  *         description: Returns a JSON error object of API call
  */
 app.get('/api/index/:indexSymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityStockIndices(req.params.indexSymbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+
+
+
+/**
+ * @openapi
+ * /api/option-chain/{indexSymbol}:
+ *   get:
+ *     description: To get he Option chain data
+ *     tags:
+ *       - Index
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: indexSymbol
+ *         in: path
+ *         description: NSE index symbol
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *       - name: preOpen
+ *         in: query
+ *         description: Boolean to get preOpen data
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *     responses:
+ *       200:
+ *         description: Returns a intraday trade info of the NSE index symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+
+app.get('/api/option-chain/:indexSymbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getOptionChain(req.params.indexSymbol))
     } catch (error) {
         res.status(400).json(error)
     }
