@@ -590,6 +590,15 @@ app.get('/api/index/:indexSymbol', async (req, res) => {
     }
 })
 
+
+app.get('/api/option-chain/:indexSymbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getOptionChain(req.params.indexSymbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
 /**
  * @openapi
  * /api/index/intraday/{indexSymbol}:
