@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NseIndia, ApiList } from '../index'
 import ora from 'ora'
 import chalk from 'chalk'
