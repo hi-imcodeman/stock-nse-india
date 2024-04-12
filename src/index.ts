@@ -9,7 +9,8 @@ import {
     EquityHistoricalData,
     SeriesData,
     IndexDetails,
-    IndexHistoricalData
+    IndexHistoricalData,
+    OptionChainData
 } from './interface'
 
 export enum ApiList {
@@ -26,7 +27,8 @@ export enum ApiList {
     MARKET_DATA_PRE_OPEN = '/api/market-data-pre-open?key=ALL',
     MERGED_DAILY_REPORTS_CAPITAL = '/api/merged-daily-reports?key=favCapital',
     MERGED_DAILY_REPORTS_DERIVATIVES = '/api/merged-daily-reports?key=favDerivatives',
-    MERGED_DAILY_REPORTS_DEBT = '/api/merged-daily-reports?key=favDebt'
+    MERGED_DAILY_REPORTS_DEBT = '/api/merged-daily-reports?key=favDebt',
+    NSE_OPTION_CHAIN = '/api/option-chain-indices?symbol='
 }
 
 export class NseIndia {
@@ -142,6 +144,20 @@ export class NseIndia {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol
             .toUpperCase())}&section=trade_info`)
     }
+
+ 
+    // GET OPTION CHAIN DATAS 
+      /**
+     * 
+     * @param symbol 
+     * @returns 
+     */
+    getOptionChain(symbol: string): Promise<OptionChainData> {
+        return this.getDataByEndpoint(`${ApiList.NSE_OPTION_CHAIN}${encodeURIComponent(symbol
+            .toUpperCase())}`)
+    }
+
+
     /**
      * 
      * @param symbol 
