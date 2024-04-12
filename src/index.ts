@@ -84,7 +84,7 @@ export class NseIndia {
      * @param url NSE API's URL
      * @returns JSON data from NSE India
      */
-    async getData(url: string) {
+    async getData(url: string): Promise<any> {
         let retries = 0
         let hasError = false
         do {
@@ -116,7 +116,7 @@ export class NseIndia {
      * @param apiEndpoint 
      * @returns 
      */
-    async getDataByEndpoint(apiEndpoint: string) {
+    async getDataByEndpoint(apiEndpoint: string): Promise<any> {
         return this.getData(`${this.baseUrl}${apiEndpoint}`)
     }
     /**
