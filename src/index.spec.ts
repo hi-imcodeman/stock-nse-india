@@ -17,8 +17,6 @@ describe('Class: NseIndia', () => {
 
     test('getOptionChain', async () => {
         const optionCHain = await nseIndia.getOptionChain(symbolChain)
-
-        console.log(optionCHain.filtered.data[0].PE?.underlying)
         // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(optionCHain.filtered.data[0].PE?.underlying).toBe(symbolChain)
     })

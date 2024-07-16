@@ -3,11 +3,15 @@
   "version": "1.1.5",
   "description": "This package will help us to get equity/index details and historical data from National Stock Exchange of India.",
   "main": "build/index.js",
+  "browser": false,
   "repository": "https://github.com/hi-imcodeman/stock-nse-india.git",
   "author": "Asraf Ali <asraf.cse@gmail.com>",
   "license": "MIT",
   "bin": {
     "nseindia": "build/cli/index.js"
+  },
+  "engines": {
+    "node": ">=12"
   },
   "scripts": {
     "build": "tsc",
