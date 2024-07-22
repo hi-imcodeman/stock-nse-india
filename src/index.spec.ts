@@ -2,8 +2,6 @@ import { NseIndia, ApiList } from "./index";
 
 describe('Class: NseIndia', () => {
     const symbol = 'ITC'
-
-    const symbolChain = 'NIFTY'
     const nseIndia = new NseIndia()
     test('getAllStockSymbols', async () => {
         const symbols = await nseIndia.getAllStockSymbols()
@@ -15,10 +13,15 @@ describe('Class: NseIndia', () => {
         expect(details.info.symbol).toBe(symbol)
     })
 
-    test('getOptionChain', async () => {
-        const optionCHain = await nseIndia.getOptionChain(symbolChain)
+    test('getIndexOptionChain', async () => {
+        const optionChain = await nseIndia.getIndexOptionChain('NIFTY')
         // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(optionCHain.filtered.data[0].PE?.underlying).toBe(symbolChain)
+        expect(optionChain.filtered.data[0].PE?.underlying).toBe('NIFTY')
+    })
+    test('getEquityOptionChain', async () => {
+        const optionChain = await nseIndia.getEquityOptionChain('TCS')
+        // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(optionChain.filtered.data[0].PE?.underlying).toBe('TCS')
     })
     test('getEquityTradeInfo', async () => {
         const tradeInfo = await nseIndia.getEquityTradeInfo(symbol)
@@ -28,7 +31,7 @@ describe('Class: NseIndia', () => {
     test('getEquityCorporateInfo', async () => {
         const data = await nseIndia.getEquityCorporateInfo(symbol)
         // expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(data.info.symbol).toBe(symbol)
+        expect(data.latest_announcements.data[0].symbol).toBe(symbol)
     })
     test('getEquityIntradayData', async () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol)

@@ -457,6 +457,37 @@ app.get('/api/equity/corporateInfo/:symbol', async (req, res) => {
 
 /**
  * @openapi
+ * /api/equity/options/{symbol}:
+ *   get:
+ *     description: To get options chain of the NSE symbol
+ *     tags:
+ *       - Equity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     responses:
+ *       200:
+ *         description: Returns a corporate info of the NSE symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+app.get('/api/equity/options/:symbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getEquityOptionChain(req.params.symbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
  * /api/equity/intraday/{symbol}:
  *   get:
  *     description: To get intraday trade info of the NSE symbol
@@ -595,9 +626,9 @@ app.get('/api/index/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/option-chain/{indexSymbol}:
+ * /api/index/options/{indexSymbol}:
  *   get:
- *     description: To get he Option chain data
+ *     description: To get index Option chain data
  *     tags:
  *       - Index
  *     produces:
@@ -610,13 +641,6 @@ app.get('/api/index/:indexSymbol', async (req, res) => {
  *         schema:
  *           type: string
  *           format: any
- *       - name: preOpen
- *         in: query
- *         description: Boolean to get preOpen data
- *         required: false
- *         schema:
- *           type: boolean
- *           default: false
  *     responses:
  *       200:
  *         description: Returns a intraday trade info of the NSE index symbol
@@ -624,9 +648,9 @@ app.get('/api/index/:indexSymbol', async (req, res) => {
  *         description: Returns a JSON error object of API call
  */
 
-app.get('/api/option-chain/:indexSymbol', async (req, res) => {
+app.get('/api/index/options/:indexSymbol', async (req, res) => {
     try {
-        res.json(await nseIndia.getOptionChain(req.params.indexSymbol))
+        res.json(await nseIndia.getIndexOptionChain(req.params.indexSymbol))
     } catch (error) {
         res.status(400).json(error)
     }
