@@ -112,7 +112,7 @@ describe('Class: NseIndia', () => {
         try {
             await nseIndia.getDataByEndpoint('/api/invalidapi')
         } catch (error) {
-            expect(error.message).toBe('Request failed with status code 404')
+            expect((error as Error).message).toBe('Request failed with status code 404')
         }
     })
 
