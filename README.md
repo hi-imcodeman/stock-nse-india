@@ -212,6 +212,9 @@ Run the below command for testing and coverage.
 ```sh
 yarn test
 ```
+## Serverless 
+The code is serverless equipped just zip the build and node_module to aws lambda and make the 
+handler as build/lambda.js
 
 ## Contributors
 

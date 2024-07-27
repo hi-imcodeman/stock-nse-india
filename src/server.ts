@@ -822,12 +822,17 @@ app.get('/api/index/intraday/:indexSymbol', async (req, res) => {
     }
 })
 
-app.listen(port, () => {
-    // eslint-disable-next-line no-console
-    console.log(`NseIndia App started in port ${port}`);
-    // eslint-disable-next-line no-console
-    console.log(`Open ${hostUrl} in browser.`);
-    // eslint-disable-next-line no-console
-    console.log(`For API docs: ${hostUrl}/api-docs`);
-
-})
+if(process.env.ENV === 'PROD'){
+    module.exports = app;
+}else{
+    app.listen(port, () => {
+        // eslint-disable-next-line no-console
+        console.log(`NseIndia App started in port ${port}`);
+        // eslint-disable-next-line no-console
+        console.log(`Open ${hostUrl} in browser.`);
+        // eslint-disable-next-line no-console
+        console.log(`For API docs: ${hostUrl}/api-docs`);
+    
+    })
+    
+}
