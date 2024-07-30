@@ -59,6 +59,7 @@
     "moment": "^2.29.2",
     "moment-range": "^4.0.2",
     "ohlc": "^2.0.4",
+    "openai": "^4.53.0",
     "ora": "^5.4.0",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.3.0",
