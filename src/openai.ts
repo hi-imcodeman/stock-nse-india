@@ -2,7 +2,18 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const OpenAI = require("openai")
 
-import { getStockDetails, getStockDetailsTool } from './tools'
+import {
+  getEquityDetails,
+  getEquityDetailsTool,
+  getMarketStatus,
+  getMarketStatusTool,
+  getAllIndices,
+  getAllIndicesTool,
+  getEquityMaster,
+  getEquityMasterTool,
+  getEquityStockIndices,
+  getEquityStockIndicesTool
+} from './tools'
 
 type Message = {
   "tool_call_id"?: string,
@@ -14,9 +25,21 @@ type Message = {
   }[] | string
 }
 
-const avaialbeFunctions: any = {
-  getStockDetails
+const avaialbeFunctions: { [key: string]: CallableFunction } = {
+  getEquityDetails,
+  getMarketStatus,
+  getAllIndices,
+  getEquityMaster,
+  getEquityStockIndices
 }
+
+const tools = [
+  getEquityDetailsTool,
+  getMarketStatusTool,
+  getAllIndicesTool,
+  getEquityMasterTool,
+  getEquityStockIndicesTool
+]
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -32,7 +55,7 @@ async function getChatCompletion(messages: Message[]): Promise<any> {
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
-    tools: [getStockDetailsTool]
+    tools,
   });
   return response
 }
@@ -43,28 +66,34 @@ const getToolResponses = async (responseMessage: any) => {
     const args = JSON.parse(toolCall.function.arguments)
     const fnToCall = avaialbeFunctions[fnName]
     if (fnToCall) {
+      console.log(`Calling ${fnName} with args ${JSON.stringify(args)}`);
       const fnResponse = await fnToCall(args)
+      let content = JSON.stringify(fnResponse)
+      if (content.length > 5000)
+        content = ""
+      // console.log(`Got response:\n${JSON.stringify(fnResponse,null,2)}`);
       const message: Message = {
         tool_call_id: toolCall.id,
         role: "tool",
         name: fnName,
-        content: JSON.stringify(fnResponse),
+        content,
       }
       return message
     }
   }))
-  return toolCallResponses
+  return toolCallResponses.filter(message => message !== undefined)
 }
 
 async function runConversation(messages: Message[]) {
   let finishReason = ''
   do {
     const response = await getChatCompletion(messages)
+    console.log('Got response from GPT.');
     // console.log(JSON.stringify(response,null,2))
     finishReason = response.choices[0].finish_reason
     const responseMessage = response.choices[0].message
     messages.push(responseMessage)
-    if (responseMessage.tool_calls && responseMessage.tool_calls.length) {
+    if (responseMessage.tool_calls?.length) {
       const toolCallResponses = await getToolResponses(responseMessage)
       messages.push(...toolCallResponses)
     } else {
@@ -98,7 +127,9 @@ const appendMessage = (messages: Message[], query: string) => {
 }
 
 // appendMessage(messages, 'What is the current stock price of TCS and Zomato?')
-appendMessage(messages, 'What is the market cap of TCS and Zomato?')
+// appendMessage(messages, 'What is the market cap of TCS and Zomato?')
+// appendMessage(messages, 'list Broad Market Indices and price of those')
+appendMessage(messages, 'what is the details of nifty 50?')
 runConversation(messages).then((res) => {
   console.log(res)
 })
