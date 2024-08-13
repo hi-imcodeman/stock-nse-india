@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "prestart": "yarn build",
+    "prestart": "npm run build",
     "start": "node build/server.js",
     "docs": "typedoc",
     "test": "jest --coverage --testTimeout=600000",
@@ -34,6 +34,7 @@
     }
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.13",
     "@types/jest": "^26.0.19",
     "@types/node": "^14.14.13",
@@ -42,6 +43,7 @@
     "@types/user-agents": "^1.0.4",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
     "@typescript-eslint/parser": "^4.14.2",
+    "cors": "^2.8.5",
     "eslint": "^7.19.0",
     "husky": "^4.3.8",
     "jest": "^26.6.3",
