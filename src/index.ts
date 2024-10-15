@@ -38,37 +38,31 @@ export class NseIndia {
     private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
     private noOfConnections = 0
     private baseHeaders = {
-        'Authority': 'www.nseindia.com',
-        'Referer': 'https://www.nseindia.com/',
+        'Referer': 'https://www.nseindia.com/get-quotes/equity?symbol=HDFCBANK',
         'Accept': '*/*',
-        'Origin': this.baseUrl,
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Ch-Ua': '" Not A;Brand";v="99", "Chromium";v="109", "Google Chrome";v="109"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive'
+        "Accept-Language": "en-US,en;q=0.5",
+        'Accept-Encoding': 'gzip, deflate',
     }
 
     private async getNseCookies() {
         if (this.cookies === '' || this.cookieUsedCount > 10 || this.cookieExpiry <= new Date().getTime()) {
             this.userAgent = new UserAgent().toString()
-            const response = await axios.get(this.baseUrl, {
+            const response = await axios.get("https://www.nseindia.com/option-chain", {
                 headers: {...this.baseHeaders,'User-Agent': this.userAgent}
             })
             const setCookies = response.headers['set-cookie']
             const cookies: string[] = []
             setCookies.forEach((cookie: string) => {
-                const requiredCookies: string[] = ['nsit', 'nseappid', 'ak_bmsc', 'AKA_A2', 'bm_mi', 'bm_sv']
+                // const requiredCookies: string[] = ['nsit', 'nseappid', 'ak_bmsc', 'AKA_A2', 'bm_mi', 'bm_sv']
+                // const cookieKeyValue = cookie.split(';')[0]
+                // const cookieEntry = cookieKeyValue.split('=')
+                // /* istanbul ignore else */
+                // if (requiredCookies.includes(cookieEntry[0])) {
+                //     cookies.push(cookieKeyValue)
+                // }
+                
                 const cookieKeyValue = cookie.split(';')[0]
-                const cookieEntry = cookieKeyValue.split('=')
-                /* istanbul ignore else */
-                if (requiredCookies.includes(cookieEntry[0])) {
-                    cookies.push(cookieKeyValue)
-                }
+                cookies.push(cookieKeyValue)
             })
             this.cookies = cookies.join('; ')
             this.cookieUsedCount = 0
