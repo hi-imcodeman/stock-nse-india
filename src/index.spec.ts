@@ -12,6 +12,17 @@ describe('Class: NseIndia', () => {
         // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(details.info.symbol).toBe(symbol)
     })
+
+    test('getIndexOptionChain', async () => {
+        const optionChain = await nseIndia.getIndexOptionChain('NIFTY')
+        // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(optionChain.filtered.data[0].PE?.underlying).toBe('NIFTY')
+    })
+    test('getEquityOptionChain', async () => {
+        const optionChain = await nseIndia.getEquityOptionChain('TCS')
+        // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(optionChain.filtered.data[0].PE?.underlying).toBe('TCS')
+    })
     test('getEquityTradeInfo', async () => {
         const tradeInfo = await nseIndia.getEquityTradeInfo(symbol)
         // expect(getDataSchema(tradeInfo,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
@@ -20,7 +31,7 @@ describe('Class: NseIndia', () => {
     test('getEquityCorporateInfo', async () => {
         const data = await nseIndia.getEquityCorporateInfo(symbol)
         // expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(data.info.symbol).toBe(symbol)
+        expect(data.latest_announcements.data[0].symbol).toBe(symbol)
     })
     test('getEquityIntradayData', async () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol)
@@ -101,7 +112,7 @@ describe('Class: NseIndia', () => {
         try {
             await nseIndia.getDataByEndpoint('/api/invalidapi')
         } catch (error) {
-            expect(error.message).toBe('Request failed with status code 404')
+            expect((error as Error).message).toBe('Request failed with status code 404')
         }
     })
 

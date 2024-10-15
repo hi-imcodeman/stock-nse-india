@@ -9,7 +9,9 @@ import {
     EquityHistoricalData,
     SeriesData,
     IndexDetails,
-    IndexHistoricalData
+    IndexHistoricalData,
+    OptionChainData,
+    EquityCorporateInfo
 } from './interface'
 
 export enum ApiList {
@@ -76,7 +78,7 @@ export class NseIndia {
      * @param url NSE API's URL
      * @returns JSON data from NSE India
      */
-    async getData(url: string) {
+    async getData(url: string): Promise<any> {
         let retries = 0
         let hasError = false
         do {
@@ -108,7 +110,7 @@ export class NseIndia {
      * @param apiEndpoint 
      * @returns 
      */
-    async getDataByEndpoint(apiEndpoint: string) {
+    async getDataByEndpoint(apiEndpoint: string): Promise<any> {
         return this.getData(`${this.baseUrl}${apiEndpoint}`)
     }
     /**
@@ -136,14 +138,15 @@ export class NseIndia {
         return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol
             .toUpperCase())}&section=trade_info`)
     }
+
     /**
      * 
      * @param symbol 
      * @returns 
      */
-    getEquityCorporateInfo(symbol: string): Promise<any> {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol
-            .toUpperCase())}`)
+    getEquityCorporateInfo(symbol: string): Promise<EquityCorporateInfo> {
+        return this.getDataByEndpoint(`/api/top-corp-info?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}&market=equities`)
     }
     /**
      * 
@@ -222,5 +225,25 @@ export class NseIndia {
             return this.getDataByEndpoint(url)
         })
         return Promise.all(promises)
+    }
+
+    /**
+     * 
+     * @param indexSymbol 
+     * @returns 
+     */
+    getIndexOptionChain(indexSymbol: string): Promise<OptionChainData> {
+        return this.getDataByEndpoint(`/api/option-chain-indices?symbol=${encodeURIComponent(indexSymbol
+            .toUpperCase())}`)
+    }
+
+    /**
+     * 
+     * @param symbol 
+     * @returns 
+     */
+    getEquityOptionChain(symbol: string): Promise<OptionChainData> {
+        return this.getDataByEndpoint(`/api/option-chain-equities?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}`)
     }
 }

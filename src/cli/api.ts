@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable no-console */
 import { NseIndia, ApiList } from '../index'
 import ora from 'ora'
 import chalk from 'chalk'
@@ -8,7 +10,7 @@ import asciichart from 'asciichart'
 const rupee = '₹'
 const nse = new NseIndia()
 
-export async function showIndexOverview() {
+export async function showIndexOverview(): Promise<void> {
     const spinner = ora()
     spinner.text = 'Loading Indices deatils'
     spinner.start()
@@ -42,7 +44,7 @@ export async function showIndexOverview() {
         console.table(allIndexTableData)
     })
 }
-export async function showIndexDetails(argv: any) {
+export async function showIndexDetails(argv: any): Promise<void> {
     const { indexSymbol: index } = argv
     const spinner = ora()
     spinner.text = `Loading ${index} Details`
@@ -69,7 +71,7 @@ export async function showIndexDetails(argv: any) {
         console.log(chalk.red(`${index} index symbol is invalid. Try to enclose the index symbols with quotes.`));
     }
 }
-export async function showMarketStatus() {
+export async function showMarketStatus(): Promise<void> {
     const spinner = ora()
     spinner.text = 'Loading Market status'
     spinner.start()
@@ -79,7 +81,7 @@ export async function showMarketStatus() {
     console.table(marketState);
 }
 
-export async function showEquityDetails(argv: any) {
+export async function showEquityDetails(argv: any): Promise<void> {
     const {
         symbol
     } = argv
@@ -154,7 +156,7 @@ export async function showEquityDetails(argv: any) {
     }
 }
 
-export async function showHistorical(argv: any) {
+export async function showHistorical(argv: any): Promise<void> {
     console.time('Done In')
     const {
         symbol
