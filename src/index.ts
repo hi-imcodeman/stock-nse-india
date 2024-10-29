@@ -57,7 +57,6 @@ export class NseIndia {
                 headers: {...this.baseHeaders,'User-Agent': this.userAgent}
             })
             const setCookies:string[] = response.headers['set-cookie']
-            
             const cookies: string[] = []
             setCookies.forEach((cookie: string) => {
                 const cookieKeyValue = cookie.split(';')[0]
