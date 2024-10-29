@@ -32,28 +32,23 @@ export enum ApiList {
 }
 
 export class NseIndia {
-    private baseUrl = 'https://www.nseindia.com'
-    private cookies = ''
-    private userAgent = ''
-    private cookieUsedCount = 0
-    private cookieMaxAge = 60 // should be in seconds
-    private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
-    private noOfConnections = 0
-    private baseHeaders = {
+    private readonly baseUrl = 'https://www.nseindia.com'
+    private readonly cookieMaxAge = 60 // should be in seconds
+    private readonly baseHeaders = {
         'Authority': 'www.nseindia.com',
         'Referer': 'https://www.nseindia.com/',
         'Accept': '*/*',
         'Origin': this.baseUrl,
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Ch-Ua': '" Not A;Brand";v="99", "Chromium";v="109", "Google Chrome";v="109"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
         'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Encoding': 'application/json, text/plain, */*',
         'Connection': 'keep-alive'
     }
+    private userAgent = ''
+    private cookies = ''
+    private cookieUsedCount = 0
+    private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
+    private noOfConnections = 0
+    
 
     private async getNseCookies() {
         if (this.cookies === '' || this.cookieUsedCount > 10 || this.cookieExpiry <= new Date().getTime()) {
@@ -61,16 +56,11 @@ export class NseIndia {
             const response = await axios.get(this.baseUrl, {
                 headers: {...this.baseHeaders,'User-Agent': this.userAgent}
             })
-            const setCookies = response.headers['set-cookie']
+            const setCookies:string[] = response.headers['set-cookie']
             const cookies: string[] = []
             setCookies.forEach((cookie: string) => {
-                const requiredCookies: string[] = ['nsit', 'nseappid', 'ak_bmsc', 'AKA_A2', 'bm_mi', 'bm_sv']
                 const cookieKeyValue = cookie.split(';')[0]
-                const cookieEntry = cookieKeyValue.split('=')
-                /* istanbul ignore else */
-                if (requiredCookies.includes(cookieEntry[0])) {
-                    cookies.push(cookieKeyValue)
-                }
+                cookies.push(cookieKeyValue)
             })
             this.cookies = cookies.join('; ')
             this.cookieUsedCount = 0
