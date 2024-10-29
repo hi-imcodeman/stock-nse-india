@@ -40,7 +40,7 @@ export class NseIndia {
         'Accept': '*/*',
         'Origin': this.baseUrl,
         'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'application/json, text/plain, */*' ,
+        'Accept-Encoding': 'application/json, text/plain, */*',
         'Connection': 'keep-alive'
     }
     private userAgent = ''
