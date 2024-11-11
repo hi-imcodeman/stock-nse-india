@@ -41,6 +41,10 @@ export const swaggerDocOptions = {
                 "description": "Contains all index related APIs of NSE India"
             },
             {
+                "name": "Commodity",
+                "description": "Contains all commodity related APIs of NSE India"
+            },
+            {
                 "name": "Helpers",
                 "description": "Contains all helper APIs of NSE India"
             },
