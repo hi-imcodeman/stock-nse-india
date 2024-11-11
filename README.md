@@ -3,7 +3,7 @@
 
 # National Stock Exchange - India (Unofficial)
 
-![](https://github.com/hi-imcodeman/stock-nse-india/workflows/CI/badge.svg)
+![](https://github.com/hi-imcodeman/stock-nse-india/workflows/CI/badge.svg) ![npm](https://img.shields.io/npm/dt/stock-nse-india) ![NPM](https://img.shields.io/npm/l/stock-nse-india) ![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/hi-imcodeman/stock-nse-india) ![GitHub top language](https://img.shields.io/github/languages/top/hi-imcodeman/stock-nse-india)
 
 This package will help us to get equity/index details and historical data from National Stock Exchange of India.
 
@@ -68,6 +68,8 @@ nseIndia.getEquityHistoricalData(symbol, range).then(data => {
 
 [getEquityIntradayData](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getequityintradaydata)
 
+[getEquityOptionChain](https://hi-imcodeman.github.io/stock-nse-india/docs/classes/index.nseindia.html#getequityoptionchain)
+
 [getEquitySeries](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getequityseries)
 
 [getEquityTradeInfo](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getequitytradeinfo)
@@ -78,6 +80,10 @@ nseIndia.getEquityHistoricalData(symbol, range).then(data => {
 [getIndexIntradayData](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getindexintradaydata)
 
 [getIndexHistoricalData](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getindexhistoricaldata)
+
+[getIndexOptionChain](https://hi-imcodeman.github.io/stock-nse-india/docs/classes/index.nseindia.html#getindexoptionchain)
+
+[getCommodityOptionChain](https://hi-imcodeman.github.io/stock-nse-india/docs/classes/commodity.nseindia.html#getcommodityoptionchain)
 
 ### Helper Methods
 [getGainersAndLosersByIndex](https://hi-imcodeman.github.io/stock-nse-india/modules/helpers.html#getgainersandlosersbyindex)
@@ -200,13 +206,6 @@ For API service documentation please hit http://localhoast:3001/api-docs
 
 https://hub.docker.com/r/imcodeman/nseindia
 
-## Demo
-
-Please the use below links for the demo.
-
-**Demo URL:** https://stock-nse-india.herokuapp.com/
-
-**API Docs URL:** https://stock-nse-india.herokuapp.com/api-docs
 
 ## Testing
 
@@ -215,3 +214,9 @@ Run the below command for testing and coverage.
 ```sh
 yarn test
 ```
+
+## Contributors
+
+<a href="https://github.com/hi-imcodeman/stock-nse-india/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=hi-imcodeman/stock-nse-india" />
+</a>

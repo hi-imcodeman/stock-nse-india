@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import express from 'express'
 import http from 'http';
 import swaggerUi from 'swagger-ui-express'
@@ -24,7 +25,7 @@ const loadedResolvers = loadFilesSync(path.join(__dirname, './**/*.resolver.{ts,
 
 const typeDefs = mergeTypeDefs(loadedTypeDefs)
 const printedTypeDefs = print(typeDefs)
-// console.log(printedTypeDefs)
+console.log(printedTypeDefs)
 const resolvers = mergeResolvers(loadedResolvers)
 
 const httpServer = http.createServer(app);

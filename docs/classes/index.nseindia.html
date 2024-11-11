@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>NseIndia | stock-nse-india - v1.1.1</title>
-	<meta name="description" content="Documentation for stock-nse-india - v1.1.1">
+	<title>NseIndia | stock-nse-india - v1.1.7</title>
+	<meta name="description" content="Documentation for stock-nse-india - v1.1.7">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
 	<script async src="../assets/js/search.js" id="search-script"></script>
@@ -23,7 +23,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">stock-nse-india - v1.1.1</a>
+					<a href="../index.html" class="title">stock-nse-india - v1.1.7</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -52,7 +52,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules.html">stock-nse-india - v1.1.1</a>
+					<a href="../modules.html">stock-nse-india - v1.1.7</a>
 				</li>
 				<li>
 					<a href="../modules/index.html">index</a>
@@ -96,11 +96,14 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getequitydetails" class="tsd-kind-icon">get<wbr>Equity<wbr>Details</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getequityhistoricaldata" class="tsd-kind-icon">get<wbr>Equity<wbr>Historical<wbr>Data</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getequityintradaydata" class="tsd-kind-icon">get<wbr>Equity<wbr>Intraday<wbr>Data</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getequityoptionchain" class="tsd-kind-icon">get<wbr>Equity<wbr>Option<wbr>Chain</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getequityseries" class="tsd-kind-icon">get<wbr>Equity<wbr>Series</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getequitystockindices" class="tsd-kind-icon">get<wbr>Equity<wbr>Stock<wbr>Indices</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getequitytradeinfo" class="tsd-kind-icon">get<wbr>Equity<wbr>Trade<wbr>Info</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getindexhistoricaldata" class="tsd-kind-icon">get<wbr>Index<wbr>Historical<wbr>Data</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getindexintradaydata" class="tsd-kind-icon">get<wbr>Index<wbr>Intraday<wbr>Data</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getindexoptionchain" class="tsd-kind-icon">get<wbr>Index<wbr>Option<wbr>Chain</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.nseindia.html#getcommodityoptionchain" class="tsd-kind-icon">get<wbr>Commodity<wbr>Option<wbr>Chain</a></li>
 							</ul>
 						</section>
 					</div>
@@ -135,7 +138,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L116">index.ts:116</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L116">index.ts:116</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -153,7 +156,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L74">index.ts:74</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L77">index.ts:77</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -174,22 +177,19 @@
 					<a name="getdatabyendpoint" class="tsd-anchor"></a>
 					<h3>get<wbr>Data<wbr>ByEndpoint</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Data<wbr>ByEndpoint<span class="tsd-signature-symbol">(</span>apiEndpoint<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, isLegacy<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Data<wbr>ByEndpoint<span class="tsd-signature-symbol">(</span>apiEndpoint<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L106">index.ts:106</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L109">index.ts:109</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>apiEndpoint: <span class="tsd-signature-type">string</span></h5>
-								</li>
-								<li>
-									<h5>isLegacy: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -206,7 +206,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L141">index.ts:141</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L143">index.ts:143</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -229,7 +229,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L125">index.ts:125</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L125">index.ts:125</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -252,7 +252,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L164">index.ts:164</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L167">index.ts:167</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -278,7 +278,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L150">index.ts:150</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L153">index.ts:153</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -295,6 +295,29 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getequityoptionchain" class="tsd-anchor"></a>
+					<h3>get<wbr>Equity<wbr>Option<wbr>Chain</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Equity<wbr>Option<wbr>Chain<span class="tsd-signature-symbol">(</span>symbol<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.optionchaindata.html" class="tsd-signature-type" data-tsd-kind="Interface">OptionChainData</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L241">index.ts:241</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>symbol: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.optionchaindata.html" class="tsd-signature-type" data-tsd-kind="Interface">OptionChainData</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="getequityseries" class="tsd-anchor"></a>
 					<h3>get<wbr>Equity<wbr>Series</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -304,7 +327,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L182">index.ts:182</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L186">index.ts:186</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -327,7 +350,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L190">index.ts:190</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L195">index.ts:195</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -350,7 +373,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L133">index.ts:133</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L133">index.ts:133</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -367,13 +390,13 @@
 					<a name="getindexhistoricaldata" class="tsd-anchor"></a>
 					<h3>get<wbr>Index<wbr>Historical<wbr>Data</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Index<wbr>Historical<wbr>Data<span class="tsd-signature-symbol">(</span>index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, range<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.daterange.html" class="tsd-signature-type" data-tsd-kind="Interface">DateRange</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.indexhistoricaldata.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexHistoricalData</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Index<wbr>Historical<wbr>Data<span class="tsd-signature-symbol">(</span>index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, range<span class="tsd-signature-symbol">: </span><a href="../interfaces/interface.daterange.html" class="tsd-signature-type" data-tsd-kind="Interface">DateRange</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.indexhistoricaldata.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexHistoricalData</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L211">index.ts:211</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L216">index.ts:216</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -385,7 +408,7 @@
 									<h5>range: <a href="../interfaces/interface.daterange.html" class="tsd-signature-type" data-tsd-kind="Interface">DateRange</a></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.indexhistoricaldata.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexHistoricalData</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.indexhistoricaldata.html" class="tsd-signature-type" data-tsd-kind="Interface">IndexHistoricalData</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -399,7 +422,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/a5d45ec/src/index.ts#L199">index.ts:199</a></li>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L204">index.ts:204</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -412,6 +435,52 @@
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.intradaydata.html" class="tsd-signature-type" data-tsd-kind="Interface">IntradayData</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getindexoptionchain" class="tsd-anchor"></a>
+					<h3>get<wbr>Index<wbr>Option<wbr>Chain</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Index<wbr>Option<wbr>Chain<span class="tsd-signature-symbol">(</span>indexSymbol<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.optionchaindata.html" class="tsd-signature-type" data-tsd-kind="Interface">OptionChainData</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L231">index.ts:231</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>indexSymbol: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.optionchaindata.html" class="tsd-signature-type" data-tsd-kind="Interface">OptionChainData</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getcommodityoptionchain" class="tsd-anchor"></a>
+					<h3>get<wbr>Commodity<wbr>Option<wbr>Chain</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Commodity<wbr>Option<wbr>Chain<span class="tsd-signature-symbol">(</span>indexSymbol<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.optionchaindata.html" class="tsd-signature-type" data-tsd-kind="Interface">OptionChainData</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/hi-imcodeman/stock-nse-india/blob/02b895e/src/index.ts#L231">index.ts:231</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>indexSymbol: <span class="tsd-signature-type">string</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/interface.optionchaindata.html" class="tsd-signature-type" data-tsd-kind="Interface">OptionChainData</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -469,6 +538,9 @@
 								<a href="index.nseindia.html#getequityintradaydata" class="tsd-kind-icon">get<wbr>Equity<wbr>Intraday<wbr>Data</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.nseindia.html#getequityoptionchain" class="tsd-kind-icon">get<wbr>Equity<wbr>Option<wbr>Chain</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="index.nseindia.html#getequityseries" class="tsd-kind-icon">get<wbr>Equity<wbr>Series</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
@@ -482,6 +554,12 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="index.nseindia.html#getindexintradaydata" class="tsd-kind-icon">get<wbr>Index<wbr>Intraday<wbr>Data</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.nseindia.html#getindexoptionchain" class="tsd-kind-icon">get<wbr>Index<wbr>Option<wbr>Chain</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="commodity.nseindia.html#getcommodityoptionchain" class="tsd-kind-icon">get<wbr>Commodity<wbr>Option<wbr>Chain</a>
 							</li>
 						</ul>
 					</li>

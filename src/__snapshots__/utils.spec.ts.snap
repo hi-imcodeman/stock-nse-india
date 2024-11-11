@@ -2,9 +2,35 @@
 
 exports[`Utils getDataSchema for date value having typeStrict:false 1`] = `
 Array [
-  "date: any",
+  "a: any",
+  "b: any",
+  Object {
+    "c": "any",
+  },
+  Object {
+    "d": Array [
+      "a: any",
+      Object {
+        "b": "any",
+      },
+      Object {
+        "c": Array [
+          "d: any",
+        ],
+      },
+      Object {
+        "e": "any",
+      },
+    ],
+  },
+  "e: any",
+  Object {
+    "f": "any",
+  },
 ]
 `;
+
+exports[`Utils getDataSchema for date value having typeStrict:false: array_validation 1`] = `"any"`;
 
 exports[`Utils getDataSchema with type strict 1`] = `
 Array [
@@ -24,9 +50,15 @@ Array [
           "d: number",
         ],
       },
+      Object {
+        "e": Array [],
+      },
     ],
   },
   "e: Date",
+  Object {
+    "f": "number[]",
+  },
 ]
 `;
 

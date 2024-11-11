@@ -7,7 +7,8 @@ const nseIndia = new NseIndia()
  * @param indexSymbol 
  * @returns 
  */
-export const getGainersAndLosersByIndex = async (indexSymbol: string) => {
+export const getGainersAndLosersByIndex = async (indexSymbol: string): Promise<{ gainers: IndexEquityInfo[],
+     losers: IndexEquityInfo[] }> => {
     const indexData = await nseIndia.getEquityStockIndices(indexSymbol)
     const gainers: IndexEquityInfo[] = []
     const losers: IndexEquityInfo[] = []
@@ -27,7 +28,8 @@ export const getGainersAndLosersByIndex = async (indexSymbol: string) => {
  * @param indexSymbol 
  * @returns 
  */
-export const getMostActiveEquities = async (indexSymbol: string) => {
+export const getMostActiveEquities = async (indexSymbol: string): Promise<{ byVolume: IndexEquityInfo[],
+     byValue: IndexEquityInfo[] }> => {
     const indexData = await nseIndia.getEquityStockIndices(indexSymbol)
     return {
         byVolume: [...indexData.data].sort((a, b) => b.totalTradedVolume - a.totalTradedVolume),

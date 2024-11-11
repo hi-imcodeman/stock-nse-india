@@ -28,6 +28,66 @@ export interface EquityInfo {
     identifier: string
 }
 
+
+
+export interface OptionChainData {
+    records: Records;
+    filtered: Filtered;
+}
+
+export interface Records {
+    expiryDates: string[];
+    data: Datum[];
+    timestamp: string;
+    underlyingValue: number;
+    strikePrices: number[];
+}
+
+export interface Filtered {
+    data: Datum[];
+    CE: OptionsData;
+    PE: OptionsData;
+}
+
+export interface OptionsData {
+    totOI: number;
+    totVol: number;
+}
+
+export interface Datum {
+    strikePrice: number;
+    expiryDate: string;
+    PE?: OptionsDetails;
+    CE?: OptionsDetails;
+}
+
+export interface OptionsDetails {
+    strikePrice: number;
+    expiryDate: string;
+    underlying: Underlying;
+    identifier: string;
+    openInterest: number;
+    changeinOpenInterest: number;
+    pchangeinOpenInterest: number;
+    totalTradedVolume: number;
+    impliedVolatility: number;
+    lastPrice: number;
+    change: number;
+    pChange: number;
+    totalBuyQuantity: number;
+    totalSellQuantity: number;
+    bidQty: number;
+    bidprice: number;
+    askQty: number;
+    askPrice: number;
+    underlyingValue: number;
+}
+
+
+export enum Underlying {
+    Nifty = "NIFTY",
+}
+
 export interface EquityMetadata {
     series: string
     symbol: string
@@ -79,14 +139,14 @@ export interface EquityPriceInfo {
         value: number
     }
 }
-export interface PreOpenDetils {
+export interface PreOpenDetails {
     price: number
     buyQty: number
     sellQty: number
 }
 
 export interface EquityPreOpenMarket {
-    preopen: PreOpenDetils[]
+    preopen: PreOpenDetails[]
     ato: {
         buy: number
         sell: number
@@ -160,55 +220,48 @@ export interface DirectoryDetails {
     fax: string
     email: string
 }
+
 export interface EquityCorporateInfo {
-    corporate: {
-        announcements: {
-            desc: string
-            attchmntText: string
-            attchmntFile: string
-            an_dt: string
+    "latest_announcements": {
+        "data": {
+            "symbol": string
+            "broadcastdate": string
+            "subject": string
         }[]
-        boardMeetings: {
-            bm_purpose: string
-            bm_desc: string
-            attachment: string
-            bm_date: string
-            bm_timestamp: string
+    },
+    "corporate_actions": {
+        "data": {
+            "symbol": string
+            "exdate": string
+            "purpose": string
         }[]
-        corporateActions: {
-            series: string
-            faceVal: string
-            subject: string
-            exDate: string
-            recDate: string
-            bcStartDate: string
-            bcEndDate: string
-            ndStartDate: string
-            ndEndDate: string
+    },
+    "shareholdings_patterns": {
+        "data": any
+    },
+    "financial_results": {
+        "data": {
+            "from_date": string
+            "to_date": string
+            "expenditure": string
+            "income": string
+            "audited": string
+            "cumulative": string
+            "consolidated": string
+            "reDilEPS": string
+            "reProLossBefTax": string
+            "proLossAftTax": string
+            "re_broadcast_timestamp": string
+            "xbrl_attachment": string
+            "na_attachment": string
         }[]
-        governance: any[]
-        financialResults: any[]
-        shareholdingPatterns: {
-            cols: any[]
-            data: any[]
-        }
-        insiderTrading: any[]
-        sastRegulations_29: any[]
-        sastRegulations_3132Post: any[]
-        votingResults: any[]
-        annualReport: {
-            companyName: string
-            fromYr: string
-            toYr: string
-            fileName: string
+    },
+    "borad_meeting": {
+        "data": {
+            "symbol": string
+            "purpose": string
+            "meetingdate": string
         }[]
-        dailyBuyBack: any[]
-        companyDirectory: DirectoryDetails[]
-        transferAgentDetail: DirectoryDetails[]
-        investorComplaints: any[]
-        pledgedetails: any[]
-        corpEncumbrance: any[]
-        secretarialCamp: any[]
     }
 }
 
@@ -249,18 +302,24 @@ export interface EquityHistoricalData {
 }
 
 export interface IndexHistoricalData {
-    indexSymbol: string
-    fromDate: Date
-    toDate: Date
-    historicalData: {
-        date: Date
-        open: number
-        high: number
-        low: number
-        close: number
-        volume: number
-        turnoverInCrore: number
-    }[]
+    data: {
+        indexCloseOnlineRecords: {
+            EOD_CLOSE_INDEX_VAL: number
+            EOD_HIGH_INDEX_VAL: number
+            EOD_INDEX_NAME: string
+            EOD_LOW_INDEX_VAL: number
+            EOD_OPEN_INDEX_VAL: number
+            EOD_TIMESTAMP: string
+            TIMESTAMP: string
+        }[]
+        indexTurnoverRecords: {
+            HIT_INDEX_NAME_UPPER: string
+            HIT_TIMESTAMP: string
+            HIT_TRADED_QTY: number
+            HIT_TURN_OVER: number
+            TIMESTAMP: string
+        }[]
+    }
 }
 
 export interface SeriesData {

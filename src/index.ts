@@ -1,16 +1,17 @@
 import axios from 'axios'
-import cheerio from 'cheerio'
+import UserAgent from 'user-agents'
 import { getDateRangeChunks, sleep } from './utils'
 import {
     DateRange,
     IntradayData,
     EquityDetails,
     EquityTradeInfo,
-    EquityCorporateInfo,
     EquityHistoricalData,
     SeriesData,
     IndexDetails,
-    IndexHistoricalData
+    IndexHistoricalData,
+    OptionChainData,
+    EquityCorporateInfo
 } from './interface'
 
 export enum ApiList {
@@ -31,33 +32,35 @@ export enum ApiList {
 }
 
 export class NseIndia {
-    private baseUrl = 'https://www.nseindia.com'
-    private legacyBaseUrl = 'https://www1.nseindia.com'
-    private cookies = ''
-    private cookieUsedCount = 0
-    private cookieMaxAge = 60 // should be in seconds
-    private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
-    private noOfConnections = 0
-    private baseHeaders = {
+    private readonly baseUrl = 'https://www.nseindia.com'
+    private readonly cookieMaxAge = 60 // should be in seconds
+    private readonly baseHeaders = {
+        'Authority': 'www.nseindia.com',
+        'Referer': 'https://www.nseindia.com/',
+        'Accept': '*/*',
+        'Origin': this.baseUrl,
         'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Encoding': 'application/json, text/plain, */*',
         'Connection': 'keep-alive'
     }
+    private userAgent = ''
+    private cookies = ''
+    private cookieUsedCount = 0
+    private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
+    private noOfConnections = 0
+    
 
     private async getNseCookies() {
         if (this.cookies === '' || this.cookieUsedCount > 10 || this.cookieExpiry <= new Date().getTime()) {
+            this.userAgent = new UserAgent().toString()
             const response = await axios.get(this.baseUrl, {
-                headers: this.baseHeaders
+                headers: {...this.baseHeaders,'User-Agent': this.userAgent}
             })
-            const setCookies = response.headers['set-cookie']
+            const setCookies:string[] = response.headers['set-cookie']
             const cookies: string[] = []
             setCookies.forEach((cookie: string) => {
-                const requiredCookies: string[] = ['nsit', 'nseappid', 'ak_bmsc', 'AKA_A2']
                 const cookieKeyValue = cookie.split(';')[0]
-                const cookieEntry = cookieKeyValue.split('=')
-                if (requiredCookies.includes(cookieEntry[0])) {
-                    cookies.push(cookieKeyValue)
-                }
+                cookies.push(cookieKeyValue)
             })
             this.cookies = cookies.join('; ')
             this.cookieUsedCount = 0
@@ -71,7 +74,7 @@ export class NseIndia {
      * @param url NSE API's URL
      * @returns JSON data from NSE India
      */
-    async getData(url: string) {
+    async getData(url: string): Promise<any> {
         let retries = 0
         let hasError = false
         do {
@@ -84,6 +87,7 @@ export class NseIndia {
                     headers: {
                         ...this.baseHeaders,
                         'Cookie': await this.getNseCookies(),
+                        'User-Agent': this.userAgent
                     }
                 })
                 this.noOfConnections--
@@ -100,14 +104,10 @@ export class NseIndia {
     /**
      * 
      * @param apiEndpoint 
-     * @param isLegacy 
      * @returns 
      */
-    async getDataByEndpoint(apiEndpoint: string, isLegacy = false) {
-        if (!isLegacy)
-            return this.getData(`${this.baseUrl}${apiEndpoint}`)
-        else
-            return this.getData(`${this.legacyBaseUrl}${apiEndpoint}`)
+    async getDataByEndpoint(apiEndpoint: string): Promise<any> {
+        return this.getData(`${this.baseUrl}${apiEndpoint}`)
     }
     /**
      * 
@@ -123,7 +123,7 @@ export class NseIndia {
      * @returns 
      */
     getEquityDetails(symbol: string): Promise<EquityDetails> {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}`)
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol.toUpperCase())}`)
     }
     /**
      * 
@@ -131,15 +131,18 @@ export class NseIndia {
      * @returns 
      */
     getEquityTradeInfo(symbol: string): Promise<EquityTradeInfo> {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=trade_info`)
+        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}&section=trade_info`)
     }
+
     /**
      * 
      * @param symbol 
      * @returns 
      */
     getEquityCorporateInfo(symbol: string): Promise<EquityCorporateInfo> {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol)}&section=corp_info`)
+        return this.getDataByEndpoint(`/api/top-corp-info?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}&market=equities`)
     }
     /**
      * 
@@ -148,7 +151,7 @@ export class NseIndia {
      * @returns 
      */
     async getEquityIntradayData(symbol: string, isPreOpenData = false): Promise<IntradayData> {
-        const details = await this.getEquityDetails(symbol)
+        const details = await this.getEquityDetails(symbol.toUpperCase())
         const identifier = details.info.identifier
         let url = `/api/chart-databyindex?index=${identifier}`
         if (isPreOpenData)
@@ -162,14 +165,15 @@ export class NseIndia {
      * @returns 
      */
     async getEquityHistoricalData(symbol: string, range?: DateRange): Promise<EquityHistoricalData[]> {
+        const data = await this.getEquityDetails(symbol.toUpperCase())
+        const activeSeries = data.info.activeSeries.length ? data.info.activeSeries[0] : /* istanbul ignore next */ 'EQ'
         if (!range) {
-            const data = await this.getEquityDetails(symbol)
             range = { start: new Date(data.metadata.listingDate), end: new Date() }
         }
         const dateRanges = getDateRangeChunks(range.start, range.end, 66)
         const promises = dateRanges.map(async (dateRange) => {
-            const url = `/api/historical/cm/equity?symbol=${encodeURIComponent(symbol)}` +
-                `&series=[%22EQ%22]&from=${dateRange.start}&to=${dateRange.end}`
+            const url = `/api/historical/cm/equity?symbol=${encodeURIComponent(symbol.toUpperCase())}` +
+                `&series=[%22${activeSeries}%22]&from=${dateRange.start}&to=${dateRange.end}`
             return this.getDataByEndpoint(url)
         })
         return Promise.all(promises)
@@ -180,7 +184,8 @@ export class NseIndia {
      * @returns 
      */
     getEquitySeries(symbol: string): Promise<SeriesData> {
-        return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol)}`)
+        return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}`)
     }
     /**
      * 
@@ -188,7 +193,7 @@ export class NseIndia {
      * @returns 
      */
     getEquityStockIndices(index: string): Promise<IndexDetails> {
-        return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index)}`)
+        return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index.toUpperCase())}`)
     }
     /**
      * 
@@ -197,7 +202,7 @@ export class NseIndia {
      * @returns 
      */
     getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
-        let endpoint = `/api/chart-databyindex?index=${index}&indices=true`
+        let endpoint = `/api/chart-databyindex?index=${index.toUpperCase()}&indices=true`
         if (isPreOpenData)
             endpoint += '&preopen=true'
         return this.getDataByEndpoint(endpoint)
@@ -208,45 +213,43 @@ export class NseIndia {
      * @param range 
      * @returns 
      */
-    async getIndexHistoricalData(index: string, range: DateRange):Promise<IndexHistoricalData> {
-        const dateRanges = getDateRangeChunks(range.start, range.end, 360)
+    async getIndexHistoricalData(index: string, range: DateRange): Promise<IndexHistoricalData[]> {
+        const dateRanges = getDateRangeChunks(range.start, range.end, 66)
         const promises = dateRanges.map(async (dateRange) => {
-            const endpoint = '/products/dynaContent/equities/indices/historicalindices.jsp' +
-                `?indexType=${encodeURIComponent(index)}&fromDate=${dateRange.start}&toDate=${dateRange.end}`
-            const html: string = await this.getDataByEndpoint(endpoint, true)
-            const $ = cheerio.load(html)
-            const historical: any[] = []
-            const historicalRecords = $('#csvContentDiv').text().split(':')
-            historicalRecords.forEach((record: string, i: number) => {
-                if (record && i > 0) {
-                    const [date, open, high, low, close, volume, turnover] = record.split(',').map(item => {
-                        item = item.replace(/[",\s]/g, '')
-                        return item
-                    })
-                    historical.push({
-                        date: new Date(`${date} 17:30:00 GMT+0530`),
-                        open: Number(open),
-                        high: Number(high),
-                        low: Number(low),
-                        close: Number(close),
-                        volume: Number(volume),
-                        turnoverInCrore: Number(turnover)
-                    })
-                }
+            const url = `/api/historical/indicesHistory?indexType=${encodeURIComponent(index.toUpperCase())}` +
+                `&from=${dateRange.start}&to=${dateRange.end}`
+            return this.getDataByEndpoint(url)
+        })
+        return Promise.all(promises)
+    }
 
-            })
-            return historical
-        })
-        const historicalDataArray = await Promise.all(promises)
-        let historicalData: any[] = []
-        historicalDataArray.forEach(item => {
-            historicalData = historicalData.concat(item)
-        })
-        return {
-            indexSymbol: index,
-            fromDate: range.start,
-            toDate: range.end,
-            historicalData
-        }
+    /**
+     * 
+     * @param indexSymbol 
+     * @returns 
+     */
+    getIndexOptionChain(indexSymbol: string): Promise<OptionChainData> {
+        return this.getDataByEndpoint(`/api/option-chain-indices?symbol=${encodeURIComponent(indexSymbol
+            .toUpperCase())}`)
+    }
+
+    /**
+     * 
+     * @param symbol 
+     * @returns 
+     */
+    getEquityOptionChain(symbol: string): Promise<OptionChainData> {
+        return this.getDataByEndpoint(`/api/option-chain-equities?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}`)
+    }
+    
+    /**
+         * 
+         * @param symbol 
+         * @returns 
+         */
+    getCommodityOptionChain(symbol: string): Promise<OptionChainData> {
+        return this.getDataByEndpoint(`/api/option-chain-com?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}`)
     }
 }

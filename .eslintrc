@@ -12,6 +12,8 @@
     "rules": {
         "max-len": ["error", {
             "code": 120
-        }]
+        }],
+        "no-console":["error", {"allow": ["warn", "error"]}],
+        "@typescript-eslint/explicit-module-boundary-types":"error"
     }
 }

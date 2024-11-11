@@ -1,11 +1,12 @@
-import * as Moment from 'moment';
 import { extendMoment } from 'moment-range';
+import * as Moment from 'moment';
 
 const moment = extendMoment(Moment);
 /**
  * @private
  */
-export const getDateRangeChunks = (startDate: Date, endDate: Date, chunkInDays: number) => {
+export const getDateRangeChunks = (startDate: Date,
+     endDate: Date, chunkInDays: number): { start: string, end: string }[] => {
     const range = moment.range(startDate, endDate)
     const chunks = Array.from(range.by('days', { step: chunkInDays }))
     const dateRanges = []
@@ -20,10 +21,10 @@ export const getDateRangeChunks = (startDate: Date, endDate: Date, chunkInDays: 
 /**
  * @private
  */
-export const sleep = (ms: number) => {
+export const sleep = (ms: number): Promise<void> => {
     return new Promise(resolve => {
         setTimeout(() => {
-            resolve('')
+            resolve()
         }, ms)
     })
 }
@@ -33,6 +34,7 @@ export const sleep = (ms: number) => {
  * @param obj 
  * @returns 
  */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const getDataSchema = (data: any, isTypeStrict=true): any[] | string => {
     if (typeof data !== 'object')
         return isTypeStrict ? `${typeof data}` : 'any'
