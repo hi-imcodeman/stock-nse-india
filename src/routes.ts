@@ -451,6 +451,37 @@ mainRouter.get('/api/equity/corporateInfo/:symbol', async (req, res) => {
 
 /**
  * @openapi
+ * /api/equity/options/{symbol}:
+ *   get:
+ *     description: To get options chain of the NSE symbol
+ *     tags:
+ *       - Equity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     responses:
+ *       200:
+ *         description: Returns a options chain of the NSE symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+mainRouter.get('/api/equity/options/:symbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getEquityOptionChain(req.params.symbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
  * /api/equity/intraday/{symbol}:
  *   get:
  *     description: To get intraday trade info of the NSE symbol
@@ -579,6 +610,74 @@ mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
 mainRouter.get('/api/index/:indexSymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityStockIndices(req.params.indexSymbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+
+
+
+/**
+ * @openapi
+ * /api/index/options/{indexSymbol}:
+ *   get:
+ *     description: To get index Option chain data
+ *     tags:
+ *       - Index
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: indexSymbol
+ *         in: path
+ *         description: NSE index symbol
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     responses:
+ *       200:
+ *         description: Returns Data for Index OPTION CHAIN
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+
+mainRouter.get('/api/index/options/:indexSymbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getIndexOptionChain(req.params.indexSymbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+
+/**
+ * @openapi
+ * /api/commodity/options/{indexSymbol}:
+ *   get:
+ *     description: To get commodity Option chain data
+ *     tags:
+ *       - Commodity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: indexSymbol
+ *         in: path
+ *         description: NSE commodity symbol
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *     responses:
+ *       200:
+ *         description: Returns a intraday trade info of the NSE commodity symbol
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+
+mainRouter.get('/api/commodity/options/:indexSymbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getCommodityOptionChain(req.params.indexSymbol))
     } catch (error) {
         res.status(400).json(error)
     }
