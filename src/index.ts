@@ -242,4 +242,14 @@ export class NseIndia {
         return this.getDataByEndpoint(`/api/option-chain-equities?symbol=${encodeURIComponent(symbol
             .toUpperCase())}`)
     }
+    
+    /**
+         * 
+         * @param symbol 
+         * @returns 
+         */
+    getCommodityOptionChain(symbol: string): Promise<OptionChainData> {
+        return this.getDataByEndpoint(`/api/option-chain-com?symbol=${encodeURIComponent(symbol
+            .toUpperCase())}`)
+    }
 }
