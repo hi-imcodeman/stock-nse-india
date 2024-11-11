@@ -83,6 +83,8 @@ nseIndia.getEquityHistoricalData(symbol, range).then(data => {
 
 [getIndexOptionChain](https://hi-imcodeman.github.io/stock-nse-india/docs/classes/index.nseindia.html#getindexoptionchain)
 
+[getCommodityOptionChain](https://hi-imcodeman.github.io/stock-nse-india/docs/classes/commodity.nseindia.html#getcommodityoptionchain)
+
 ### Helper Methods
 [getGainersAndLosersByIndex](https://hi-imcodeman.github.io/stock-nse-india/modules/helpers.html#getgainersandlosersbyindex)
 
