@@ -22,7 +22,7 @@
     "prestart": "yarn build",
     "start": "node build/server.js",
     "prestart:dev":"yarn remove-build",
-    "start:dev": "tsc-watch --onCompilationComplete 'yarn copy-graphql' --onSuccess 'node build/server.js'",
+    "start:dev": "NODE_ENV=development tsc-watch --onCompilationComplete 'yarn copy-graphql' --onSuccess 'node build/server.js'",
     "docs": "typedoc",
     "test": "jest --coverage --testTimeout=600000",
     "lint": "eslint ./src/**/*.ts",

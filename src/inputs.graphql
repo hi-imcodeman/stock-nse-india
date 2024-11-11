@@ -8,3 +8,7 @@ input StringArrayFilter {
   offset: Int
   limit: Int
 }
+
+input IndexStringArrayFilter {
+  regex: String
+}

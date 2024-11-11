@@ -24,8 +24,12 @@ const loadedTypeDefs = loadSchemaSync(path.join(__dirname, './**/*.graphql'), { 
 const loadedResolvers = loadFilesSync(path.join(__dirname, './**/*.resolver.{ts,js}'))
 
 const typeDefs = mergeTypeDefs(loadedTypeDefs)
-const printedTypeDefs = print(typeDefs)
-console.log(printedTypeDefs)
+
+if (process.env.NODE_ENV === 'development') {
+    const printedTypeDefs = print(typeDefs)
+    console.log(printedTypeDefs)
+}
+
 const resolvers = mergeResolvers(loadedResolvers)
 
 const httpServer = http.createServer(app);

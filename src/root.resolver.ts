@@ -1,4 +1,5 @@
 import { ApiList, NseIndia } from './index'
+import { EquityDetails } from './interface'
 
 const nseIndia = new NseIndia()
 
@@ -56,11 +57,12 @@ function objectArrayFilter(input: any, filterBy: string, filter: StringArrayFilt
 
 export default {
     Query: {
-        equities: async (_parent: any, { symbolFilter }: { symbolFilter: StringArrayFilter }) => {
+        equities: async (_parent: unknown,
+             { symbolFilter }: { symbolFilter: StringArrayFilter }): Promise<string[]> => {
             const results = await nseIndia.getAllStockSymbols()
             return stringArrayFilter(results, symbolFilter)
         },
-        indices: async (_parent: any, { filter }: { filter: any }) => {
+        indices: async (_parent: unknown, { filter }: { filter: any }): Promise<any> => {
             const indices = await nseIndia.getDataByEndpoint(ApiList.ALL_INDICES)
             if (filter)
                 return objectArrayFilter(indices.data, filter.filterBy, filter.criteria)
@@ -68,10 +70,10 @@ export default {
         }
     },
     Equity: {
-        symbol: (parent: string) => {
+        symbol: (parent: string): string => {
             return parent
         },
-        details: async (parent: string) => {
+        details: async (parent: string): Promise<EquityDetails> => {
             const result = await nseIndia.getEquityDetails(parent)
             return result
         }
