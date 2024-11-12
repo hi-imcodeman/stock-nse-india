@@ -26,8 +26,11 @@ const loadedResolvers = loadFilesSync(path.join(__dirname, './**/*.resolver.{ts,
 const typeDefs = mergeTypeDefs(loadedTypeDefs)
 
 if (process.env.NODE_ENV === 'development') {
+    console.log('\n=== GraphQL Schema Start ===\n')
     const printedTypeDefs = print(typeDefs)
     console.log(printedTypeDefs)
+    console.log('\n=== GraphQL Schema End ===\n')
+    
 }
 
 const resolvers = mergeResolvers(loadedResolvers)

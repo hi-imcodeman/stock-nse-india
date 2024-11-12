@@ -9,6 +9,6 @@ input StringArrayFilter {
   limit: Int
 }
 
-input IndexStringArrayFilter {
+input ObjectFilter {
   regex: String
 }

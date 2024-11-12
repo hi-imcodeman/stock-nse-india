@@ -14,6 +14,10 @@ interface StringArrayFilter {
     limit?: number
 }
 
+interface ObjectFilter {
+    regex?: string
+}
+
 function stringArrayFilter(input: string[], filter: StringArrayFilter) {
     let data = [...input]
     const { offset, limit, eq, neq, in: inside, nin, startsWith, regex } = filter
@@ -45,7 +49,7 @@ function stringArrayFilter(input: string[], filter: StringArrayFilter) {
     return data
 }
 
-function objectArrayFilter(input: any, filterBy: string, filter: StringArrayFilter) {
+function objectFilter(input: any, filterBy: string, filter: ObjectFilter) {
     const { regex } = filter
     let data = [...input]
     if (regex) {
@@ -65,7 +69,7 @@ export default {
         indices: async (_parent: unknown, { filter }: { filter: any }): Promise<any> => {
             const indices = await nseIndia.getDataByEndpoint(ApiList.ALL_INDICES)
             if (filter)
-                return objectArrayFilter(indices.data, filter.filterBy, filter.criteria)
+                return objectFilter(indices.data, filter.filterBy, filter.criteria)
             return indices.data
         }
     },

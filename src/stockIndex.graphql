@@ -1,4 +1,4 @@
-type StockIndex {
+type Index {
     key: String
     index: String
     indexSymbol: String
