@@ -1,0 +1,14 @@
+type Index {
+    key: String
+    index: String
+    indexSymbol: String
+    last: Float
+    variation: Float
+    percentChange: Float
+    open: Float
+    high: Float
+    low: Float
+    previousClose: Float
+    yearHigh: Float
+    yearLow: Float
+}

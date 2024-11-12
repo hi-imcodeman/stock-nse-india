@@ -1,0 +1,14 @@
+input StringArrayFilter {
+  startsWith: String
+  regex: String
+  in: [String]
+  nin: [String]
+  eq: String,
+  neq: String
+  offset: Int
+  limit: Int
+}
+
+input ObjectFilter {
+  regex: String
+}
