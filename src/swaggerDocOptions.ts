@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import swaggerJsDoc from 'swagger-jsdoc'
 
 const port = process.env.PORT || 3000
@@ -9,7 +8,8 @@ export const swaggerDocOptions = {
         "info": {
             "version": "1.1.0",
             "title": "National Stock Exchange - India (Unofficial)",
-            "description": "This package will help us to get equity details and historical data from National Stock Exchange of India.",
+            "description": "This package will help us to get equity details and historical data" +
+                " from National Stock Exchange of India.",
             "contact": {
                 "email": "asraf.cse@gmail.com"
             },
@@ -23,7 +23,7 @@ export const swaggerDocOptions = {
                 "url": hostUrl
             }
         ],
-        "tags":[
+        "tags": [
             {
                 "name": "Base",
                 "description": "Base API of NSE India"
