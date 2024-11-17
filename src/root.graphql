@@ -1,0 +1,14 @@
+#import Equity from 'equity.graphql'
+#import StringArrayFilter from 'inputs.graphql'
+#import ObjectFilter from 'inputs.graphql'
+#import Index from 'stockIndex.graphql'
+
+input ObjectKeyFilter {
+  filterBy: String!
+  criteria: ObjectFilter
+}
+
+type Query {
+  equities(symbolFilter:StringArrayFilter!): [Equity]
+  indices (filter:ObjectKeyFilter): [Index]
+}

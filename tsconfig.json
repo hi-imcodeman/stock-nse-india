@@ -83,7 +83,9 @@
       "**/server.ts",
       "**/swagger*.ts",
       "**/utils.ts",
-      "**/constants.ts"
+      "**/constants.ts",
+      "**/root.resolver.ts",
+      "**/routes.ts"
     ],
     "excludePrivate": true,
     "includeVersion": true,

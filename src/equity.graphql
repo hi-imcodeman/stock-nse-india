@@ -1,0 +1,44 @@
+type Equity {
+  symbol: String!
+  details: EqutiyDetail
+}
+
+type EqutiyDetail {
+  info: EquityInfo
+  metadata: EquityMetadata
+}
+
+"It will return equity's information."
+type EquityInfo {
+  symbol: String
+  "Name of the company."
+  companyName: String
+  industry: String
+  activeSeries: [String]
+  debtSeries: [String]
+  tempSuspendedSeries: [String]
+  "Is it available for FNO option?"
+  isFNOSec: Boolean
+  isCASec: Boolean
+  isSLBSec: Boolean
+  isDebtSec: Boolean
+  isSuspended: Boolean
+  isETFSec: Boolean
+  isDelisted: Boolean
+  isin: String
+  isTop10: Boolean
+  identifier: String
+}
+
+"It will return metadata of the equity."
+type EquityMetadata {
+  symbol: String
+  series: String
+  status: String
+  listingDate: String
+  industry: String
+  pdSectorInd: String
+  pdSectorPe: String
+  pdSymbolPe: String
+  lastUpdateTime: String
+}

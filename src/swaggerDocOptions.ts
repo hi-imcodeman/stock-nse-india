@@ -1,4 +1,5 @@
-/* eslint-disable max-len */
+import swaggerJsDoc from 'swagger-jsdoc'
+
 const port = process.env.PORT || 3000
 const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
 export const swaggerDocOptions = {
@@ -7,7 +8,8 @@ export const swaggerDocOptions = {
         "info": {
             "version": "1.1.0",
             "title": "National Stock Exchange - India (Unofficial)",
-            "description": "This package will help us to get equity details and historical data from National Stock Exchange of India.",
+            "description": "This package will help us to get equity details and historical data" +
+                " from National Stock Exchange of India.",
             "contact": {
                 "email": "asraf.cse@gmail.com"
             },
@@ -21,7 +23,7 @@ export const swaggerDocOptions = {
                 "url": hostUrl
             }
         ],
-        "tags":[
+        "tags": [
             {
                 "name": "Base",
                 "description": "Base API of NSE India"
@@ -39,10 +41,16 @@ export const swaggerDocOptions = {
                 "description": "Contains all index related APIs of NSE India"
             },
             {
+                "name": "Commodity",
+                "description": "Contains all commodity related APIs of NSE India"
+            },
+            {
                 "name": "Helpers",
                 "description": "Contains all helper APIs of NSE India"
             },
         ]
     },
-    apis: ['./build/server.js']
+    apis: ['./build/routes.js']
 }
+
+export const openapiSpecification = swaggerJsDoc(swaggerDocOptions);

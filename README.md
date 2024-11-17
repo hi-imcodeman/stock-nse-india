@@ -68,7 +68,7 @@ nseIndia.getEquityHistoricalData(symbol, range).then(data => {
 
 [getEquityIntradayData](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getequityintradaydata)
 
-[getEquityOptionChain](https://hi-imcodeman.github.io/stock-nse-india/docs/classes/index.nseindia.html#getequityoptionchain)
+[getEquityOptionChain](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getequityoptionchain)
 
 [getEquitySeries](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getequityseries)
 
@@ -81,7 +81,10 @@ nseIndia.getEquityHistoricalData(symbol, range).then(data => {
 
 [getIndexHistoricalData](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getindexhistoricaldata)
 
-[getIndexOptionChain](https://hi-imcodeman.github.io/stock-nse-india/docs/classes/index.nseindia.html#getindexoptionchain)
+[getIndexOptionChain](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getindexoptionchain)
+
+### Commodity Methods
+[getCommodityOptionChain](https://hi-imcodeman.github.io/stock-nse-india/classes/index.nseindia.html#getcommodityoptionchain)
 
 ### Helper Methods
 [getGainersAndLosersByIndex](https://hi-imcodeman.github.io/stock-nse-india/modules/helpers.html#getgainersandlosersbyindex)

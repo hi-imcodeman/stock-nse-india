@@ -18,6 +18,11 @@ describe('Class: NseIndia', () => {
         // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(optionChain.filtered.data[0].PE?.underlying).toBe('NIFTY')
     })
+    test('getCommodityOptionChain', async () => {
+        const optionChain = await nseIndia.getCommodityOptionChain('CRUDEOIL')
+        // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+        expect(optionChain.filtered.data[0].PE?.underlying).toBe('CRUDEOIL')
+    })
     test('getEquityOptionChain', async () => {
         const optionChain = await nseIndia.getEquityOptionChain('TCS')
         // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)

@@ -15,7 +15,7 @@ import {
   getEquityStockIndicesTool
 } from './tools'
 
-type Message = {
+export type Message = {
   "tool_call_id"?: string,
   "role": "system" | "user" | "assistant" | "function" | "tool",
   "name"?: string,
@@ -114,7 +114,7 @@ const messages: Message[] = [
   }
 ]
 
-const appendMessage = (messages: Message[], query: string) => {
+const appendMessage = (messages: Message[], query: string): void => {
   messages.push({
     role: 'user',
     content: [
@@ -126,12 +126,12 @@ const appendMessage = (messages: Message[], query: string) => {
   })
 }
 
-// appendMessage(messages, 'What is the current stock price of TCS and Zomato?')
+appendMessage(messages, 'What is the current stock price of TCS and Zomato?')
 // appendMessage(messages, 'What is the market cap of TCS and Zomato?')
 // appendMessage(messages, 'list Broad Market Indices and price of those')
-appendMessage(messages, 'what is the details of nifty 50?')
+// appendMessage(messages, 'what is the details of nifty 50?')
 runConversation(messages).then((res) => {
   console.log(res)
 })
 
-export { getChatCompletion }
+export { appendMessage, getChatCompletion }
