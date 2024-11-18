@@ -51,7 +51,7 @@ async function getChatCompletion(messages: Message[]): Promise<any> {
     model: "gpt-4o-mini",
     messages,
     temperature: 0,
-    max_tokens: 1000,
+    max_tokens: 4000,
     top_p: 1,
     frequency_penalty: 0,
     presence_penalty: 0,
@@ -68,10 +68,13 @@ const getToolResponses = async (responseMessage: any) => {
     if (fnToCall) {
       console.log(`Calling ${fnName} with args ${JSON.stringify(args)}`);
       const fnResponse = await fnToCall(args)
-      let content = JSON.stringify(fnResponse)
-      if (content.length > 5000)
-        content = ""
       // console.log(`Got response:\n${JSON.stringify(fnResponse,null,2)}`);
+      let content = JSON.stringify(fnResponse)
+      console.log(`Content Length: ${content.length}`)
+      if (content.length > 100000){
+        console.log("Content too long, skipping");
+        content = ""
+      }
       const message: Message = {
         tool_call_id: toolCall.id,
         role: "tool",
@@ -84,39 +87,30 @@ const getToolResponses = async (responseMessage: any) => {
   return toolCallResponses.filter(message => message !== undefined)
 }
 
-async function runConversation(messages: Message[]) {
+async function runConversation(messages: Message[]): Promise<string> {
   let finishReason = ''
+  let content = ''
   do {
     const response = await getChatCompletion(messages)
     console.log('Got response from GPT.');
     // console.log(JSON.stringify(response,null,2))
     finishReason = response.choices[0].finish_reason
     const responseMessage = response.choices[0].message
+    content = responseMessage.content
     messages.push(responseMessage)
     if (responseMessage.tool_calls?.length) {
       const toolCallResponses = await getToolResponses(responseMessage)
       messages.push(...toolCallResponses)
     } else {
-      return responseMessage.content
+      return content
     }
   } while (finishReason === 'tool_calls');
+  return content
 }
 
-const messages: Message[] = [
-  {
-    "role": "system",
-    "content": [
-      {
-        "type": "text",
-        "text": "You are a trading advisor."
-      }
-    ]
-  }
-]
-
-const appendMessage = (messages: Message[], query: string): void => {
+const appendMessage = (messages: Message[], query: string, role: 'user'|'system'|'assistant' = 'user'): void => {
   messages.push({
-    role: 'user',
+    role,
     content: [
       {
         "type": "text",
@@ -126,12 +120,4 @@ const appendMessage = (messages: Message[], query: string): void => {
   })
 }
 
-appendMessage(messages, 'What is the current stock price of TCS and Zomato?')
-// appendMessage(messages, 'What is the market cap of TCS and Zomato?')
-// appendMessage(messages, 'list Broad Market Indices and price of those')
-// appendMessage(messages, 'what is the details of nifty 50?')
-runConversation(messages).then((res) => {
-  console.log(res)
-})
-
-export { appendMessage, getChatCompletion }
+export { appendMessage, getChatCompletion, runConversation }

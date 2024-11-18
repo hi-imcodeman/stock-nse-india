@@ -29,10 +29,6 @@ export async function getEquityStockIndices(params: { indexSymbol: string }): Pr
     return details
 }
 
-
-
-
-
 export const getEquityDetailsTool = {
     "type": "function",
     "function": {
@@ -73,7 +69,7 @@ export const getEquityMasterTool = {
     "type": "function",
     "function": {
         "name": "getEquityMaster",
-        "description": "Get the list of indices unerd the index category like Sectoral Indices, Broad Market Indices"
+        "description": "Get the list of indices under the index category like Sectoral Indices, Broad Market Indices"
     }
 }
 
@@ -81,7 +77,7 @@ export const getEquityStockIndicesTool = {
     "type": "function",
     "function": {
         "name": "getEquityStockIndices",
-        "description": "Get the index details of the NSE index symbol",
+        "description": "Get the list of equities under the NSE index symbol, equity details contains open, high low, close, volume, previous close, change, change percent, year high, year low, company name, industry, active series and is FNO or not",
         "parameters": {
             "type": "object",
             "properties": {
