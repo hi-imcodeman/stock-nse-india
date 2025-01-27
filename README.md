@@ -131,7 +131,7 @@ yarn start
 
 **Then open the URL http://localhost:3000 in browser.**
 
-For API service documentation please hit http://localhoast:3000/api-docs
+For API service documentation please hit http://localhost:3000/api-docs
 
 ## CLI
 
@@ -199,9 +199,9 @@ docker run --rm -d -p 3001:3001 imcodeman/nseindia
 
 ### Test the instance
 
-Open the browser and hit http://localhoast:3001
+Open the browser and hit http://localhost:3001
 
-For API service documentation please hit http://localhoast:3001/api-docs
+For API service documentation please hit http://localhost:3001/api-docs
 
 ### Docker Hub link
 
