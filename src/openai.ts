@@ -56,10 +56,6 @@ const tools = [
   getEquityStockIndicesTool
 ]
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export const getUsageCost = (usage: UsageInfo[]): {combinedUsage: any,
    unCachedInputCost: number, cachedInputCost: number, outputCost: number, totalCost: number} => {
   const combinedUsage = { promptTokens: 0,
@@ -84,22 +80,20 @@ export const getUsageCost = (usage: UsageInfo[]): {combinedUsage: any,
 }
 
 async function getChatCompletion(messages: Message[]): Promise<any> {
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages,
-      temperature: 0,
-      max_tokens: 4000,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-      tools,
-    });
-    return response
-  } catch (error) {
-    console.log({messageCount: messages.length, messages: JSON.stringify(messages,null,2)});
-    throw error
-  }
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages,
+    temperature: 0,
+    max_tokens: 4000,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    tools,
+  });
+  return response
 }
 
 const getToolResponses = async (responseMessage: any) => {
@@ -137,7 +131,6 @@ async function runConversation(messages: Message[],usage?: UsageInfo[]): Promise
     console.log('Got response from GPT.');
     // console.log(JSON.stringify(response,null,2))
     if (usage) {
-      console.log({messages, usage:response.usage});
       usage.push(response.usage)
     }
     finishReason = response.choices[0].finish_reason
