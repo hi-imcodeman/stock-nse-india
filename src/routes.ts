@@ -5,8 +5,9 @@ import {
     getGainersAndLosersByIndex,
     getMostActiveEquities
 } from './helpers'
+import { Message, UsageInfo, appendMessage, runConversation } from './openai'
 
-const mainRouter:Router = Router()
+const mainRouter: Router = Router()
 
 const nseIndia = new NseIndia()
 
@@ -26,7 +27,7 @@ const nseIndia = new NseIndia()
  *       400:
  *         description: Returns a JSON error object of API call
  */
- mainRouter.get('/', async (_req, res) => {
+mainRouter.get('/', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS))
     } catch (error) {
@@ -844,6 +845,41 @@ mainRouter.get('/api/gainersAndLosers/:indexSymbol', async (req, res) => {
 mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
     try {
         res.json(await getMostActiveEquities(req.params.indexSymbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/ai:
+ *   post:
+ *     description: To get AI response
+ *     tags:
+ *       - Helpers
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a AI response
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+mainRouter.post('/api/ai', async (req, res) => {
+    try {
+        const messages: Message[] = []
+        const usage: UsageInfo[] = []
+        appendMessage(messages, 'You are a trading advisor.', 'system')
+        appendMessage(messages, req.body.query, 'user')
+        runConversation(messages, usage).then((response) => {
+            res.json(response)
+        })
     } catch (error) {
         res.status(400).json(error)
     }

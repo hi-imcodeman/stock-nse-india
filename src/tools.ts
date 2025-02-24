@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import { ApiList, NseIndia } from ".";
-import { EquityDetails, IndexDetails } from "./interface";
+import { EquityDetails, IndexDetails, IndexEquityInfo } from "./interface";
 
 const nseIndia = new NseIndia()
 
@@ -24,9 +24,27 @@ export async function getEquityMaster(): Promise<any> {
     return equityMaster
 }
 
-export async function getEquityStockIndices(params: { indexSymbol: string }): Promise<IndexDetails> {
+export async function getEquityStockIndices(params: { indexSymbol: string }): Promise<any> {
     const details = await nseIndia.getEquityStockIndices(params.indexSymbol)
-    return details
+    return details.data ? {
+        name: details.name,
+        advance: details.advance.advances,
+        declines: details.advance.declines,
+        unchanged: details.advance.unchanged,
+        timestamp: details.timestamp,
+        equities: details.data.filter((item: IndexEquityInfo) => item.symbol !== params.indexSymbol).map((item: IndexEquityInfo) => {
+            return {
+                'symbol': item.symbol,
+                'open': item.open,
+                'high': item.dayHigh,
+                'low': item.dayLow,
+                'lastPrice': item.lastPrice,
+                'previousClose': item.previousClose,
+                'change': Number(item.change.toFixed(2)),
+                'changePercent': item.pChange
+            }
+        })
+    } : {}
 }
 
 export const getEquityDetailsTool = {

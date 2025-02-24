@@ -12,13 +12,15 @@ import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { openapiSpecification } from './swaggerDocOptions'
 import path from 'path';
 import { mainRouter } from './routes'
+import bodyParser from 'body-parser'
 
 const app = express()
 const port = process.env.PORT || 3000
 const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
 
-app.use(mainRouter)
+app.use(bodyParser.json())
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
+app.use(mainRouter)
 
 const loadedTypeDefs = loadSchemaSync(path.join(__dirname, './**/*.graphql'), { loaders: [new GraphQLFileLoader()] })
 const loadedResolvers = loadFilesSync(path.join(__dirname, './**/*.resolver.{ts,js}'))
