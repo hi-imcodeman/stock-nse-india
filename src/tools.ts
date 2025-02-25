@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import { ApiList, NseIndia } from ".";
-import { EquityDetails, IndexDetails, IndexEquityInfo } from "./interface";
+import { EquityDetails, IndexEquityInfo } from "./interface";
 
 const nseIndia = new NseIndia()
 
@@ -109,4 +109,37 @@ export const getEquityStockIndicesTool = {
             ]
         }
     }
+}
+
+export type ToolFunctionList = { [key: string]: CallableFunction }
+export type ToolInfo = {
+  type: string;
+  function: {
+      name: string;
+      description: string;
+  };
+}
+export type ToolData = {
+  tools: ToolInfo[],
+  avaialbeFunctions: ToolFunctionList
+}
+
+const avaialbeFunctions:ToolFunctionList = {
+  getEquityDetails,
+  getMarketStatus,
+  getAllIndices,
+  getEquityMaster,
+  getEquityStockIndices
+}
+const tools:ToolInfo[] = [
+  getEquityDetailsTool,
+  getMarketStatusTool,
+  getAllIndicesTool,
+  getEquityMasterTool,
+  getEquityStockIndicesTool
+]
+
+export const toolsData: ToolData = {
+  tools,
+  avaialbeFunctions
 }

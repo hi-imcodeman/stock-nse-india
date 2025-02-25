@@ -7,6 +7,7 @@ import {
     getMostActiveEquities
 } from './helpers'
 import { Message, UsageInfo, appendMessage, getUsageCost, runConversation } from './openai'
+import { toolsData } from './tools'
 
 const mainRouter: Router = Router()
 
@@ -853,11 +854,11 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/ai:
+ * /api/ai/trading:
  *   post:
- *     description: To get AI response
+ *     description: To get AI response related to trading
  *     tags:
- *       - Helpers
+ *       - AI
  *     requestBody:
  *       required: true
  *       content:
@@ -879,7 +880,7 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *       500:
  *         description: Returns a JSON error object of API call
  */
-mainRouter.post('/api/ai', async (req, res) => {
+mainRouter.post('/api/ai/trading', async (req, res) => {
     try {
         if(req.body.query === undefined) {
             res.status(400).json('Missing argument "query". Please pass that argumet.')
@@ -889,7 +890,59 @@ mainRouter.post('/api/ai', async (req, res) => {
         const usage: UsageInfo[] = []
         appendMessage(messages, 'You are a trading advisor.', 'system')
         appendMessage(messages, req.body.query, 'user')
-        const result = await runConversation(messages, usage)
+        const result = await runConversation(messages,toolsData, usage)
+        res.json({
+            result,
+            usage: getUsageCost(usage)
+        })
+    } catch (error: any) {
+        if(error.status) {
+            res.status(error.status).json(error)
+            return
+        }
+        res.status(500).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/ai/general:
+ *   post:
+ *     description: To get AI response
+ *     tags:
+ *       - AI
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             properties:
+ *               query:
+ *                 type: string
+ *                 description: Query to ask AI
+ *                 required: true
+ *                 example: "What you can do?"
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a AI response
+ *       401:
+ *         description: Returns a JSON error object of API call when API key is invalid
+ *       500:
+ *         description: Returns a JSON error object of API call
+ */
+mainRouter.post('/api/ai/general', async (req, res) => {
+    try {
+        if(req.body.query === undefined) {
+            res.status(400).json('Missing argument "query". Please pass that argumet.')
+            return
+        }
+        const messages: Message[] = []
+        const usage: UsageInfo[] = []
+        appendMessage(messages, 'You are a AI assistant.', 'system')
+        appendMessage(messages, req.body.query, 'user')
+        const result = await runConversation(messages, undefined, usage)
         res.json({
             result,
             usage: getUsageCost(usage)

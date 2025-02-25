@@ -1,19 +1,9 @@
 /* eslint-disable no-console */
+
+import { ToolInfo, ToolFunctionList, ToolData } from "./tools"
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const OpenAI = require("openai")
-
-import {
-  getEquityDetails,
-  getEquityDetailsTool,
-  getMarketStatus,
-  getMarketStatusTool,
-  getAllIndices,
-  getAllIndicesTool,
-  getEquityMaster,
-  getEquityMasterTool,
-  getEquityStockIndices,
-  getEquityStockIndicesTool
-} from './tools'
 
 export type Message = {
   "tool_call_id"?: string,
@@ -39,23 +29,6 @@ export type UsageInfo = {
     accepted_prediction_tokens: number
     rejected_prediction_tokens: number
   }}
-
-const avaialbeFunctions: { [key: string]: CallableFunction } = {
-  getEquityDetails,
-  getMarketStatus,
-  getAllIndices,
-  getEquityMaster,
-  getEquityStockIndices
-}
-
-const tools = [
-  getEquityDetailsTool,
-  getMarketStatusTool,
-  getAllIndicesTool,
-  getEquityMasterTool,
-  getEquityStockIndicesTool
-]
-
 export const getUsageCost = (usage: UsageInfo[]): {combinedUsage: any,
    unCachedInputCost: number, cachedInputCost: number, outputCost: number, totalCost: number} => {
   const combinedUsage = { promptTokens: 0,
@@ -79,7 +52,7 @@ export const getUsageCost = (usage: UsageInfo[]): {combinedUsage: any,
   return {combinedUsage, unCachedInputCost, cachedInputCost, outputCost, totalCost}
 }
 
-async function getChatCompletion(messages: Message[]): Promise<any> {
+export async function getChatCompletion(messages: Message[],tools?: ToolInfo[]): Promise<any> {
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
@@ -96,7 +69,7 @@ async function getChatCompletion(messages: Message[]): Promise<any> {
   return response
 }
 
-const getToolResponses = async (responseMessage: any) => {
+const getToolResponses = async (responseMessage: any, avaialbeFunctions: ToolFunctionList) => {
   const toolCallResponses: Message[] = await Promise.all(responseMessage.tool_calls.map(async (toolCall: any) => {
     const fnName = toolCall.function.name
     const args = JSON.parse(toolCall.function.arguments)
@@ -123,11 +96,11 @@ const getToolResponses = async (responseMessage: any) => {
   return toolCallResponses.filter(message => message !== undefined)
 }
 
-async function runConversation(messages: Message[],usage?: UsageInfo[]): Promise<string> {
+export async function runConversation(messages: Message[], toolsData?: ToolData, usage?: UsageInfo[]): Promise<string> {
   let finishReason = ''
   let content = ''
   do {
-    const response = await getChatCompletion(messages)
+    const response = await getChatCompletion(messages, toolsData?.tools)
     console.log('Got response from GPT.');
     // console.log(JSON.stringify(response,null,2))
     if (usage) {
@@ -137,9 +110,9 @@ async function runConversation(messages: Message[],usage?: UsageInfo[]): Promise
     const responseMessage = response.choices[0].message
     content = responseMessage.content
     messages.push(responseMessage)
-    if (responseMessage.tool_calls?.length) {
+    if (toolsData?.avaialbeFunctions &&responseMessage.tool_calls?.length) {
       console.log(`Tool Calls Count: ${responseMessage.tool_calls.length}`);
-      const toolCallResponses = await getToolResponses(responseMessage)
+      const toolCallResponses = await getToolResponses(responseMessage,toolsData.avaialbeFunctions)
       messages.push(...toolCallResponses)
     } else {
       return content
@@ -148,7 +121,7 @@ async function runConversation(messages: Message[],usage?: UsageInfo[]): Promise
   return content
 }
 
-const appendMessage = (messages: Message[], query: string, role: 'user'|'system'|'assistant' = 'user'): void => {
+export const appendMessage = (messages: Message[], query: string, role: 'user'|'system'|'assistant' = 'user'): void => {
   messages.push({
     role,
     content: [
@@ -159,5 +132,3 @@ const appendMessage = (messages: Message[], query: string, role: 'user'|'system'
     ]
   })
 }
-
-export { appendMessage, getChatCompletion, runConversation }
