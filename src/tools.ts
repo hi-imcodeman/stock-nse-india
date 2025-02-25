@@ -24,9 +24,9 @@ export async function getEquityMaster(): Promise<any> {
     return equityMaster
 }
 
-export async function getEquityStockIndices(params: { indexSymbol: string }): Promise<IndexDetails> {
+export async function getEquityStockIndices(params: { indexSymbol: string }): Promise<any> {
     const details = await nseIndia.getEquityStockIndices(params.indexSymbol)
-    return details
+    return details.data.filter((obj) => obj.priority !== 1).map((equity) => equity.symbol)
 }
 
 export const getEquityDetailsTool = {
@@ -77,7 +77,8 @@ export const getEquityStockIndicesTool = {
     "type": "function",
     "function": {
         "name": "getEquityStockIndices",
-        "description": "Get the list of equities under the NSE index symbol, equity details contains open, high low, close, volume, previous close, change, change percent, year high, year low, company name, industry, active series and is FNO or not",
+        "description": "Get the list of equities under the NSE index symbol",
+        // "description": "Get the list of equities under the NSE index symbol, equity details contains open, high low, close, volume, previous close, change, change percent, year high, year low, company name, industry, active series and is FNO or not",
         "parameters": {
             "type": "object",
             "properties": {

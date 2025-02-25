@@ -588,7 +588,7 @@ mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
  * @openapi
  * /api/index/{indexSymbol}:
  *   get:
- *     description: To get detailsof the NSE index
+ *     description: To get details of the NSE index
  *     tags:
  *       - Index
  *     produces:
