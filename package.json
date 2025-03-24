@@ -1,6 +1,6 @@
 {
   "name": "stock-nse-india",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "This package will help us to get equity/index details and historical data from National Stock Exchange of India.",
   "main": "build/index.js",
   "browser": false,
