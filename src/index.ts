@@ -53,7 +53,7 @@ export class NseIndia {
     private async getNseCookies() {
         if (this.cookies === '' || this.cookieUsedCount > 10 || this.cookieExpiry <= new Date().getTime()) {
             this.userAgent = new UserAgent().toString()
-            const response = await axios.get(this.baseUrl, {
+            const response = await axios.get(`${this.baseUrl}/get-quotes/equity?symbol=TCS`, {
                 headers: {...this.baseHeaders,'User-Agent': this.userAgent}
             })
             const setCookies:string[] = response.headers['set-cookie']

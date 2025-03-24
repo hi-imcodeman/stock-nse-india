@@ -1,5 +1,7 @@
 import { NseIndia, ApiList } from "./index";
 
+jest.setTimeout(999999)
+
 describe('Class: NseIndia', () => {
     const symbol = 'ITC'
     const nseIndia = new NseIndia()
