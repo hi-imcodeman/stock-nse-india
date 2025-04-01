@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MarketStatus, IndexDetails, AllIndicesData, IndexEquityInfo } from '../../../src/interface';
+import { MarketStatus, IndexDetails, IndexEquityInfo } from '../../../src/interface';
 
 const BASE_URL = 'http://localhost:3000/api';
 
@@ -8,10 +8,15 @@ export interface MarketState {
   marketStatus: string;
   tradeDate: string;
   index: string;
-  last: number;
-  variation: number;
-  percentChange: number;
+  last: number | string;
+  variation: number | string;
+  percentChange: number | string;
   marketStatusMessage: string;
+  expiryDate?: string;
+  underlying?: string;
+  updated_time?: string;
+  tradeDateFormatted?: string;
+  slickclass?: string;
 }
 
 export interface EquityDetails {
@@ -116,44 +121,45 @@ interface MostActive {
   byValue: IndexEquityInfo[];
 }
 
+interface NSEIndexData {
+  key: string;
+  index: string;
+  indexSymbol: string;
+  last: number;
+  variation: number;
+  percentChange: number;
+  open: number;
+  high: number;
+  low: number;
+  previousClose: number;
+  yearHigh: number;
+  yearLow: number;
+  declines: string;
+  advances: string;
+  unchanged: string;
+}
+
+interface NSEIndicesResponse {
+  data: NSEIndexData[];
+  timestamp: string;
+  advances: number;
+  declines: number;
+  unchanged: number;
+  dates: {
+    previousDay: string;
+    oneWeekAgo: string;
+    oneMonthAgo: string;
+    oneYearAgo: string;
+  };
+  date30dAgo: string;
+  date365dAgo: string;
+}
+
 const api = {
   // Market Status
   getMarketStatus: async (): Promise<MarketStatus> => {
     const response = await axios.get(`${BASE_URL}/marketStatus`);
-    const data = response.data;
-    
-    // Transform the response to match our interface
-    return {
-      marketState: Array.isArray(data.marketState) ? data.marketState.map((state: Partial<MarketState>) => ({
-        market: state.market || '',
-        marketStatus: state.marketStatus || '',
-        tradeDate: state.tradeDate || '',
-        index: state.index || '',
-        last: Number(state.last) || 0,
-        variation: Number(state.variation) || 0,
-        percentChange: Number(state.percentChange) || 0,
-        marketStatusMessage: state.marketStatusMessage || ''
-      })) : [],
-      marketcap: {
-        timeStamp: data.marketcap?.timeStamp || '',
-        marketCapinTRDollars: Number(data.marketcap?.marketCapinTRDollars) || 0,
-        marketCapinLACCRRupees: Number(data.marketcap?.marketCapinLACCRRupees) || 0,
-        marketCapinCRRupees: Number(data.marketcap?.marketCapinCRRupees) || 0,
-        marketCapinCRRupeesFormatted: data.marketcap?.marketCapinCRRupeesFormatted || '',
-        marketCapinLACCRRupeesFormatted: data.marketcap?.marketCapinLACCRRupeesFormatted || '',
-        underlying: data.marketcap?.underlying || ''
-      },
-      indicativenifty50: {
-        last: Number(data.indicativenifty50?.last) || 0,
-        change: Number(data.indicativenifty50?.change) || 0,
-        pChange: Number(data.indicativenifty50?.pChange) || 0
-      },
-      giftnifty: {
-        last: Number(data.giftnifty?.last) || 0,
-        change: Number(data.giftnifty?.change) || 0,
-        pChange: Number(data.giftnifty?.pChange) || 0
-      }
-    };
+    return response.data;
   },
 
   // Equity
@@ -210,18 +216,44 @@ const api = {
   // Market Overview
   getAllIndices: async (): Promise<IndexDetails[]> => {
     const response = await axios.get(`${BASE_URL}/allIndices`);
-    const data = response.data as AllIndicesData;
-    // Transform the response to match our interface
-    const indices = data.data || [];
-    return indices.map((index) => ({
-      indexSymbol: index.indexSymbol || '',
-      indexName: index.index || '',
-      open: index.open || 0,
-      high: index.high || 0,
-      low: index.low || 0,
-      close: index.last || 0,
-      change: index.variation || 0,
-      changePercent: index.percentChange || 0
+    const data = response.data as NSEIndicesResponse;
+    return data.data.map((index) => ({
+      name: index.indexSymbol,
+      advance: { 
+        declines: index.declines || '0', 
+        advances: index.advances || '0', 
+        unchanged: index.unchanged || '0' 
+      },
+      timestamp: data.timestamp,
+      data: [],
+      metadata: {
+        indexName: index.index,
+        open: index.open,
+        high: index.high,
+        low: index.low,
+        previousClose: index.previousClose,
+        last: index.last,
+        percChange: index.percentChange,
+        change: index.variation,
+        timeVal: data.timestamp,
+        yearHigh: index.yearHigh,
+        yearLow: index.yearLow,
+        totalTradedVolume: 0,
+        totalTradedValue: 0,
+        ffmc_sum: 0
+      },
+      marketStatus: {
+        market: 'NSE',
+        marketStatus: 'Open',
+        tradeDate: data.dates.previousDay,
+        index: index.index,
+        last: index.last,
+        variation: index.variation,
+        percentChange: index.percentChange,
+        marketStatusMessage: ''
+      },
+      date30dAgo: data.date30dAgo,
+      date365dAgo: data.date365dAgo
     }));
   },
 

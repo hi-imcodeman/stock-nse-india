@@ -1,33 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Row, Col, Table, Statistic, Typography } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import api, { MarketState } from '../services/api';
+import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import api from '../services/api';
+import { IndexDetails, MarketStatus } from '../../../src/interface';
 
 const { Title, Text } = Typography;
 
 const Dashboard: React.FC = () => {
-  const [marketStatus, setMarketStatus] = useState<{
-    marketState: MarketState[];
-    marketcap: {
-      timeStamp: string;
-      marketCapinTRDollars: number;
-      marketCapinLACCRRupees: number;
-      marketCapinCRRupees: number;
-      marketCapinCRRupeesFormatted: string;
-      marketCapinLACCRRupeesFormatted: string;
-      underlying: string;
-    };
-    indicativenifty50: {
-      last: number;
-      change: number;
-      pChange: number;
-    };
-    giftnifty: {
-      last: number;
-      change: number;
-      pChange: number;
-    };
-  }>({
+  const [marketStatus, setMarketStatus] = useState<MarketStatus>({
     marketState: [],
     marketcap: {
       timeStamp: '',
@@ -39,17 +19,33 @@ const Dashboard: React.FC = () => {
       underlying: ''
     },
     indicativenifty50: {
-      last: 0,
+      dateTime: '',
+      indicativeTime: null,
+      indexName: '',
+      indexLast: null,
+      indexPercChange: null,
+      indexTimeVal: null,
+      closingValue: 0,
+      finalClosingValue: 0,
       change: 0,
-      pChange: 0
+      perChange: 0,
+      status: ''
     },
     giftnifty: {
-      last: 0,
-      change: 0,
-      pChange: 0
+      INSTRUMENTTYPE: '',
+      SYMBOL: '',
+      EXPIRYDATE: '',
+      OPTIONTYPE: '',
+      STRIKEPRICE: '',
+      LASTPRICE: 0,
+      DAYCHANGE: '',
+      PERCHANGE: '',
+      CONTRACTSTRADED: 0,
+      TIMESTMP: '',
+      id: ''
     }
   });
-  const [indices, setIndices] = useState<any[]>([]);
+  const [indices, setIndices] = useState<IndexDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -160,49 +156,49 @@ const Dashboard: React.FC = () => {
   const indicesColumns = [
     {
       title: 'Index',
-      dataIndex: 'indexSymbol',
-      key: 'indexSymbol',
+      dataIndex: 'name',
+      key: 'name',
       fixed: 'left' as const,
       width: 100,
     },
     {
       title: 'Name',
-      dataIndex: 'indexName',
+      dataIndex: ['metadata', 'indexName'],
       key: 'indexName',
       fixed: 'left' as const,
       width: 200,
     },
     {
       title: 'Open',
-      dataIndex: 'open',
+      dataIndex: ['metadata', 'open'],
       key: 'open',
       render: (value: number) => formatNumber(value),
       align: 'right' as const,
     },
     {
       title: 'High',
-      dataIndex: 'high',
+      dataIndex: ['metadata', 'high'],
       key: 'high',
       render: (value: number) => formatNumber(value),
       align: 'right' as const,
     },
     {
       title: 'Low',
-      dataIndex: 'low',
+      dataIndex: ['metadata', 'low'],
       key: 'low',
       render: (value: number) => formatNumber(value),
       align: 'right' as const,
     },
     {
       title: 'Close',
-      dataIndex: 'close',
-      key: 'close',
+      dataIndex: ['metadata', 'last'],
+      key: 'last',
       render: (value: number) => formatNumber(value),
       align: 'right' as const,
     },
     {
       title: 'Change',
-      dataIndex: 'change',
+      dataIndex: ['metadata', 'change'],
       key: 'change',
       render: (value: number) => (
         <span style={{ color: getChangeColor(value) }}>
@@ -213,8 +209,8 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Change %',
-      dataIndex: 'changePercent',
-      key: 'changePercent',
+      dataIndex: ['metadata', 'percChange'],
+      key: 'percChange',
       render: (value: number) => (
         <span style={{ color: getChangeColor(value) }}>
           {formatPercentage(value)}
@@ -271,11 +267,11 @@ const Dashboard: React.FC = () => {
             extra={<Text type="secondary">Pre-market indicator</Text>}
           >
             <Statistic
-              value={marketStatus.indicativenifty50.last}
+              value={marketStatus.indicativenifty50.indexLast || 0}
               precision={2}
               suffix={
-                <span style={{ color: getChangeColor(marketStatus.indicativenifty50.change) }}>
-                  {formatPercentage(marketStatus.indicativenifty50.pChange)}
+                <span style={{ color: getChangeColor(marketStatus.indicativenifty50.perChange) }}>
+                  {formatPercentage(marketStatus.indicativenifty50.perChange)}
                 </span>
               }
             />
@@ -287,11 +283,11 @@ const Dashboard: React.FC = () => {
             extra={<Text type="secondary">SGX Nifty</Text>}
           >
             <Statistic
-              value={marketStatus.giftnifty.last}
+              value={marketStatus.giftnifty.LASTPRICE}
               precision={2}
               suffix={
-                <span style={{ color: getChangeColor(marketStatus.giftnifty.change) }}>
-                  {formatPercentage(marketStatus.giftnifty.pChange)}
+                <span style={{ color: getChangeColor(Number(marketStatus.giftnifty.PERCHANGE)) }}>
+                  {formatPercentage(Number(marketStatus.giftnifty.PERCHANGE))}
                 </span>
               }
             />
@@ -325,7 +321,12 @@ const Dashboard: React.FC = () => {
           dataSource={indices}
           rowKey="indexSymbol"
           loading={loading}
-          pagination={false}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `Total ${total} indices`
+          }}
           scroll={{ x: 1200 }}
           size="middle"
         />
