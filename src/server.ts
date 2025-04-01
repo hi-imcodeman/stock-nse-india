@@ -12,10 +12,26 @@ import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { openapiSpecification } from './swaggerDocOptions'
 import path from 'path';
 import { mainRouter } from './routes'
+import cors from 'cors';
 
 const app = express()
 const port = process.env.PORT || 3000
 const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
+
+// Enable CORS for all routes
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    /^http:\/\/localhost:\d+$/,  // Allow any localhost port
+    /^http:\/\/127\.0\.0\.1:\d+$/ // Allow any 127.0.0.1 port
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 app.use(mainRouter)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
@@ -40,7 +56,7 @@ const httpServer = http.createServer(app);
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
 });
 
 server.start().then(() => {
