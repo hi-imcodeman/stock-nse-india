@@ -122,37 +122,36 @@ interface MostActive {
 }
 
 interface NSEIndexData {
-  key: string;
-  index: string;
   indexSymbol: string;
-  last: number;
-  variation: number;
-  percentChange: number;
-  open: number;
-  high: number;
-  low: number;
-  previousClose: number;
-  yearHigh: number;
-  yearLow: number;
+  index: string;
+  last: string;
+  variation: string;
+  percentChange: string;
+  open: string;
+  high: string;
+  low: string;
+  previousClose: string;
+  yearHigh: string;
+  yearLow: string;
+  pe: string;
+  pb: string;
+  dy: string;
   declines: string;
   advances: string;
   unchanged: string;
 }
 
-interface NSEIndicesResponse {
-  data: NSEIndexData[];
-  timestamp: string;
-  advances: number;
-  declines: number;
-  unchanged: number;
-  dates: {
-    previousDay: string;
-    oneWeekAgo: string;
-    oneMonthAgo: string;
-    oneYearAgo: string;
+interface IndexData {
+  name: string;
+  metadata: {
+    indexName: string;
+    open: number;
+    high: number;
+    low: number;
+    last: number;
+    change: number;
+    percChange: number;
   };
-  date30dAgo: string;
-  date365dAgo: string;
 }
 
 const api = {
@@ -195,7 +194,7 @@ const api = {
     return response.data;
   },
 
-  getIndexHistorical: async (indexSymbol: string, startDate: string, endDate: string): Promise<IndexHistoricalData> => {
+  getIndexHistorical: async (indexSymbol: string, startDate: string, endDate: string): Promise<IndexHistoricalData[]> => {
     const response = await axios.get(`${BASE_URL}/index/historical/${indexSymbol}`, {
       params: { dateStart: startDate, dateEnd: endDate }
     });
@@ -214,46 +213,28 @@ const api = {
   },
 
   // Market Overview
-  getAllIndices: async (): Promise<IndexDetails[]> => {
+  getAllIndices: async (): Promise<IndexData[]> => {
     const response = await axios.get(`${BASE_URL}/allIndices`);
-    const data = response.data as NSEIndicesResponse;
-    return data.data.map((index) => ({
+    const data = response.data;
+    
+    console.log('Raw API response:', data);
+    
+    if (!data || !data.data || !Array.isArray(data.data)) {
+      console.error('Invalid data format received from API');
+      return [];
+    }
+    
+    return data.data.map((index: NSEIndexData) => ({
       name: index.indexSymbol,
-      advance: { 
-        declines: index.declines || '0', 
-        advances: index.advances || '0', 
-        unchanged: index.unchanged || '0' 
-      },
-      timestamp: data.timestamp,
-      data: [],
       metadata: {
         indexName: index.index,
-        open: index.open,
-        high: index.high,
-        low: index.low,
-        previousClose: index.previousClose,
-        last: index.last,
-        percChange: index.percentChange,
-        change: index.variation,
-        timeVal: data.timestamp,
-        yearHigh: index.yearHigh,
-        yearLow: index.yearLow,
-        totalTradedVolume: 0,
-        totalTradedValue: 0,
-        ffmc_sum: 0
-      },
-      marketStatus: {
-        market: 'NSE',
-        marketStatus: 'Open',
-        tradeDate: data.dates.previousDay,
-        index: index.index,
-        last: index.last,
-        variation: index.variation,
-        percentChange: index.percentChange,
-        marketStatusMessage: ''
-      },
-      date30dAgo: data.date30dAgo,
-      date365dAgo: data.date365dAgo
+        open: Number(index.open) || 0,
+        high: Number(index.high) || 0,
+        low: Number(index.low) || 0,
+        last: Number(index.last) || 0,
+        change: Number(index.variation) || 0,
+        percChange: Number(index.percentChange) || 0
+      }
     }));
   },
 

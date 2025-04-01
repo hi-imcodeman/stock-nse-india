@@ -65,7 +65,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 60000); // Refresh every minute
+    const interval = setInterval(fetchData, 5000); // Refresh every 5 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -74,6 +74,16 @@ const Dashboard: React.FC = () => {
       maximumFractionDigits: 2,
       minimumFractionDigits: 2
     }).format(value);
+  };
+
+  const formatMarketCap = (value: string): string => {
+    const numValue = parseFloat(value.replace(/,/g, ''));
+    if (numValue >= 100000) {
+      return `${(numValue / 100000).toFixed(2)} Lakh Cr`;
+    } else if (numValue >= 1000) {
+      return `${(numValue / 1000).toFixed(2)} Thousand Cr`;
+    }
+    return `${numValue.toFixed(2)} Cr`;
   };
 
   const formatPercentage = (value: number): string => {
@@ -206,6 +216,7 @@ const Dashboard: React.FC = () => {
         </span>
       ),
       align: 'right' as const,
+      sorter: (a: IndexDetails, b: IndexDetails) => (a.metadata?.change || 0) - (b.metadata?.change || 0),
     },
     {
       title: 'Change %',
@@ -217,6 +228,7 @@ const Dashboard: React.FC = () => {
         </span>
       ),
       align: 'right' as const,
+      sorter: (a: IndexDetails, b: IndexDetails) => (a.metadata?.percChange || 0) - (b.metadata?.percChange || 0),
     },
   ];
 
@@ -230,18 +242,17 @@ const Dashboard: React.FC = () => {
       </Title>
 
       <Row gutter={[16, 16]}>
-        <Col span={8}>
-          <Card>
+        <Col span={6}>
+          <Card loading={loading}>
             <Statistic
               title="Market Cap"
-              value={marketStatus.marketcap.marketCapinCRRupeesFormatted}
+              value={formatMarketCap(marketStatus.marketcap.marketCapinCRRupeesFormatted)}
               valueStyle={{ color: '#1890ff' }}
-              prefix="₹"
             />
           </Card>
         </Col>
-        <Col span={8}>
-          <Card>
+        <Col span={6}>
+          <Card loading={loading}>
             <Statistic
               title="Total Indices"
               value={indices.length}
@@ -249,12 +260,27 @@ const Dashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
-          <Card>
+        <Col span={6}>
+          <Card loading={loading}>
             <Statistic
               title="Active Markets"
               value={marketStatus.marketState.filter(state => state.marketStatus === 'Open').length}
               valueStyle={{ color: '#1890ff' }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card loading={loading}>
+            <Statistic
+              title="NIFTY50 Advances/Declines"
+              value={indices.find(index => index.name === 'NIFTY 50')?.advance.advances || 0}
+              suffix={` / ${indices.find(index => index.name === 'NIFTY 50')?.advance.declines || 0}`}
+              valueStyle={{ 
+                color: (indices.find(index => index.name === 'NIFTY 50')?.advance.advances || 0) > (indices.find(index => index.name === 'NIFTY 50')?.advance.declines || 0) ? '#3f8600' : '#cf1322',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
             />
           </Card>
         </Col>
@@ -265,6 +291,7 @@ const Dashboard: React.FC = () => {
           <Card 
             title="Indicative Nifty 50"
             extra={<Text type="secondary">Pre-market indicator</Text>}
+            loading={loading}
           >
             <Statistic
               value={marketStatus.indicativenifty50.indexLast || 0}
@@ -281,6 +308,7 @@ const Dashboard: React.FC = () => {
           <Card 
             title="Gift Nifty"
             extra={<Text type="secondary">SGX Nifty</Text>}
+            loading={loading}
           >
             <Statistic
               value={marketStatus.giftnifty.LASTPRICE}
@@ -299,6 +327,7 @@ const Dashboard: React.FC = () => {
         style={{ marginTop: 16 }}
         title="Market States"
         extra={<Text type="secondary">Real-time data</Text>}
+        loading={loading}
       >
         <Table
           columns={marketStateColumns}
@@ -315,6 +344,7 @@ const Dashboard: React.FC = () => {
         style={{ marginTop: 16 }}
         title="Market Indices"
         extra={<Text type="secondary">Real-time data</Text>}
+        loading={loading}
       >
         <Table
           columns={indicesColumns}
