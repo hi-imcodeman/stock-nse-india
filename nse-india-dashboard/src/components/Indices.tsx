@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, DatePicker, Select, Space } from 'antd';
+import { Card, Row, Col, Statistic, Table, Tag, DatePicker, Select, Space, Spin } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import dayjs from 'dayjs';
@@ -294,7 +294,7 @@ const Indices: React.FC = () => {
       {dateRange && (
         <>
           <Card title="Price Chart" style={{ marginTop: 16 }}>
-            <div style={{ height: 600, paddingLeft: 20, paddingBottom: 20 }}>
+            <div style={{ height: 600, paddingLeft: 20, paddingBottom: 20, position: 'relative' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -354,6 +354,22 @@ const Indices: React.FC = () => {
                   />
                 </ComposedChart>
               </ResponsiveContainer>
+              {historicalLoading && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0, 
+                  right: 0, 
+                  bottom: 0, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                  zIndex: 1
+                }}>
+                  <Spin size="large" />
+                </div>
+              )}
             </div>
           </Card>
 
