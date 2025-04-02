@@ -20,16 +20,86 @@ export interface MarketState {
 }
 
 export interface EquityDetails {
-  symbol: string;
-  companyName: string;
-  industry: string;
-  series: string;
-  isinCode: string;
-  faceValue: number;
-  marketLot: number;
-  issuePrice: number;
-  issueDate: string;
-  listingDate: string;
+  info: {
+    symbol: string;
+    companyName: string;
+    industry: string;
+    activeSeries: string[];
+    debtSeries: string[];
+    isFNOSec: boolean;
+    isCASec: boolean;
+    isSLBSec: boolean;
+    isDebtSec: boolean;
+    isSuspended: boolean;
+    tempSuspendedSeries: string[];
+    isETFSec: boolean;
+    isDelisted: boolean;
+    isin: string;
+    slb_isin: string;
+    listingDate: string;
+    isMunicipalBond: boolean;
+    isHybridSymbol: boolean;
+    isTop10: boolean;
+    identifier: string;
+  };
+  metadata: {
+    series: string;
+    symbol: string;
+    isin: string;
+    status: string;
+    listingDate: string;
+    industry: string;
+    lastUpdateTime: string;
+    pdSectorPe: number;
+    pdSymbolPe: number;
+    pdSectorInd: string;
+    pdSectorIndAll: string[];
+  };
+  securityInfo: {
+    boardStatus: string;
+    tradingStatus: string;
+    tradingSegment: string;
+    sessionNo: string;
+    slb: string;
+    classOfShare: string;
+    derivatives: string;
+    surveillance: {
+      surv: string | null;
+      desc: string | null;
+    };
+    faceValue: number;
+    issuedSize: number;
+  };
+  priceInfo: {
+    lastPrice: number;
+    change: number;
+    pChange: number;
+    previousClose: number;
+    open: number;
+    close: number;
+    vwap: number;
+    stockIndClosePrice: number;
+    lowerCP: string;
+    upperCP: string;
+    pPriceBand: string;
+    basePrice: number;
+    intraDayHighLow: {
+      min: number;
+      max: number;
+      value: number;
+    };
+    weekHighLow: {
+      min: number;
+      minDate: string;
+      max: number;
+      maxDate: string;
+      value: number;
+    };
+    iNavValue: number | null;
+    checkINAV: boolean;
+    tickSize: number;
+    ieq: string;
+  };
 }
 
 export interface OptionChain {
@@ -147,40 +217,6 @@ interface NSEIndexData {
   marketStatus: string;
   tradeDate: string;
   marketStatusMessage: string;
-}
-
-interface IndexEquityResponse {
-  symbol: string;
-  identifier: string;
-  series: string;
-  open: number;
-  dayHigh: number;
-  dayLow: number;
-  lastPrice: number;
-  previousClose: number;
-  change: number;
-  pChange: number;
-  totalTradedVolume: number;
-  totalTradedValue: number;
-  lastUpdateTime: string;
-  yearHigh: number;
-  yearLow: number;
-  meta: {
-    symbol: string;
-    companyName: string;
-    industry: string;
-    activeSeries: string[];
-    debtSeries: string[];
-    tempSuspendedSeries: string[];
-    isFNOSec: boolean;
-    isCASec: boolean;
-    isSLBSec: boolean;
-    isDebtSec: boolean;
-    isSuspended: boolean;
-    isETFSec: boolean;
-    isDelisted: boolean;
-    isin: string;
-  };
 }
 
 interface IndexEquity {

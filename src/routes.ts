@@ -327,7 +327,7 @@ mainRouter.get('/api/allSymbols', async (_req, res) => {
 
 /**
  * @openapi
- * /api/equity/{symbol}:
+ * /api/equity/:symbol:
  *   get:
  *     description: To get details of the NSE symbol
  *     tags:
@@ -350,15 +350,17 @@ mainRouter.get('/api/allSymbols', async (_req, res) => {
  */
 mainRouter.get('/api/equity/:symbol', async (req, res) => {
     try {
-        res.json(await nseIndia.getEquityDetails(req.params.symbol))
+        const { symbol } = req.params;
+        const data = await nseIndia.getEquityDetails(symbol);
+        res.json(data);
     } catch (error) {
-        res.status(400).json(error)
+        res.status(400).json(error);
     }
 })
 
 /**
  * @openapi
- * /api/equity/series/{symbol}:
+ * /api/equity/series/:symbol:
  *   get:
  *     description: To get equity series of the NSE symbol
  *     tags:
@@ -389,7 +391,7 @@ mainRouter.get('/api/equity/series/:symbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/equity/tradeInfo/{symbol}:
+ * /api/equity/tradeInfo/:symbol:
  *   get:
  *     description: To get trade info of the NSE symbol
  *     tags:
@@ -420,7 +422,7 @@ mainRouter.get('/api/equity/tradeInfo/:symbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/equity/corporateInfo/{symbol}:
+ * /api/equity/corporateInfo/:symbol:
  *   get:
  *     description: To get corporate info of the NSE symbol
  *     tags:
@@ -451,7 +453,7 @@ mainRouter.get('/api/equity/corporateInfo/:symbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/equity/options/{symbol}:
+ * /api/equity/options/:symbol:
  *   get:
  *     description: To get options chain of the NSE symbol
  *     tags:
@@ -482,7 +484,7 @@ mainRouter.get('/api/equity/options/:symbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/equity/intraday/{symbol}:
+ * /api/equity/intraday/:symbol:
  *   get:
  *     description: To get intraday trade info of the NSE symbol
  *     tags:
@@ -512,20 +514,18 @@ mainRouter.get('/api/equity/options/:symbol', async (req, res) => {
  */
 mainRouter.get('/api/equity/intraday/:symbol', async (req, res) => {
     try {
-        const isPreOpen = req.query.preOpen as string
-        if (isPreOpen === "true") {
-            res.json(await nseIndia.getEquityIntradayData(req.params.symbol, true))
-        } else {
-            res.json(await nseIndia.getEquityIntradayData(req.params.symbol))
-        }
+        const { symbol } = req.params;
+        const { preOpen } = req.query;
+        const data = await nseIndia.getEquityIntradayData(symbol, preOpen === 'true');
+        res.json(data);
     } catch (error) {
-        res.status(400).json(error)
+        res.status(400).json(error);
     }
 })
 
 /**
  * @openapi
- * /api/equity/historical/{symbol}:
+ * /api/equity/historical/:symbol:
  *   get:
  *     description: To get details of the NSE symbol
  *     tags:
@@ -562,31 +562,22 @@ mainRouter.get('/api/equity/intraday/:symbol', async (req, res) => {
  */
 mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
     try {
-        const dateStart = req.query.dateStart as string
-        const dateEnd = req.query.dateEnd as string
-        if (dateStart && dateEnd) {
-            const start = new Date(dateStart)
-            const end = new Date(dateEnd)
-            if (start.getTime() > 0 && end.getTime() > 0) {
-                const range = {
-                    start,
-                    end
-                }
-                res.json(await nseIndia.getEquityHistoricalData(req.params.symbol, range))
-            } else {
-                res.status(400).json({ error: 'Invalid date format. Please use the format (YYYY-MM-DD)' })
-            }
-        } else {
-            res.json(await nseIndia.getEquityHistoricalData(req.params.symbol))
-        }
+        const { symbol } = req.params;
+        const { dateStart, dateEnd } = req.query;
+        const range = {
+            start: new Date(dateStart as string),
+            end: new Date(dateEnd as string)
+        };
+        const data = await nseIndia.getEquityHistoricalData(symbol, range);
+        res.json(data[0]); // Return the first chunk since we're handling one date range at a time
     } catch (error) {
-        res.status(400).json(error)
+        res.status(400).json(error);
     }
 })
 
 /**
  * @openapi
- * /api/index/{indexSymbol}:
+ * /api/index/:indexSymbol:
  *   get:
  *     description: To get detailsof the NSE index
  *     tags:
@@ -620,7 +611,7 @@ mainRouter.get('/api/index/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/index/options/{indexSymbol}:
+ * /api/index/options/:indexSymbol:
  *   get:
  *     description: To get index Option chain data
  *     tags:
@@ -653,7 +644,7 @@ mainRouter.get('/api/index/options/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/commodity/options/{commoditySymbol}:
+ * /api/commodity/options/:commoditySymbol:
  *   get:
  *     description: To get commodity Option chain data
  *     tags:
@@ -685,7 +676,7 @@ mainRouter.get('/api/commodity/options/:commoditySymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/index/intraday/{indexSymbol}:
+ * /api/index/intraday/:indexSymbol:
  *   get:
  *     description: To get intraday trade info of the NSE index symbol
  *     tags:
@@ -728,7 +719,7 @@ mainRouter.get('/api/index/intraday/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/index/historical/{indexSymbol}:
+ * /api/index/historical/:indexSymbol:
  *   get:
  *     description: To get the historical data for the NSE index symbol
  *     tags:
@@ -789,7 +780,7 @@ mainRouter.get('/api/index/historical/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/gainersAndLosers/{indexSymbol}:
+ * /api/gainersAndLosers/:indexSymbol:
  *   get:
  *     description: To get gainers and losers of the specific index
  *     tags:
@@ -820,7 +811,7 @@ mainRouter.get('/api/gainersAndLosers/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/mostActive/{indexSymbol}:
+ * /api/mostActive/:indexSymbol:
  *   get:
  *     description: To get most active equities of the specific index
  *     tags:
