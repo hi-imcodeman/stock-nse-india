@@ -139,19 +139,14 @@ interface NSEIndexData {
   declines: string;
   advances: string;
   unchanged: string;
-}
-
-interface IndexData {
-  name: string;
-  metadata: {
-    indexName: string;
-    open: number;
-    high: number;
-    low: number;
-    last: number;
-    change: number;
-    percChange: number;
-  };
+  timeVal: string;
+  totalTradedVolume: string;
+  totalTradedValue: string;
+  ffmc_sum: string;
+  market: string;
+  marketStatus: string;
+  tradeDate: string;
+  marketStatusMessage: string;
 }
 
 const api = {
@@ -213,29 +208,64 @@ const api = {
   },
 
   // Market Overview
-  getAllIndices: async (): Promise<IndexData[]> => {
-    const response = await axios.get(`${BASE_URL}/allIndices`);
-    const data = response.data;
-    
-    console.log('Raw API response:', data);
-    
-    if (!data || !data.data || !Array.isArray(data.data)) {
-      console.error('Invalid data format received from API');
-      return [];
-    }
-    
-    return data.data.map((index: NSEIndexData) => ({
-      name: index.indexSymbol,
-      metadata: {
-        indexName: index.index,
-        open: Number(index.open) || 0,
-        high: Number(index.high) || 0,
-        low: Number(index.low) || 0,
-        last: Number(index.last) || 0,
-        change: Number(index.variation) || 0,
-        percChange: Number(index.percentChange) || 0
+  getAllIndices: async (): Promise<IndexDetails[]> => {
+    try {
+      console.log('Fetching indices from API');
+      const response = await axios.get(`${BASE_URL}/allIndices`);
+      const data = response.data;
+      
+      console.log('Raw API response:', data);
+      
+      if (!data || !data.data || !Array.isArray(data.data)) {
+        console.error('Invalid data format received from API');
+        return [];
       }
-    }));
+      
+      const transformedData = data.data.map((index: NSEIndexData) => ({
+        name: index.indexSymbol,
+        advance: {
+          advances: index.advances,
+          declines: index.declines,
+          unchanged: index.unchanged
+        },
+        timestamp: new Date().toISOString(),
+        data: [],
+        metadata: {
+          indexName: index.index,
+          open: Number(index.open) || 0,
+          high: Number(index.high) || 0,
+          low: Number(index.low) || 0,
+          previousClose: Number(index.previousClose) || 0,
+          last: Number(index.last) || 0,
+          change: Number(index.variation) || 0,
+          percChange: Number(index.percentChange) || 0,
+          timeVal: index.timeVal || '',
+          yearHigh: Number(index.yearHigh) || 0,
+          yearLow: Number(index.yearLow) || 0,
+          totalTradedVolume: Number(index.totalTradedVolume) || 0,
+          totalTradedValue: Number(index.totalTradedValue) || 0,
+          ffmc_sum: Number(index.ffmc_sum) || 0
+        },
+        marketStatus: {
+          market: index.market || '',
+          marketStatus: index.marketStatus || '',
+          tradeDate: index.tradeDate || '',
+          index: index.index || '',
+          last: Number(index.last) || 0,
+          variation: Number(index.variation) || 0,
+          percentChange: Number(index.percentChange) || 0,
+          marketStatusMessage: index.marketStatusMessage || ''
+        },
+        date30dAgo: '',
+        date365dAgo: ''
+      }));
+
+      console.log('Transformed indices data:', transformedData);
+      return transformedData;
+    } catch (error) {
+      console.error('Error in getAllIndices:', error);
+      throw error;
+    }
   },
 
   getGainersAndLosers: async (indexSymbol: string): Promise<GainersAndLosers> => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card, Row, Col, Table, Statistic, Typography } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import api from '../services/api';
@@ -47,27 +47,75 @@ const Dashboard: React.FC = () => {
   });
   const [indices, setIndices] = useState<IndexDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const isLoadingRef = useRef(false);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
+    const intervalId = setInterval(() => {
+      if (!mountedRef.current) return;
+      fetchData();
+    }, 5000);
+
     const fetchData = async () => {
+      if (isLoadingRef.current) {
+        console.log('Skipping fetch - previous request still loading');
+        return;
+      }
+      
       try {
+        console.log('Starting data fetch');
+        isLoadingRef.current = true;
+        if (isInitialLoad) {
+          setLoading(true);
+        }
         const [statusData, indicesData] = await Promise.all([
           api.getMarketStatus(),
           api.getAllIndices()
         ]);
-        setMarketStatus(statusData);
-        setIndices(indicesData);
+        console.log('Data fetched successfully');
+        if (mountedRef.current) {
+          setMarketStatus(statusData);
+          setIndices(indicesData);
+          if (isInitialLoad) {
+            setIsInitialLoad(false);
+            setLoading(false);
+          }
+        }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        if (mountedRef.current && isInitialLoad) {
+          setLoading(false);
+        }
       } finally {
-        setLoading(false);
+        if (mountedRef.current) {
+          console.log('Setting loading to false');
+          isLoadingRef.current = false;
+        }
       }
     };
 
+    // Initial fetch
     fetchData();
-    const interval = setInterval(fetchData, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval);
-  }, []);
+
+    // Cleanup function
+    return () => {
+      console.log('Component unmounting, waiting for fetch to complete');
+      mountedRef.current = false;
+      // Don't clear interval immediately, let the fetch complete
+      const cleanupInterval = () => {
+        console.log('Cleaning up interval');
+        clearInterval(intervalId);
+      };
+      // Wait for any pending fetch to complete
+      if (isLoadingRef.current) {
+        setTimeout(cleanupInterval, 1000);
+      } else {
+        cleanupInterval();
+      }
+    };
+  }, [isInitialLoad]); // Add isInitialLoad to dependencies
 
   const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('en-IN', {
