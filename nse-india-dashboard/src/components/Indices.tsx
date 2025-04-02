@@ -48,6 +48,18 @@ interface ChartDataRecord {
   isUp: boolean;
 }
 
+interface EquityData {
+  symbol: string;
+  companyName: string;
+  lastPrice: number;
+  change: number;
+  changePercent: number;
+  open: number;
+  high: number;
+  low: number;
+  volume: number;
+}
+
 const Indices: React.FC = () => {
   const [indices, setIndices] = useState<IndexData[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<string>('');
@@ -55,6 +67,8 @@ const Indices: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [historicalLoading, setHistoricalLoading] = useState(false);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [equities, setEquities] = useState<EquityData[]>([]);
+  const [equitiesLoading, setEquitiesLoading] = useState(false);
 
   useEffect(() => {
     const fetchIndices = async () => {
@@ -71,7 +85,8 @@ const Indices: React.FC = () => {
         setIndices(data);
         console.log('Indices set in state:', data);
         
-        if (data.length > 0) {
+        // Only set the first index if no index is currently selected
+        if (data.length > 0 && !selectedIndex) {
           console.log('Setting first index as selected:', data[0].name);
           setSelectedIndex(data[0].name);
         }
@@ -85,7 +100,7 @@ const Indices: React.FC = () => {
     fetchIndices();
     const interval = setInterval(fetchIndices, 60000); // Refresh every minute
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedIndex]); // Add selectedIndex to dependencies
 
   useEffect(() => {
     const fetchHistoricalData = async () => {
@@ -132,6 +147,39 @@ const Indices: React.FC = () => {
 
     fetchHistoricalData();
   }, [selectedIndex, dateRange]);
+
+  useEffect(() => {
+    const fetchEquities = async () => {
+      if (!selectedIndex) return;
+
+      setEquitiesLoading(true);
+      try {
+        console.log('Fetching equities for index:', selectedIndex);
+        const data = await api.getIndexEquities(selectedIndex);
+        console.log('Received equities data:', data);
+        
+        const transformedData = data.map(equity => ({
+          symbol: equity.symbol,
+          companyName: equity.companyName,
+          lastPrice: equity.lastPrice,
+          change: equity.change,
+          changePercent: equity.changePercent,
+          open: equity.open,
+          high: equity.high,
+          low: equity.low,
+          volume: equity.volume
+        }));
+        
+        setEquities(transformedData);
+      } catch (error) {
+        console.error('Error fetching equities:', error);
+      } finally {
+        setEquitiesLoading(false);
+      }
+    };
+
+    fetchEquities();
+  }, [selectedIndex]);
 
   const columns = [
     {
@@ -223,6 +271,80 @@ const Indices: React.FC = () => {
     return new Intl.NumberFormat('en-IN').format(Math.round(value));
   };
 
+  const equityColumns = [
+    {
+      title: 'Symbol',
+      dataIndex: 'symbol',
+      key: 'symbol',
+      sorter: (a: EquityData, b: EquityData) => a.symbol.localeCompare(b.symbol),
+    },
+    {
+      title: 'Company Name',
+      dataIndex: 'companyName',
+      key: 'companyName',
+      sorter: (a: EquityData, b: EquityData) => a.companyName.localeCompare(b.companyName),
+    },
+    {
+      title: 'Last Price',
+      dataIndex: 'lastPrice',
+      key: 'lastPrice',
+      render: (value: number) => formatNumber(value),
+      sorter: (a: EquityData, b: EquityData) => a.lastPrice - b.lastPrice,
+    },
+    {
+      title: 'Change',
+      dataIndex: 'change',
+      key: 'change',
+      render: (value: number) => (
+        <Tag color={value >= 0 ? 'success' : 'error'}>
+          {value >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+          {Math.abs(value).toFixed(2)}
+        </Tag>
+      ),
+      sorter: (a: EquityData, b: EquityData) => a.change - b.change,
+    },
+    {
+      title: 'Change %',
+      dataIndex: 'changePercent',
+      key: 'changePercent',
+      render: (value: number) => (
+        <Tag color={value >= 0 ? 'success' : 'error'}>
+          {value >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+          {Math.abs(value).toFixed(2)}%
+        </Tag>
+      ),
+      sorter: (a: EquityData, b: EquityData) => a.changePercent - b.changePercent,
+    },
+    {
+      title: 'Open',
+      dataIndex: 'open',
+      key: 'open',
+      render: (value: number) => formatNumber(value),
+      sorter: (a: EquityData, b: EquityData) => a.open - b.open,
+    },
+    {
+      title: 'High',
+      dataIndex: 'high',
+      key: 'high',
+      render: (value: number) => formatNumber(value),
+      sorter: (a: EquityData, b: EquityData) => a.high - b.high,
+    },
+    {
+      title: 'Low',
+      dataIndex: 'low',
+      key: 'low',
+      render: (value: number) => formatNumber(value),
+      sorter: (a: EquityData, b: EquityData) => a.low - b.low,
+    },
+    {
+      title: 'Volume',
+      dataIndex: 'volume',
+      key: 'volume',
+      render: (value: number) => formatInteger(value),
+      sorter: (a: EquityData, b: EquityData) => a.volume - b.volume,
+    },
+  ];
+
   return (
     <div>
       <Row gutter={[16, 16]}>
@@ -242,7 +364,10 @@ const Indices: React.FC = () => {
                     if (dates && dates[0] && dates[1]) {
                       setDateRange([dates[0], dates[1]]);
                     }
-                  }} 
+                  }}
+                  disabledDate={(current) => {
+                    return current && current > dayjs().endOf('day');
+                  }}
                 />
               </Space>
               {selectedIndexData && (
@@ -290,6 +415,24 @@ const Indices: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
+      {selectedIndex && (
+        <Card title="Index Constituents" style={{ marginTop: 16 }}>
+          <Table
+            columns={equityColumns}
+            dataSource={equities}
+            rowKey="symbol"
+            loading={equitiesLoading}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total) => `Total ${total} records`,
+              position: ['bottomCenter']
+            }}
+          />
+        </Card>
+      )}
 
       {dateRange && (
         <>

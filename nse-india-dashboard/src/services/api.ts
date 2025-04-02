@@ -149,6 +149,52 @@ interface NSEIndexData {
   marketStatusMessage: string;
 }
 
+interface IndexEquityResponse {
+  symbol: string;
+  identifier: string;
+  series: string;
+  open: number;
+  dayHigh: number;
+  dayLow: number;
+  lastPrice: number;
+  previousClose: number;
+  change: number;
+  pChange: number;
+  totalTradedVolume: number;
+  totalTradedValue: number;
+  lastUpdateTime: string;
+  yearHigh: number;
+  yearLow: number;
+  meta: {
+    symbol: string;
+    companyName: string;
+    industry: string;
+    activeSeries: string[];
+    debtSeries: string[];
+    tempSuspendedSeries: string[];
+    isFNOSec: boolean;
+    isCASec: boolean;
+    isSLBSec: boolean;
+    isDebtSec: boolean;
+    isSuspended: boolean;
+    isETFSec: boolean;
+    isDelisted: boolean;
+    isin: string;
+  };
+}
+
+interface IndexEquity {
+  symbol: string;
+  companyName: string;
+  lastPrice: number;
+  change: number;
+  changePercent: number;
+  open: number;
+  high: number;
+  low: number;
+  volume: number;
+}
+
 const api = {
   // Market Status
   getMarketStatus: async (): Promise<MarketStatus> => {
@@ -194,6 +240,47 @@ const api = {
       params: { dateStart: startDate, dateEnd: endDate }
     });
     return response.data;
+  },
+
+  getIndexEquities: async (indexSymbol: string): Promise<IndexEquity[]> => {
+    try {
+      console.log('Fetching equities for index:', indexSymbol);
+      const response = await axios.get(`${BASE_URL}/index/${encodeURIComponent(indexSymbol.toUpperCase())}`);
+      console.log('Raw API response:', response.data);
+      
+      if (!response.data || !response.data.data) {
+        console.error('Invalid response format:', response.data);
+        return [];
+      }
+
+      const indexDetails = response.data;
+      console.log('Number of equities received:', indexDetails.data.length);
+      
+      const transformedData = indexDetails.data.map((equity: IndexEquityInfo) => ({
+        symbol: equity.symbol,
+        companyName: equity.meta?.companyName || equity.symbol,
+        lastPrice: Number(equity.lastPrice) || 0,
+        change: Number(equity.change) || 0,
+        changePercent: Number(equity.pChange) || 0,
+        open: Number(equity.open) || 0,
+        high: Number(equity.dayHigh) || 0,
+        low: Number(equity.dayLow) || 0,
+        volume: Number(equity.totalTradedVolume) || 0
+      }));
+      
+      console.log('Transformed data:', transformedData);
+      return transformedData;
+    } catch (error) {
+      console.error('Error fetching index equities:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data
+        });
+      }
+      return [];
+    }
   },
 
   // Options
@@ -276,7 +363,7 @@ const api = {
   getMostActive: async (indexSymbol: string): Promise<MostActive> => {
     const response = await axios.get(`${BASE_URL}/mostActive/${indexSymbol}`);
     return response.data;
-  }
+  },
 };
 
 export default api; 
