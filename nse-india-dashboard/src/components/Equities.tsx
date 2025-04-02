@@ -24,6 +24,11 @@ interface HistoricalData {
   changePercent: number;
 }
 
+interface EquityTableRow {
+  field: string;
+  value: string | number;
+}
+
 const { RangePicker } = DatePicker;
 
 const Equities: React.FC = () => {
@@ -32,6 +37,7 @@ const Equities: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [searchText, setSearchText] = useState('');
+  const [pageSize, setPageSize] = useState(10);
 
   const fetchEquityDetails = async (symbol: string) => {
     if (!symbol) return;
@@ -124,61 +130,34 @@ const Equities: React.FC = () => {
 
   const equityColumns = [
     {
-      title: 'Symbol',
-      dataIndex: ['info', 'symbol'],
-      key: 'symbol',
+      title: 'Field',
+      dataIndex: 'field',
+      key: 'field',
+      width: '40%',
     },
     {
-      title: 'Company Name',
-      dataIndex: ['info', 'companyName'],
-      key: 'companyName',
-    },
-    {
-      title: 'Industry',
-      dataIndex: ['info', 'industry'],
-      key: 'industry',
-    },
-    {
-      title: 'Series',
-      dataIndex: ['metadata', 'series'],
-      key: 'series',
-    },
-    {
-      title: 'ISIN Code',
-      dataIndex: ['info', 'isin'],
-      key: 'isinCode',
-    },
-    {
-      title: 'Face Value',
-      dataIndex: ['securityInfo', 'faceValue'],
-      key: 'faceValue',
-      render: (value: number) => formatPrice(value),
-    },
-    {
-      title: 'Market Lot',
-      dataIndex: 'marketLot',
-      key: 'marketLot',
-      render: (value: number) => value?.toLocaleString('en-IN') || '0',
-    },
-    {
-      title: 'Issue Price',
-      dataIndex: ['priceInfo', 'basePrice'],
-      key: 'issuePrice',
-      render: (value: number) => formatPrice(value),
-    },
-    {
-      title: 'Issue Date',
-      dataIndex: ['metadata', 'listingDate'],
-      key: 'issueDate',
-      render: (date: string) => date ? dayjs(date).tz('Asia/Kolkata').format('DD-MM-YYYY') : '-',
-    },
-    {
-      title: 'Listing Date',
-      dataIndex: ['info', 'listingDate'],
-      key: 'listingDate',
-      render: (date: string) => date ? dayjs(date).tz('Asia/Kolkata').format('DD-MM-YYYY') : '-',
+      title: 'Value',
+      dataIndex: 'value',
+      key: 'value',
+      width: '60%',
     },
   ];
+
+  const getEquityTableData = (equity: EquityDetails): EquityTableRow[] => {
+    if (!equity) return [];
+    return [
+      { field: 'Symbol', value: equity.info.symbol },
+      { field: 'Company Name', value: equity.info.companyName },
+      { field: 'Industry', value: equity.info.industry },
+      { field: 'Series', value: equity.metadata.series },
+      { field: 'ISIN Code', value: equity.info.isin },
+      { field: 'Face Value', value: formatPrice(equity.securityInfo.faceValue) },
+      { field: 'Market Lot', value: equity.securityInfo.issuedSize?.toLocaleString('en-IN') || '0' },
+      { field: 'Issue Price', value: formatPrice(equity.priceInfo.basePrice) },
+      { field: 'Issue Date', value: equity.metadata.listingDate ? dayjs(equity.metadata.listingDate).tz('Asia/Kolkata').format('DD-MM-YYYY') : '-' },
+      { field: 'Listing Date', value: equity.info.listingDate ? dayjs(equity.info.listingDate).tz('Asia/Kolkata').format('DD-MM-YYYY') : '-' },
+    ];
+  };
 
   const historicalColumns = [
     {
@@ -266,6 +245,7 @@ const Equities: React.FC = () => {
             onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
             style={{ width: '100%' }}
             format="DD-MM-YYYY"
+            disabledDate={(current) => current && current > dayjs().endOf('day')}
           />
         </Col>
       </Row>
@@ -298,15 +278,17 @@ const Equities: React.FC = () => {
         </Card>
       )}
 
-      <Card style={{ marginTop: 16 }}>
-        <Table
-          columns={equityColumns}
-          dataSource={equity ? [equity] : []}
-          rowKey={(record) => record?.info?.symbol && record?.metadata?.series ? `${record.info.symbol}-${record.metadata.series}` : 'key'}
-          loading={loading}
-          pagination={false}
-        />
-      </Card>
+      {equity && (
+        <Card style={{ marginTop: 16 }}>
+          <Table
+            columns={equityColumns}
+            dataSource={getEquityTableData(equity)}
+            rowKey={(record) => record.field}
+            loading={loading}
+            pagination={false}
+          />
+        </Card>
+      )}
 
       {historicalData.length > 0 && (
         <Card style={{ marginTop: 16 }}>
@@ -315,7 +297,16 @@ const Equities: React.FC = () => {
             dataSource={historicalData}
             rowKey={(record) => record.date}
             loading={loading}
-            pagination={false}
+            pagination={{
+              pageSize: pageSize,
+              pageSizeOptions: ['10', '20', '50', '100'],
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total) => `Total ${total} records`,
+              onShowSizeChange: (current, size) => {
+                setPageSize(size);
+              }
+            }}
           />
         </Card>
       )}

@@ -48,6 +48,7 @@ const Dashboard: React.FC = () => {
   const [indices, setIndices] = useState<IndexDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [pageSize, setPageSize] = useState(10);
   const isLoadingRef = useRef(false);
   const mountedRef = useRef(true);
 
@@ -363,10 +364,14 @@ const Dashboard: React.FC = () => {
           rowKey="indexSymbol"
           loading={loading}
           pagination={{
-            pageSize: 10,
+            pageSize: pageSize,
+            pageSizeOptions: ['10', '20', '50', '100'],
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => `Total ${total} indices`
+            showTotal: (total) => `Total ${total} indices`,
+            onShowSizeChange: (current, size) => {
+              setPageSize(size);
+            }
           }}
           scroll={{ x: 1200 }}
           size="middle"

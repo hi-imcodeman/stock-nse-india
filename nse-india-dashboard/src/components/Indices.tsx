@@ -69,6 +69,8 @@ const Indices: React.FC = () => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [equities, setEquities] = useState<EquityData[]>([]);
   const [equitiesLoading, setEquitiesLoading] = useState(false);
+  const [equitiesPageSize, setEquitiesPageSize] = useState(10);
+  const [historicalPageSize, setHistoricalPageSize] = useState(10);
 
   useEffect(() => {
     const fetchIndices = async () => {
@@ -424,11 +426,15 @@ const Indices: React.FC = () => {
             rowKey="symbol"
             loading={equitiesLoading}
             pagination={{
-              pageSize: 10,
+              pageSize: equitiesPageSize,
+              pageSizeOptions: ['10', '20', '50', '100'],
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: (total) => `Total ${total} records`,
-              position: ['bottomCenter']
+              position: ['bottomCenter'],
+              onShowSizeChange: (current, size) => {
+                setEquitiesPageSize(size);
+              }
             }}
           />
         </Card>
@@ -523,11 +529,15 @@ const Indices: React.FC = () => {
               rowKey="date"
               loading={historicalLoading}
               pagination={{
-                pageSize: 10,
+                pageSize: historicalPageSize,
+                pageSizeOptions: ['10', '20', '50', '100'],
                 showSizeChanger: true,
                 showQuickJumper: true,
                 showTotal: (total) => `Total ${total} records`,
-                position: ['bottomCenter']
+                position: ['bottomCenter'],
+                onShowSizeChange: (current, size) => {
+                  setHistoricalPageSize(size);
+                }
               }}
             />
           </Card>
