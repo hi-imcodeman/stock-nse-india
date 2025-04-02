@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Typography } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
@@ -43,7 +43,19 @@ const MainLayout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider width={200} theme="dark">
-        <div style={{ height: 32, margin: 16, background: 'rgba(255, 255, 255, 0.2)' }} />
+        <div style={{ 
+          height: 64, 
+          margin: 16, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: 4
+        }}>
+          <Typography.Title level={4} style={{ color: '#fff', margin: 0 }}>
+            NSE India
+          </Typography.Title>
+        </div>
         <Menu
           theme="dark"
           mode="inline"

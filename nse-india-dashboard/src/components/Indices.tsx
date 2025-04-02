@@ -212,6 +212,17 @@ const Indices: React.FC = () => {
 
   const selectedIndexData = indices.find(i => i.name === selectedIndex);
 
+  const formatNumber = (value: number): string => {
+    return new Intl.NumberFormat('en-IN', {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2
+    }).format(value);
+  };
+
+  const formatInteger = (value: number): string => {
+    return new Intl.NumberFormat('en-IN').format(Math.round(value));
+  };
+
   return (
     <div>
       <Row gutter={[16, 16]}>
@@ -283,14 +294,47 @@ const Indices: React.FC = () => {
       {dateRange && (
         <>
           <Card title="Price Chart" style={{ marginTop: 16 }}>
-            <div style={{ height: 400 }}>
+            <div style={{ height: 600, paddingLeft: 20, paddingBottom: 20 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
+                  <XAxis 
+                    dataKey="date" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis 
+                    domain={[(dataMin: number) => dataMin * 0.999, (dataMax: number) => dataMax * 1.001]}
+                    tickFormatter={(value) => formatInteger(value)}
+                    width={80}
+                  />
+                  <Tooltip 
+                    formatter={(value: number, name: string) => [formatNumber(value), name]}
+                  />
+                  <Legend 
+                    verticalAlign="top"
+                    height={36}
+                    wrapperStyle={{ paddingBottom: 20 }}
+                  />
+                  {/* Open price line */}
+                  <Line
+                    type="monotone"
+                    dataKey="open"
+                    name="Open"
+                    stroke="#1890ff"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  {/* Close price line */}
+                  <Line
+                    type="monotone"
+                    dataKey="close"
+                    name="Close"
+                    stroke="#722ed1"
+                    strokeWidth={2}
+                    dot={false}
+                  />
                   {/* High-Low wicks */}
                   <Line
                     type="monotone"

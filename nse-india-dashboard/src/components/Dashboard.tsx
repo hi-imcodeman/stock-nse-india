@@ -334,43 +334,6 @@ const Dashboard: React.FC = () => {
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col span={12}>
-          <Card 
-            title="Indicative Nifty 50"
-            extra={<Text type="secondary">Pre-market indicator</Text>}
-            loading={loading}
-          >
-            <Statistic
-              value={marketStatus.indicativenifty50.indexLast || 0}
-              precision={2}
-              suffix={
-                <span style={{ color: getChangeColor(marketStatus.indicativenifty50.perChange) }}>
-                  {formatPercentage(marketStatus.indicativenifty50.perChange)}
-                </span>
-              }
-            />
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card 
-            title="Gift Nifty"
-            extra={<Text type="secondary">SGX Nifty</Text>}
-            loading={loading}
-          >
-            <Statistic
-              value={marketStatus.giftnifty.LASTPRICE}
-              precision={2}
-              suffix={
-                <span style={{ color: getChangeColor(Number(marketStatus.giftnifty.PERCHANGE)) }}>
-                  {formatPercentage(Number(marketStatus.giftnifty.PERCHANGE))}
-                </span>
-              }
-            />
-          </Card>
-        </Col>
-      </Row>
-
       <Card 
         style={{ marginTop: 16 }}
         title="Market States"
