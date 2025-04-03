@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Card, Row, Col, Table, Statistic, Typography } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { IndexDetails, MarketStatus } from '../../../src/interface';
 
 const { Title, Text } = Typography;
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [marketStatus, setMarketStatus] = useState<MarketStatus>({
     marketState: [],
     marketcap: {
@@ -219,6 +221,11 @@ const Dashboard: React.FC = () => {
       key: 'name',
       fixed: 'left' as const,
       width: 100,
+      render: (text: string) => (
+        <a onClick={() => navigate(`/index/${text}`)} style={{ cursor: 'pointer' }}>
+          {text}
+        </a>
+      ),
     },
     {
       title: 'Name',

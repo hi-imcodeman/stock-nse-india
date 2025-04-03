@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Card, Input, DatePicker, Table, Statistic, Row, Col, Tag } from 'antd';
+import { Card, Input, DatePicker, Table, Statistic, Row, Col, Tag, Spin } from 'antd';
 import { SearchOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { useParams, useNavigate } from 'react-router-dom';
 import api, { EquityDetails, EquityHistoricalData } from '../services/api';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -32,33 +33,36 @@ interface EquityTableRow {
 const { RangePicker } = DatePicker;
 
 const Equities: React.FC = () => {
+  const { symbol } = useParams<{ symbol: string }>();
+  const navigate = useNavigate();
   const [equity, setEquity] = useState<EquityDetails | null>(null);
   const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [historicalLoading, setHistoricalLoading] = useState(false);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
     dayjs().subtract(1, 'month'),
     dayjs()
   ]);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState(symbol || '');
   const [pageSize, setPageSize] = useState(10);
 
   const fetchEquityDetails = async (symbol: string) => {
     if (!symbol) return;
     try {
-      setLoading(true);
+      setDetailsLoading(true);
       const response = await api.getEquityDetails(symbol);
       setEquity(response);
     } catch (error) {
       console.error('Error fetching equity details:', error);
     } finally {
-      setLoading(false);
+      setDetailsLoading(false);
     }
   };
 
   const fetchHistoricalData = async (symbol: string, startDate: string, endDate: string) => {
     if (!symbol || !startDate || !endDate) return;
     try {
-      setLoading(true);
+      setHistoricalLoading(true);
       // Convert dates to IST and format for API call
       const istStartDate = dayjs(startDate, 'DD-MM-YYYY').tz('Asia/Kolkata').format('YYYY-MM-DD');
       const istEndDate = dayjs(endDate, 'DD-MM-YYYY').tz('Asia/Kolkata').format('YYYY-MM-DD');
@@ -99,7 +103,7 @@ const Equities: React.FC = () => {
     } catch (error) {
       console.error('Error fetching historical data:', error);
     } finally {
-      setLoading(false);
+      setHistoricalLoading(false);
     }
   };
 
@@ -144,14 +148,16 @@ const Equities: React.FC = () => {
 
   // Add new useEffect for initial data fetch
   useEffect(() => {
-    if (searchText) {
-      debouncedFetchHistorical(
-        searchText,
+    if (symbol) {
+      setSearchText(symbol);
+      fetchEquityDetails(symbol);
+      fetchHistoricalData(
+        symbol,
         dateRange[0].tz('Asia/Kolkata').format('DD-MM-YYYY'),
         dateRange[1].tz('Asia/Kolkata').format('DD-MM-YYYY')
       );
     }
-  }, []); // Empty dependency array means this runs once on mount
+  }, [symbol]); // Run when symbol changes
 
   const formatPrice = (value: number) => {
     if (value === undefined || value === null) return '0.00';
@@ -252,6 +258,13 @@ const Equities: React.FC = () => {
     },
   ];
 
+  // Update the search handler to use navigation
+  const handleSearch = (value: string) => {
+    if (value) {
+      navigate(`/equity/${value}`);
+    }
+  };
+
   return (
     <div>
       <Row gutter={[16, 16]}>
@@ -261,16 +274,8 @@ const Equities: React.FC = () => {
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            onPressEnter={() => {
-              fetchEquityDetails(searchText);
-              if (dateRange) {
-                fetchHistoricalData(
-                  searchText,
-                  dateRange[0].tz('Asia/Kolkata').format('DD-MM-YYYY'),
-                  dateRange[1].tz('Asia/Kolkata').format('DD-MM-YYYY')
-                );
-              }
-            }}
+            onPressEnter={() => handleSearch(searchText)}
+            disabled={detailsLoading || historicalLoading}
           />
         </Col>
         <Col span={12}>
@@ -280,69 +285,85 @@ const Equities: React.FC = () => {
             style={{ width: '100%' }}
             format="DD-MM-YYYY"
             disabledDate={(current) => current && current > dayjs().endOf('day')}
+            disabled={detailsLoading || historicalLoading}
           />
         </Col>
       </Row>
 
       {equity?.info && (
         <Card style={{ marginTop: 16 }}>
-          <Row gutter={[16, 16]}>
-            <Col span={8}>
-              <Statistic
-                title="Symbol"
-                value={equity.info.symbol}
-                valueStyle={{ color: '#1890ff' }}
-              />
-            </Col>
-            <Col span={8}>
-              <Statistic
-                title="Company Name"
-                value={equity.info.companyName}
-                valueStyle={{ color: '#1890ff' }}
-              />
-            </Col>
-            <Col span={8}>
-              <Statistic
-                title="Industry"
-                value={equity.info.industry}
-                valueStyle={{ color: '#1890ff' }}
-              />
-            </Col>
-          </Row>
+          <Spin spinning={detailsLoading}>
+            <Row gutter={[16, 16]}>
+              <Col span={8}>
+                <Statistic
+                  title="Symbol"
+                  value={equity.info.symbol}
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title="Company Name"
+                  value={equity.info.companyName}
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title="Industry"
+                  value={equity.info.industry}
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Col>
+            </Row>
+          </Spin>
         </Card>
       )}
 
       {equity && (
         <Card style={{ marginTop: 16 }}>
-          <Table
-            columns={equityColumns}
-            dataSource={getEquityTableData(equity)}
-            rowKey={(record) => record.field}
-            loading={loading}
-            pagination={false}
-          />
+          <Spin spinning={detailsLoading}>
+            <Table
+              columns={equityColumns}
+              dataSource={getEquityTableData(equity)}
+              rowKey={(record) => record.field}
+              pagination={false}
+            />
+          </Spin>
         </Card>
       )}
 
       {historicalData.length > 0 && (
         <Card style={{ marginTop: 16 }}>
-          <Table
-            columns={historicalColumns}
-            dataSource={historicalData}
-            rowKey={(record) => record.date}
-            loading={loading}
-            pagination={{
-              pageSize: pageSize,
-              pageSizeOptions: ['10', '20', '50', '100'],
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total) => `Total ${total} records`,
-              onShowSizeChange: (current, size) => {
-                setPageSize(size);
-              }
-            }}
-          />
+          <Spin spinning={historicalLoading}>
+            <Table
+              columns={historicalColumns}
+              dataSource={historicalData}
+              rowKey={(record) => record.date}
+              pagination={{
+                pageSize: pageSize,
+                pageSizeOptions: ['10', '20', '50', '100'],
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total) => `Total ${total} records`,
+                onShowSizeChange: (current, size) => {
+                  setPageSize(size);
+                }
+              }}
+            />
+          </Spin>
         </Card>
+      )}
+
+      {!equity && !historicalData.length && (detailsLoading || historicalLoading) && (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '400px' 
+        }}>
+          <Spin size="large" />
+        </div>
       )}
     </div>
   );

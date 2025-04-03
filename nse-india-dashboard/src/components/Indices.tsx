@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, DatePicker, Select, Space, Spin } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Statistic, Table, Tag, DatePicker, Select, Space, Spin, Tooltip } from 'antd';
+import { ArrowUpOutlined, ArrowDownOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line } from 'recharts';
+import { ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Line } from 'recharts';
 
 // Configure dayjs plugins
 dayjs.extend(utc);
@@ -61,8 +62,10 @@ interface EquityData {
 }
 
 const Indices: React.FC = () => {
+  const { symbol } = useParams<{ symbol: string }>();
+  const navigate = useNavigate();
   const [indices, setIndices] = useState<IndexData[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState<string>('');
+  const [selectedIndex, setSelectedIndex] = useState<string>(symbol || '');
   const [historicalData, setHistoricalData] = useState<HistoricalDataRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [historicalLoading, setHistoricalLoading] = useState(false);
@@ -74,6 +77,11 @@ const Indices: React.FC = () => {
   const [equitiesLoading, setEquitiesLoading] = useState(false);
   const [equitiesPageSize, setEquitiesPageSize] = useState(10);
   const [historicalPageSize, setHistoricalPageSize] = useState(10);
+
+  // Add effect to scroll to top when component mounts or symbol changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [symbol]);
 
   useEffect(() => {
     const fetchIndices = async () => {
@@ -90,10 +98,11 @@ const Indices: React.FC = () => {
         setIndices(data);
         console.log('Indices set in state:', data);
         
-        // Only set the first index if no index is currently selected
-        if (data.length > 0 && !selectedIndex) {
-          console.log('Setting first index as selected:', data[0].name);
-          setSelectedIndex(data[0].name);
+        // Set the index from URL parameter or first index if no parameter
+        if (data.length > 0) {
+          const indexToSelect = symbol || data[0].name;
+          console.log('Setting selected index:', indexToSelect);
+          setSelectedIndex(indexToSelect);
         }
       } catch (error) {
         console.error('Error fetching indices:', error);
@@ -105,7 +114,7 @@ const Indices: React.FC = () => {
     fetchIndices();
     const interval = setInterval(fetchIndices, 60000); // Refresh every minute
     return () => clearInterval(interval);
-  }, [selectedIndex]); // Add selectedIndex to dependencies
+  }, [symbol]); // Add symbol to dependencies
 
   useEffect(() => {
     const fetchHistoricalData = async () => {
@@ -163,17 +172,19 @@ const Indices: React.FC = () => {
         const data = await api.getIndexEquities(selectedIndex);
         console.log('Received equities data:', data);
         
-        const transformedData = data.map(equity => ({
-          symbol: equity.symbol,
-          companyName: equity.companyName,
-          lastPrice: equity.lastPrice,
-          change: equity.change,
-          changePercent: equity.changePercent,
-          open: equity.open,
-          high: equity.high,
-          low: equity.low,
-          volume: equity.volume
-        }));
+        const transformedData = data
+          .filter(equity => equity.symbol !== selectedIndex) // Filter out the selected index
+          .map(equity => ({
+            symbol: equity.symbol,
+            companyName: equity.companyName,
+            lastPrice: equity.lastPrice,
+            change: equity.change,
+            changePercent: equity.changePercent,
+            open: equity.open,
+            high: equity.high,
+            low: equity.low,
+            volume: equity.volume
+          }));
         
         setEquities(transformedData);
       } catch (error) {
@@ -240,10 +251,12 @@ const Indices: React.FC = () => {
     },
   ];
 
-  const indexOptions = indices.map(index => ({
-    value: index.name,
-    label: `${index.name} - ${index.metadata.indexName}`,
-  }));
+  const indexOptions = indices
+    .filter(index => index.name !== selectedIndex)
+    .map(index => ({
+      value: index.name,
+      label: `${index.name} - ${index.metadata.indexName}`,
+    }));
 
   console.log('Current indices:', indices);
   console.log('Index options:', indexOptions);
@@ -281,6 +294,9 @@ const Indices: React.FC = () => {
       title: 'Symbol',
       dataIndex: 'symbol',
       key: 'symbol',
+      render: (text: string) => (
+        <a onClick={() => navigate(`/equity/${text}`)}>{text}</a>
+      ),
       sorter: (a: EquityData, b: EquityData) => a.symbol.localeCompare(b.symbol),
     },
     {
@@ -364,21 +380,25 @@ const Indices: React.FC = () => {
                   onChange={setSelectedIndex}
                   loading={loading}
                 />
-                <RangePicker 
-                  value={dateRange}
-                  onChange={(dates) => {
-                    if (dates && dates[0] && dates[1]) {
-                      setDateRange([dates[0], dates[1]]);
-                    }
-                  }}
-                  disabledDate={(current) => {
-                    return current && current > dayjs().endOf('day');
-                  }}
-                />
+                <Space>
+                  <RangePicker 
+                    value={dateRange}
+                    onChange={(dates) => {
+                      if (dates && dates[0] && dates[1]) {
+                        setDateRange([dates[0], dates[1]]);
+                      }
+                    }}
+                    disabledDate={(current) => {
+                      return current && current > dayjs().endOf('day');
+                    }}
+                    disabled={loading || historicalLoading}
+                  />
+                  {historicalLoading && <Spin size="small" />}
+                </Space>
               </Space>
               {selectedIndexData && (
                 <Row gutter={16}>
-                  <Col span={6}>
+                  <Col span={4}>
                     <Statistic
                       title="Open"
                       value={selectedIndexData.metadata.open}
@@ -386,7 +406,7 @@ const Indices: React.FC = () => {
                       loading={loading}
                     />
                   </Col>
-                  <Col span={6}>
+                  <Col span={4}>
                     <Statistic
                       title="High"
                       value={selectedIndexData.metadata.high}
@@ -394,7 +414,7 @@ const Indices: React.FC = () => {
                       loading={loading}
                     />
                   </Col>
-                  <Col span={6}>
+                  <Col span={4}>
                     <Statistic
                       title="Low"
                       value={selectedIndexData.metadata.low}
@@ -402,7 +422,7 @@ const Indices: React.FC = () => {
                       loading={loading}
                     />
                   </Col>
-                  <Col span={6}>
+                  <Col span={4}>
                     <Statistic
                       title="Close"
                       value={selectedIndexData.metadata.last}
@@ -415,6 +435,35 @@ const Indices: React.FC = () => {
                       }}
                     />
                   </Col>
+                  <Col span={4}>
+                    <Statistic
+                      title="Change"
+                      value={selectedIndexData.metadata.change}
+                      precision={2}
+                      loading={loading}
+                      valueStyle={{
+                        color: selectedIndexData.metadata.change >= 0
+                          ? '#3f8600'
+                          : '#cf1322',
+                      }}
+                      prefix={selectedIndexData.metadata.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                    />
+                  </Col>
+                  <Col span={4}>
+                    <Statistic
+                      title="Change %"
+                      value={selectedIndexData.metadata.percChange}
+                      precision={2}
+                      loading={loading}
+                      valueStyle={{
+                        color: selectedIndexData.metadata.change >= 0
+                          ? '#3f8600'
+                          : '#cf1322',
+                      }}
+                      prefix={selectedIndexData.metadata.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                      suffix="%"
+                    />
+                  </Col>
                 </Row>
               )}
             </Space>
@@ -423,25 +472,78 @@ const Indices: React.FC = () => {
       </Row>
 
       {selectedIndex && (
-        <Card title="Index Constituents" style={{ marginTop: 16 }}>
-          <Table
-            columns={equityColumns}
-            dataSource={equities}
-            rowKey="symbol"
-            loading={equitiesLoading}
-            pagination={{
-              pageSize: equitiesPageSize,
-              pageSizeOptions: ['10', '20', '50', '100'],
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total) => `Total ${total} records`,
-              position: ['bottomCenter'],
-              onShowSizeChange: (current, size) => {
-                setEquitiesPageSize(size);
-              }
-            }}
-          />
-        </Card>
+        <>
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <Card 
+                title={
+                  <Space>
+                    Market Breadth
+                    {equities.length > 0 && (
+                      <>
+                        <Tag color={equities.filter(e => e.change > 0).length > equities.filter(e => e.change < 0).length ? 'success' : 'error'}>
+                          {equities.filter(e => e.change > 0).length > equities.filter(e => e.change < 0).length ? 
+                            <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                          {((equities.filter(e => e.change > 0).length / (equities.filter(e => e.change > 0).length + equities.filter(e => e.change < 0).length)) * 100).toFixed(1)}%
+                        </Tag>
+                        <Tooltip title="Market breadth shows the ratio of advancing to declining stocks. A percentage above 50% indicates more stocks are rising than falling, while below 50% indicates more stocks are falling than rising. This helps gauge overall market sentiment.">
+                          <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
+                        </Tooltip>
+                      </>
+                    )}
+                  </Space>
+                }
+              >
+                <Row gutter={16}>
+                  <Col span={8}>
+                    <Statistic
+                      title="Advances"
+                      value={equities.filter(e => e.change > 0).length}
+                      loading={equitiesLoading}
+                      valueStyle={{ color: '#3f8600' }}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="Declines"
+                      value={equities.filter(e => e.change < 0).length}
+                      loading={equitiesLoading}
+                      valueStyle={{ color: '#cf1322' }}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="Unchanged"
+                      value={equities.filter(e => e.change === 0).length}
+                      loading={equitiesLoading}
+                      valueStyle={{ color: '#8c8c8c' }}
+                    />
+                  </Col>
+                </Row>
+              </Card>
+            </Col>
+          </Row>
+
+          <Card title="Index Constituents" style={{ marginTop: 16 }}>
+            <Table
+              columns={equityColumns}
+              dataSource={equities}
+              rowKey="symbol"
+              loading={equitiesLoading}
+              pagination={{
+                pageSize: equitiesPageSize,
+                pageSizeOptions: ['10', '20', '50', '100'],
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total) => `Total ${total} records`,
+                position: ['bottomCenter'],
+                onShowSizeChange: (current, size) => {
+                  setEquitiesPageSize(size);
+                }
+              }}
+            />
+          </Card>
+        </>
       )}
 
       {dateRange && (
@@ -462,7 +564,7 @@ const Indices: React.FC = () => {
                     tickFormatter={(value) => formatInteger(value)}
                     width={80}
                   />
-                  <Tooltip 
+                  <RechartsTooltip 
                     formatter={(value: number, name: string) => [formatNumber(value), name]}
                   />
                   <Legend 

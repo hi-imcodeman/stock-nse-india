@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 type SortField = 'symbol' | 'lastPrice' | 'change' | 'pChange' | 'totalMarketCap';
@@ -32,11 +33,12 @@ interface EquityInfo {
 }
 
 const EquitiesWidget: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState<string>('NIFTY 50');
   const [equities, setEquities] = useState<EquityInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [sortField, setSortField] = useState<SortField>('symbol');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('ascend');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('descend');
 
   useEffect(() => {
     fetchEquities();
@@ -135,19 +137,13 @@ const EquitiesWidget: React.FC = () => {
   };
 
   const sortedEquities = [...equities].sort((a, b) => {
-    const aValue = a[sortField];
-    const bValue = b[sortField];
-    
-    // Handle undefined values
-    if (aValue === undefined && bValue === undefined) return 0;
-    if (aValue === undefined) return 1;
-    if (bValue === undefined) return -1;
-    
-    if (sortOrder === 'ascend') {
-      return aValue > bValue ? 1 : -1;
-    }
-    return aValue < bValue ? 1 : -1;
+    const comparison = Math.abs(b.pChange) - Math.abs(a.pChange);
+    return sortOrder === 'ascend' ? -comparison : comparison;
   });
+
+  const handleCardClick = (symbol: string) => {
+    navigate(`/equity/${symbol}`);
+  };
 
   return (
     <div>
@@ -201,11 +197,14 @@ const EquitiesWidget: React.FC = () => {
                     <Typography.Text strong>{equity.symbol}</Typography.Text>
                     <Tag color={equity.pChange >= 0 ? 'success' : 'error'}>
                       {equity.pChange >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                      {equity.pChange.toFixed(2)}%
+                      {Math.abs(equity.pChange).toFixed(2)}%
                     </Tag>
                   </div>
                 } 
                 size="small"
+                hoverable
+                onClick={() => handleCardClick(equity.symbol)}
+                style={{ cursor: 'pointer' }}
               >
                 <div style={{ marginBottom: 16 }}>
                   <Tooltip title={equity.detailsLoading ? 'Loading...' : equity.companyName}>

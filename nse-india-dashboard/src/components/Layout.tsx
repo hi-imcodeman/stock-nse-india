@@ -18,29 +18,42 @@ interface LayoutProps {
 const MainLayout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
 
+  // Function to get the base path from the current location
+  const getBasePath = (path: string) => {
+    const segments = path.split('/');
+    const basePath = segments[1] || '';
+    
+    // Handle parameterized routes
+    if (basePath === 'index' || basePath === 'equity') {
+      return basePath === 'index' ? 'indices' : 'equities';
+    }
+    
+    return basePath;
+  };
+
   const menuItems = [
     {
-      key: '/',
+      key: 'dashboard',
       icon: <DashboardOutlined />,
       label: <Link to="/">Dashboard</Link>,
     },
     {
-      key: '/indices',
+      key: 'indices',
       icon: <LineChartOutlined />,
       label: <Link to="/indices">Indices</Link>,
     },
     {
-      key: '/equities',
+      key: 'equities',
       icon: <StockOutlined />,
       label: <Link to="/equities">Equities</Link>,
     },
     {
-      key: '/equities-widget',
+      key: 'equities-widget',
       icon: <AppstoreOutlined />,
       label: <Link to="/equities-widget">Equities Widget</Link>,
     },
     {
-      key: '/options',
+      key: 'options',
       icon: <SettingOutlined />,
       label: <Link to="/options">Options</Link>,
     },
@@ -65,7 +78,7 @@ const MainLayout: React.FC<LayoutProps> = ({ children }) => {
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[location.pathname]}
+          selectedKeys={[getBasePath(location.pathname)]}
           items={menuItems}
           style={{ height: '100%', borderRight: 0 }}
         />
