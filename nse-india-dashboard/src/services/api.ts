@@ -102,26 +102,35 @@ export interface EquityDetails {
   };
 }
 
-export interface OptionChain {
-  strikePrice: number;
-  expiryDate: string;
-  calls: Option[];
-  puts: Option[];
+export interface OptionChainData {
+  records: {
+    data: Array<{
+      strikePrice: number;
+      expiryDate: string;
+      CE?: OptionDetails;
+      PE?: OptionDetails;
+    }>;
+  };
 }
 
-export interface Option {
+export interface OptionDetails {
   strikePrice: number;
   expiryDate: string;
-  optionType: string;
   openInterest: number;
-  changeInOpenInterest: number;
+  changeinOpenInterest: number;
   impliedVolatility: number;
   lastPrice: number;
   change: number;
-  bidPrice: number;
+  bidprice: number;
   bidQty: number;
   askPrice: number;
   askQty: number;
+  totalTradedVolume: number;
+  totalBuyQuantity: number;
+  totalSellQuantity: number;
+  underlying: string;
+  identifier: string;
+  underlyingValue: number;
 }
 
 export interface IntradayData {
@@ -320,12 +329,12 @@ const api = {
   },
 
   // Options
-  getEquityOptions: async (symbol: string): Promise<OptionChain[]> => {
+  getEquityOptions: async (symbol: string): Promise<OptionChainData> => {
     const response = await axios.get(`${BASE_URL}/equity/options/${symbol}`);
     return response.data;
   },
 
-  getIndexOptions: async (indexSymbol: string): Promise<OptionChain[]> => {
+  getIndexOptions: async (indexSymbol: string): Promise<OptionChainData> => {
     const response = await axios.get(`${BASE_URL}/index/options/${indexSymbol}`);
     return response.data;
   },
