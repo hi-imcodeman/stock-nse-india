@@ -6,6 +6,7 @@ import {
   LineChartOutlined,
   StockOutlined,
   SettingOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
@@ -32,6 +33,11 @@ const MainLayout: React.FC<LayoutProps> = ({ children }) => {
       key: '/equities',
       icon: <StockOutlined />,
       label: <Link to="/equities">Equities</Link>,
+    },
+    {
+      key: '/equities-widget',
+      icon: <AppstoreOutlined />,
+      label: <Link to="/equities-widget">Equities Widget</Link>,
     },
     {
       key: '/options',

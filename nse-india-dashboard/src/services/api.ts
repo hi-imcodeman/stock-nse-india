@@ -240,6 +240,45 @@ interface IndexEquity {
   volume: number;
 }
 
+interface EquityTradeInfo {
+  noBlockDeals: boolean;
+  bulkBlockDeals: { name: string }[];
+  marketDeptOrderBook: {
+    totalBuyQuantity: number;
+    totalSellQuantity: number;
+    bid: {
+      price: number;
+      quantity: number;
+    }[];
+    ask: {
+      price: number;
+      quantity: number;
+    }[];
+    tradeInfo: {
+      totalTradedVolume: number;
+      totalTradedValue: number;
+      totalMarketCap: number;
+      ffmc: number;
+      impactCost: number;
+    };
+    valueAtRisk: {
+      securityVar: number;
+      indexVar: number;
+      varMargin: number;
+      extremeLossMargin: number;
+      adhocMargin: number;
+      applicableMargin: number;
+    };
+  };
+  securityWiseDP: {
+    quantityTraded: number;
+    deliveryQuantity: number;
+    deliveryToTradedQuantity: number;
+    seriesRemarks: string | null;
+    secWiseDelPosDate: string;
+  };
+}
+
 const api = {
   // Market Status
   getMarketStatus: async (): Promise<MarketStatus> => {
@@ -326,6 +365,12 @@ const api = {
       }
       return [];
     }
+  },
+
+  // Equity Trade Info
+  getEquityTradeInfo: async (symbol: string): Promise<EquityTradeInfo> => {
+    const response = await axios.get(`${BASE_URL}/equity/tradeInfo/${symbol}`);
+    return response.data;
   },
 
   // Options
