@@ -66,7 +66,10 @@ const Indices: React.FC = () => {
   const [historicalData, setHistoricalData] = useState<HistoricalDataRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [historicalLoading, setHistoricalLoading] = useState(false);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+    dayjs().subtract(1, 'month'),
+    dayjs()
+  ]);
   const [equities, setEquities] = useState<EquityData[]>([]);
   const [equitiesLoading, setEquitiesLoading] = useState(false);
   const [equitiesPageSize, setEquitiesPageSize] = useState(10);
@@ -362,6 +365,7 @@ const Indices: React.FC = () => {
                   loading={loading}
                 />
                 <RangePicker 
+                  value={dateRange}
                   onChange={(dates) => {
                     if (dates && dates[0] && dates[1]) {
                       setDateRange([dates[0], dates[1]]);

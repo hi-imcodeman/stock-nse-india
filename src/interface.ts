@@ -281,7 +281,7 @@ export interface EquityHistoricalInfo {
     CH_TOT_TRADED_VAL: number
     CH_52WEEK_HIGH_PRICE: number
     CH_52WEEK_LOW_PRICE: number
-    CH_TOTAL_TRADES: number | null,
+    CH_TOTAL_TRADES: number | null
     CH_ISIN: string
     CH_TIMESTAMP: string
     TIMESTAMP: string

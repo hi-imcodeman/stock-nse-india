@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Card, Input, DatePicker, Table, Statistic, Row, Col, Tag } from 'antd';
 import { SearchOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import api, { EquityDetails } from '../services/api';
+import api, { EquityDetails, EquityHistoricalData } from '../services/api';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -35,7 +35,10 @@ const Equities: React.FC = () => {
   const [equity, setEquity] = useState<EquityDetails | null>(null);
   const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+    dayjs().subtract(1, 'month'),
+    dayjs()
+  ]);
   const [searchText, setSearchText] = useState('');
   const [pageSize, setPageSize] = useState(10);
 
@@ -60,10 +63,27 @@ const Equities: React.FC = () => {
       const istStartDate = dayjs(startDate, 'DD-MM-YYYY').tz('Asia/Kolkata').format('YYYY-MM-DD');
       const istEndDate = dayjs(endDate, 'DD-MM-YYYY').tz('Asia/Kolkata').format('YYYY-MM-DD');
       
-      const response = await api.getEquityHistorical(symbol, istStartDate, istEndDate);
+      const response: EquityHistoricalData[] = await api.getEquityHistorical(symbol, istStartDate, istEndDate);
       
-      // Transform the API response into the expected format
-      const transformedData = response.data.map(item => ({
+      // Add logging and validation
+      console.log('Historical data response:', response);
+      
+      if (!response || !Array.isArray(response) || response.length === 0) {
+        console.error('Invalid response format:', response);
+        setHistoricalData([]);
+        return;
+      }
+      
+      // Combine data from all response objects
+      const allData = response.reduce((acc, curr) => {
+        if (curr.data) {
+          return [...acc, ...curr.data];
+        }
+        return acc;
+      }, [] as typeof response[0]['data']);
+      
+      // Transform the combined data into the expected format
+      const transformedData = allData.map(item => ({
         date: dayjs(item.TIMESTAMP).tz('Asia/Kolkata').format('DD-MM-YYYY'),
         open: item.CH_OPENING_PRICE,
         high: item.CH_TRADE_HIGH_PRICE,
@@ -71,7 +91,9 @@ const Equities: React.FC = () => {
         close: item.CH_CLOSING_PRICE,
         change: item.CH_LAST_TRADED_PRICE - item.CH_PREVIOUS_CLS_PRICE,
         changePercent: ((item.CH_LAST_TRADED_PRICE - item.CH_PREVIOUS_CLS_PRICE) / item.CH_PREVIOUS_CLS_PRICE) * 100
-      }));
+      }))
+      // Sort by date in descending order (most recent first)
+      .sort((a, b) => dayjs(b.date, 'DD-MM-YYYY').valueOf() - dayjs(a.date, 'DD-MM-YYYY').valueOf());
       
       setHistoricalData(transformedData);
     } catch (error) {
@@ -119,6 +141,17 @@ const Equities: React.FC = () => {
       debouncedFetchHistorical.cancel();
     };
   }, [searchText, dateRange, debouncedFetchHistorical]);
+
+  // Add new useEffect for initial data fetch
+  useEffect(() => {
+    if (searchText) {
+      debouncedFetchHistorical(
+        searchText,
+        dateRange[0].tz('Asia/Kolkata').format('DD-MM-YYYY'),
+        dateRange[1].tz('Asia/Kolkata').format('DD-MM-YYYY')
+      );
+    }
+  }, []); // Empty dependency array means this runs once on mount
 
   const formatPrice = (value: number) => {
     if (value === undefined || value === null) return '0.00';
@@ -242,6 +275,7 @@ const Equities: React.FC = () => {
         </Col>
         <Col span={12}>
           <RangePicker
+            value={dateRange}
             onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
             style={{ width: '100%' }}
             format="DD-MM-YYYY"

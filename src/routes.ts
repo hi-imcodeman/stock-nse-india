@@ -569,7 +569,7 @@ mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
             end: new Date(dateEnd as string)
         };
         const data = await nseIndia.getEquityHistoricalData(symbol, range);
-        res.json(data[0]); // Return the first chunk since we're handling one date range at a time
+        res.json(data);
     } catch (error) {
         res.status(400).json(error);
     }

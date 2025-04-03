@@ -299,7 +299,7 @@ const api = {
     return response.data;
   },
 
-  getEquityHistorical: async (symbol: string, startDate?: string, endDate?: string): Promise<EquityHistoricalData> => {
+  getEquityHistorical: async (symbol: string, startDate?: string, endDate?: string): Promise<EquityHistoricalData[]> => {
     const response = await axios.get(`${BASE_URL}/equity/historical/${symbol}`, {
       params: { dateStart: startDate, dateEnd: endDate }
     });
