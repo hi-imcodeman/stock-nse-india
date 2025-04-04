@@ -6,6 +6,7 @@ import Indices from './components/Indices';
 import Equities from './components/Equities';
 import Options from './components/Options';
 import EquitiesWidget from './components/EquitiesWidget';
+import Holidays from './components/Holidays';
 
 const App: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const App: React.FC = () => {
           <Route path="/equity/:symbol" element={<Equities />} />
           <Route path="/equities-widget" element={<EquitiesWidget />} />
           <Route path="/options" element={<Options />} />
+          <Route path="/holidays" element={<Holidays />} />
         </Routes>
       </MainLayout>
     </Router>

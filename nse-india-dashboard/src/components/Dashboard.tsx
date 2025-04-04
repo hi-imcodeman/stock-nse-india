@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Card, Row, Col, Table, Statistic, Typography } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Table, Statistic, Typography, Space } from 'antd';
+import { ArrowUpOutlined, ArrowDownOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { IndexDetails, MarketStatus } from '../../../src/interface';
+import { IndexDetails, MarketStatus, Holiday } from '../../../src/interface';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
@@ -53,6 +54,7 @@ const Dashboard: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const isLoadingRef = useRef(false);
   const mountedRef = useRef(true);
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -77,7 +79,6 @@ const Dashboard: React.FC = () => {
           api.getMarketStatus(),
           api.getAllIndices()
         ]);
-        console.log('Data fetched successfully');
         if (mountedRef.current) {
           setMarketStatus(statusData);
           setIndices(indicesData);
@@ -119,6 +120,24 @@ const Dashboard: React.FC = () => {
       }
     };
   }, [isInitialLoad]); // Add isInitialLoad to dependencies
+
+  // Separate effect for fetching holiday data only once
+  useEffect(() => {
+    const fetchHolidays = async () => {
+      try {
+        const holidaysData = await api.getHolidays();
+        console.log('Holidays data:', holidaysData);
+        // Combine all holiday arrays into a single array
+        const allHolidays = Object.values(holidaysData).flat();
+        console.log('Combined holidays:', allHolidays);
+        setHolidays(Array.isArray(allHolidays) ? allHolidays : []);
+      } catch (error) {
+        console.error('Error fetching holiday data:', error);
+      }
+    };
+
+    fetchHolidays();
+  }, []); // Empty dependency array means this effect runs only once on mount
 
   const formatNumber = (value: number): string => {
     return new Intl.NumberFormat('en-IN', {
@@ -288,13 +307,52 @@ const Dashboard: React.FC = () => {
     },
   ];
 
+  const getNextHoliday = () => {
+    if (!Array.isArray(holidays) || holidays.length === 0) {
+      console.log('No holidays available:', holidays);
+      return null;
+    }
+    const today = dayjs();
+    console.log('Today:', today.format('YYYY-MM-DD'));
+    const upcomingHolidays = holidays
+      .filter(holiday => {
+        const holidayDate = dayjs(holiday.tradingDate);
+        const isAfterToday = holidayDate.isAfter(today);
+        console.log('Holiday:', holiday.holiday, 'Date:', holidayDate.format('YYYY-MM-DD'), 'Is after today:', isAfterToday);
+        return isAfterToday;
+      })
+      .sort((a, b) => dayjs(a.tradingDate).valueOf() - dayjs(b.tradingDate).valueOf());
+    
+    console.log('Upcoming holidays:', upcomingHolidays);
+    return upcomingHolidays[0] || null;
+  };
+
+  const nextHoliday = getNextHoliday();
+  console.log('Next holiday:', nextHoliday);
+
   return (
     <div>
       <Title level={2} style={{ marginBottom: 24 }}>
         NSE India Market Dashboard
-        <Text type="secondary" style={{ marginLeft: 12, fontSize: 16 }}>
-          Last Updated: {new Date().toLocaleTimeString()}
-        </Text>
+        <Space style={{ marginLeft: 12, fontSize: 16 }}>
+          <Text type="secondary">
+            Last Updated: {new Date().toLocaleTimeString()}
+          </Text>
+          {nextHoliday && (
+            <>
+              <Text type="secondary">|</Text>
+              <Space 
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate('/holidays')}
+              >
+                <CalendarOutlined style={{ fontSize: 16, color: '#1890ff' }} />
+                <Text type="secondary">
+                  Next Holiday: {dayjs(nextHoliday.tradingDate).format('DD MMM YYYY')} ({nextHoliday.description || nextHoliday.holiday || 'Holiday'})
+                </Text>
+              </Space>
+            </>
+          )}
+        </Space>
       </Title>
 
       <Row gutter={[16, 16]}>

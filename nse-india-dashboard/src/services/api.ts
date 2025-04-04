@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MarketStatus, IndexDetails, IndexEquityInfo } from '../../../src/interface';
+import { MarketStatus, IndexDetails, IndexEquityInfo, Holiday } from '../../../src/interface';
 
 const BASE_URL = 'http://localhost:3000/api';
 
@@ -452,6 +452,14 @@ const api = {
 
   getMostActive: async (indexSymbol: string): Promise<MostActive> => {
     const response = await axios.get(`${BASE_URL}/mostActive/${indexSymbol}`);
+    return response.data;
+  },
+
+  // Holidays
+  getHolidays: async (type: 'trading' | 'clearing' = 'trading'): Promise<Holiday[]> => {
+    const response = await axios.get(`${BASE_URL}/holidays`, {
+      params: { type }
+    });
     return response.data;
   },
 };
