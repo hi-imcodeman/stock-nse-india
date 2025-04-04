@@ -143,10 +143,13 @@ const Holidays: React.FC = () => {
           dataSource={holidays}
           rowKey="id"
           pagination={{
-            pageSize: 10,
+            defaultPageSize: 10,
+            pageSizeOptions: ['10', '20', '50', '100'],
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) => `Total ${total} holidays`,
+            position: ['bottomRight'],
+            size: 'default',
           }}
         />
       </Card>

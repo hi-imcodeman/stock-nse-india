@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip, Input } from 'antd';
+import { ArrowUpOutlined, ArrowDownOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -39,10 +39,26 @@ const EquitiesWidget: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [sortField, setSortField] = useState<SortField>('symbol');
   const [sortOrder, setSortOrder] = useState<SortOrder>('descend');
+  const [searchText, setSearchText] = useState<string>('');
+  const [filteredEquities, setFilteredEquities] = useState<EquityInfo[]>([]);
 
   useEffect(() => {
     fetchEquities();
   }, [selectedIndex]);
+
+  useEffect(() => {
+    // Apply filtering when search text changes
+    if (searchText.trim() === '') {
+      setFilteredEquities(equities);
+    } else {
+      const filtered = equities.filter(equity => 
+        equity.symbol.toLowerCase().includes(searchText.toLowerCase()) ||
+        (equity.companyName && equity.companyName.toLowerCase().includes(searchText.toLowerCase())) ||
+        (equity.industry && equity.industry.toLowerCase().includes(searchText.toLowerCase()))
+      );
+      setFilteredEquities(filtered);
+    }
+  }, [searchText, equities]);
 
   const fetchEquities = async () => {
     setLoading(true);
@@ -136,9 +152,36 @@ const EquitiesWidget: React.FC = () => {
     }
   };
 
-  const sortedEquities = [...equities].sort((a, b) => {
-    const comparison = Math.abs(b.pChange) - Math.abs(a.pChange);
-    return sortOrder === 'ascend' ? -comparison : comparison;
+  const sortedEquities = [...filteredEquities].sort((a, b) => {
+    // Handle different sort fields
+    let comparison = 0;
+    let aMarketCap, bMarketCap;
+    
+    switch (sortField) {
+      case 'symbol':
+        comparison = a.symbol.localeCompare(b.symbol);
+        break;
+      case 'lastPrice':
+        comparison = a.lastPrice - b.lastPrice;
+        break;
+      case 'change':
+        comparison = a.change - b.change;
+        break;
+      case 'pChange':
+        comparison = a.pChange - b.pChange;
+        break;
+      case 'totalMarketCap':
+        // Handle undefined market cap values
+        aMarketCap = a.totalMarketCap || 0;
+        bMarketCap = b.totalMarketCap || 0;
+        comparison = aMarketCap - bMarketCap;
+        break;
+      default:
+        comparison = a.symbol.localeCompare(b.symbol);
+    }
+    
+    // Apply sort order
+    return sortOrder === 'ascend' ? comparison : -comparison;
   });
 
   const handleCardClick = (symbol: string) => {
@@ -147,7 +190,7 @@ const EquitiesWidget: React.FC = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         <Select
           value={selectedIndex}
           onChange={setSelectedIndex}
@@ -159,6 +202,14 @@ const EquitiesWidget: React.FC = () => {
             { value: 'NIFTY 200', label: 'NIFTY 200' },
             { value: 'NIFTY 500', label: 'NIFTY 500' },
           ]}
+        />
+        <Input
+          placeholder="Search by symbol, company, or industry"
+          prefix={<SearchOutlined />}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 250 }}
+          allowClear
         />
         <Select
           value={sortField}
@@ -189,75 +240,81 @@ const EquitiesWidget: React.FC = () => {
         </div>
       ) : (
         <Row gutter={[16, 16]}>
-          {sortedEquities.map((equity) => (
-            <Col xs={24} sm={12} md={8} lg={6} key={equity.symbol}>
-              <Card 
-                title={
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography.Text strong>{equity.symbol}</Typography.Text>
-                    <Tag color={equity.pChange >= 0 ? 'success' : 'error'}>
-                      {equity.pChange >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                      {Math.abs(equity.pChange).toFixed(2)}%
-                    </Tag>
+          {sortedEquities.length > 0 ? (
+            sortedEquities.map((equity) => (
+              <Col xs={24} sm={12} md={8} lg={6} key={equity.symbol}>
+                <Card 
+                  title={
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography.Text strong>{equity.symbol}</Typography.Text>
+                      <Tag color={equity.pChange >= 0 ? 'success' : 'error'}>
+                        {equity.pChange >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                        {Math.abs(equity.pChange).toFixed(2)}%
+                      </Tag>
+                    </div>
+                  } 
+                  size="small"
+                  hoverable
+                  onClick={() => handleCardClick(equity.symbol)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div style={{ marginBottom: 16 }}>
+                    <Tooltip title={equity.detailsLoading ? 'Loading...' : equity.companyName}>
+                      <Typography.Text type="secondary" style={{ 
+                        display: 'block', 
+                        fontSize: '14px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {equity.detailsLoading ? <Spin size="small" /> : equity.companyName}
+                      </Typography.Text>
+                    </Tooltip>
+                    <Tooltip title={equity.detailsLoading ? 'Loading...' : equity.industry}>
+                      <Typography.Text type="secondary" style={{ 
+                        display: 'block', 
+                        fontSize: '12px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }}>
+                        {equity.detailsLoading ? <Spin size="small" /> : equity.industry}
+                      </Typography.Text>
+                    </Tooltip>
                   </div>
-                } 
-                size="small"
-                hoverable
-                onClick={() => handleCardClick(equity.symbol)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div style={{ marginBottom: 16 }}>
-                  <Tooltip title={equity.detailsLoading ? 'Loading...' : equity.companyName}>
-                    <Typography.Text type="secondary" style={{ 
-                      display: 'block', 
-                      fontSize: '14px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {equity.detailsLoading ? <Spin size="small" /> : equity.companyName}
-                    </Typography.Text>
-                  </Tooltip>
-                  <Tooltip title={equity.detailsLoading ? 'Loading...' : equity.industry}>
-                    <Typography.Text type="secondary" style={{ 
-                      display: 'block', 
-                      fontSize: '12px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {equity.detailsLoading ? <Spin size="small" /> : equity.industry}
-                    </Typography.Text>
-                  </Tooltip>
-                </div>
-                <Statistic
-                  title="Price"
-                  value={equity.lastPrice}
-                  precision={2}
-                  prefix="₹"
-                />
-                <Statistic
-                  title="Change"
-                  value={equity.change}
-                  precision={2}
-                  valueStyle={{ color: equity.pChange >= 0 ? '#3f8600' : '#cf1322' }}
-                  prefix={equity.pChange >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                  suffix="₹"
-                />
-                <Statistic
-                  title="Volume"
-                  value={equity.totalTradedVolume}
-                  formatter={(value) => formatVolume(value as number)}
-                />
-                <Statistic
-                  title="Market Cap"
-                  value={equity.totalMarketCap}
-                  formatter={(value) => value ? formatMarketCap(value as number) : 'N/A'}
-                  suffix={equity.marketCapLoading ? <Spin size="small" /> : null}
-                />
-              </Card>
+                  <Statistic
+                    title="Price"
+                    value={equity.lastPrice}
+                    precision={2}
+                    prefix="₹"
+                  />
+                  <Statistic
+                    title="Change"
+                    value={equity.change}
+                    precision={2}
+                    valueStyle={{ color: equity.pChange >= 0 ? '#3f8600' : '#cf1322' }}
+                    prefix={equity.pChange >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                    suffix="₹"
+                  />
+                  <Statistic
+                    title="Volume"
+                    value={equity.totalTradedVolume}
+                    formatter={(value) => formatVolume(value as number)}
+                  />
+                  <Statistic
+                    title="Market Cap"
+                    value={equity.totalMarketCap}
+                    formatter={(value) => value ? formatMarketCap(value as number) : 'N/A'}
+                    suffix={equity.marketCapLoading ? <Spin size="small" /> : null}
+                  />
+                </Card>
+              </Col>
+            ))
+          ) : (
+            <Col span={24} style={{ textAlign: 'center', padding: '50px' }}>
+              <Typography.Text type="secondary">No equities found matching your search criteria</Typography.Text>
             </Col>
-          ))}
+          )}
         </Row>
       )}
     </div>
