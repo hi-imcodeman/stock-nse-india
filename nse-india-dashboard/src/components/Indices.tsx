@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, DatePicker, Select, Space, Spin, Tooltip } from 'antd';
+import { Card, Row, Col, Statistic, Table, Tag, DatePicker, Select, Space, Spin, Tooltip, Typography } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -61,6 +61,10 @@ interface EquityData {
   volume: number;
 }
 
+const StatisticTitle = ({ children }: { children: React.ReactNode }) => (
+  <span style={{ fontSize: '12px' }}>{children}</span>
+);
+
 const Indices: React.FC = () => {
   const { symbol } = useParams<{ symbol: string }>();
   const navigate = useNavigate();
@@ -112,9 +116,7 @@ const Indices: React.FC = () => {
     };
 
     fetchIndices();
-    const interval = setInterval(fetchIndices, 60000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, [symbol]); // Add symbol to dependencies
+  }, [symbol]); // Only fetch when symbol changes or component mounts
 
   useEffect(() => {
     const fetchHistoricalData = async () => {
@@ -166,14 +168,18 @@ const Indices: React.FC = () => {
     const fetchEquities = async () => {
       if (!selectedIndex) return;
 
-      setEquitiesLoading(true);
+      // Only set loading state on initial load
+      if (equities.length === 0) {
+        setEquitiesLoading(true);
+      }
+
       try {
         console.log('Fetching equities for index:', selectedIndex);
         const data = await api.getIndexEquities(selectedIndex);
         console.log('Received equities data:', data);
         
         const transformedData = data
-          .filter(equity => equity.symbol !== selectedIndex) // Filter out the selected index
+          .filter(equity => equity.symbol !== selectedIndex)
           .map(equity => ({
             symbol: equity.symbol,
             companyName: equity.companyName,
@@ -195,6 +201,45 @@ const Indices: React.FC = () => {
     };
 
     fetchEquities();
+    const interval = setInterval(fetchEquities, 5000);
+    return () => clearInterval(interval);
+  }, [selectedIndex]);
+
+  useEffect(() => {
+    const fetchSelectedIndexData = async () => {
+      if (!selectedIndex) return;
+
+      try {
+        const data = await api.getIndexEquities(selectedIndex);
+        if (data && data.length > 0) {
+          const selectedData = data.find(equity => equity.symbol === selectedIndex);
+          if (selectedData) {
+            setIndices(prevIndices => 
+              prevIndices.map(index => 
+                index.name === selectedIndex ? {
+                  ...index,
+                  metadata: {
+                    ...index.metadata,
+                    last: selectedData.lastPrice,
+                    change: selectedData.change,
+                    percChange: selectedData.changePercent,
+                    open: selectedData.open,
+                    high: selectedData.high,
+                    low: selectedData.low
+                  }
+                } : index
+              )
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing selected index data:', error);
+      }
+    };
+
+    fetchSelectedIndexData();
+    const interval = setInterval(fetchSelectedIndexData, 5000);
+    return () => clearInterval(interval);
   }, [selectedIndex]);
 
   const columns = [
@@ -398,71 +443,135 @@ const Indices: React.FC = () => {
               </Space>
               {selectedIndexData && (
                 <Row gutter={16}>
-                  <Col span={4}>
-                    <Statistic
-                      title="Open"
-                      value={selectedIndexData.metadata.open}
-                      precision={2}
-                      loading={loading}
-                    />
+                  <Col span={12}>
+                    <Card size="small" style={{ height: '100%' }}>
+                      <Space direction="vertical" style={{ width: '100%' }}>
+                        <Space>
+                          <Typography.Text strong>Market Breadth</Typography.Text>
+                          {equities.length > 0 && (
+                            <>
+                              <Tag color={equities.filter(e => e.change > 0).length > equities.filter(e => e.change < 0).length ? 'success' : 'error'}>
+                                {equities.filter(e => e.change > 0).length > equities.filter(e => e.change < 0).length ? 
+                                  <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                                {((equities.filter(e => e.change > 0).length / (equities.filter(e => e.change > 0).length + equities.filter(e => e.change < 0).length)) * 100).toFixed(1)}%
+                              </Tag>
+                              <Tooltip title="Market breadth shows the ratio of advancing to declining stocks. A percentage above 50% indicates more stocks are rising than falling, while below 50% indicates more stocks are falling than rising. This helps gauge overall market sentiment.">
+                                <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
+                              </Tooltip>
+                            </>
+                          )}
+                        </Space>
+                        <Row gutter={8}>
+                          <Col span={8}>
+                            <Statistic
+                              title="Advances"
+                              value={equities.filter(e => e.change > 0).length}
+                              loading={equitiesLoading && equities.length === 0}
+                              valueStyle={{ color: '#3f8600' }}
+                            />
+                          </Col>
+                          <Col span={8}>
+                            <Statistic
+                              title="Declines"
+                              value={equities.filter(e => e.change < 0).length}
+                              loading={equitiesLoading && equities.length === 0}
+                              valueStyle={{ color: '#cf1322' }}
+                            />
+                          </Col>
+                          <Col span={8}>
+                            <Statistic
+                              title="Unchanged"
+                              value={equities.filter(e => e.change === 0).length}
+                              loading={equitiesLoading && equities.length === 0}
+                              valueStyle={{ color: '#8c8c8c' }}
+                            />
+                          </Col>
+                        </Row>
+                      </Space>
+                    </Card>
                   </Col>
-                  <Col span={4}>
-                    <Statistic
-                      title="High"
-                      value={selectedIndexData.metadata.high}
-                      precision={2}
-                      loading={loading}
-                    />
-                  </Col>
-                  <Col span={4}>
-                    <Statistic
-                      title="Low"
-                      value={selectedIndexData.metadata.low}
-                      precision={2}
-                      loading={loading}
-                    />
-                  </Col>
-                  <Col span={4}>
-                    <Statistic
-                      title="Close"
-                      value={selectedIndexData.metadata.last}
-                      precision={2}
-                      loading={loading}
-                      valueStyle={{
-                        color: selectedIndexData.metadata.change >= 0
-                          ? '#3f8600'
-                          : '#cf1322',
-                      }}
-                    />
-                  </Col>
-                  <Col span={4}>
-                    <Statistic
-                      title="Change"
-                      value={selectedIndexData.metadata.change}
-                      precision={2}
-                      loading={loading}
-                      valueStyle={{
-                        color: selectedIndexData.metadata.change >= 0
-                          ? '#3f8600'
-                          : '#cf1322',
-                      }}
-                      prefix={selectedIndexData.metadata.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                    />
-                  </Col>
-                  <Col span={4}>
-                    <Statistic
-                      title="Change %"
-                      value={selectedIndexData.metadata.percChange}
-                      precision={2}
-                      loading={loading}
-                      valueStyle={{
-                        color: selectedIndexData.metadata.change >= 0
-                          ? '#3f8600'
-                          : '#cf1322',
-                      }}
-                      prefix={selectedIndexData.metadata.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                      suffix="%"
-                    />
+                  <Col span={12}>
+                    <Card size="small" style={{ height: '100%' }}>
+                      <Space direction="vertical" style={{ width: '100%' }}>
+                        <Space>
+                          <Typography.Text strong>Index Statistics</Typography.Text>
+                        </Space>
+                        <Row gutter={4}>
+                          <Col span={4}>
+                            <Statistic
+                              title={<StatisticTitle>Open</StatisticTitle>}
+                              value={selectedIndexData.metadata.open}
+                              precision={2}
+                              loading={loading}
+                              valueStyle={{ fontSize: '14px' }}
+                            />
+                          </Col>
+                          <Col span={4}>
+                            <Statistic
+                              title={<StatisticTitle>High</StatisticTitle>}
+                              value={selectedIndexData.metadata.high}
+                              precision={2}
+                              loading={loading}
+                              valueStyle={{ fontSize: '14px' }}
+                            />
+                          </Col>
+                          <Col span={4}>
+                            <Statistic
+                              title={<StatisticTitle>Low</StatisticTitle>}
+                              value={selectedIndexData.metadata.low}
+                              precision={2}
+                              loading={loading}
+                              valueStyle={{ fontSize: '14px' }}
+                            />
+                          </Col>
+                          <Col span={4}>
+                            <Statistic
+                              title={<StatisticTitle>Close</StatisticTitle>}
+                              value={selectedIndexData.metadata.last}
+                              precision={2}
+                              loading={loading}
+                              valueStyle={{
+                                fontSize: '14px',
+                                color: selectedIndexData.metadata.change >= 0
+                                  ? '#3f8600'
+                                  : '#cf1322',
+                              }}
+                            />
+                          </Col>
+                          <Col span={4}>
+                            <Statistic
+                              title={<StatisticTitle>Change</StatisticTitle>}
+                              value={selectedIndexData.metadata.change}
+                              precision={2}
+                              loading={loading}
+                              valueStyle={{
+                                fontSize: '14px',
+                                color: selectedIndexData.metadata.change >= 0
+                                  ? '#3f8600'
+                                  : '#cf1322',
+                              }}
+                              prefix={selectedIndexData.metadata.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                            />
+                          </Col>
+                          <Col span={4}>
+                            <Statistic
+                              title={<StatisticTitle>Change %</StatisticTitle>}
+                              value={selectedIndexData.metadata.percChange}
+                              precision={2}
+                              loading={loading}
+                              valueStyle={{
+                                fontSize: '14px',
+                                color: selectedIndexData.metadata.change >= 0
+                                  ? '#3f8600'
+                                  : '#cf1322',
+                              }}
+                              prefix={selectedIndexData.metadata.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                              suffix="%"
+                            />
+                          </Col>
+                        </Row>
+                      </Space>
+                    </Card>
                   </Col>
                 </Row>
               )}
@@ -475,52 +584,109 @@ const Indices: React.FC = () => {
         <>
           <Row gutter={[16, 16]}>
             <Col span={24}>
-              <Card 
-                title={
-                  <Space>
-                    Market Breadth
-                    {equities.length > 0 && (
-                      <>
-                        <Tag color={equities.filter(e => e.change > 0).length > equities.filter(e => e.change < 0).length ? 'success' : 'error'}>
-                          {equities.filter(e => e.change > 0).length > equities.filter(e => e.change < 0).length ? 
-                            <ArrowUpOutlined /> : <ArrowDownOutlined />}
-                          {((equities.filter(e => e.change > 0).length / (equities.filter(e => e.change > 0).length + equities.filter(e => e.change < 0).length)) * 100).toFixed(1)}%
+              <Row gutter={[16, 16]}>
+                <Col span={12}>
+                  <Card 
+                    title={
+                      <Space>
+                        Top Gainers
+                        <Tag color="success">
+                          <ArrowUpOutlined />
+                          {equities.length > 0 ? equities.filter(e => e.change > 0).length : 0}
                         </Tag>
-                        <Tooltip title="Market breadth shows the ratio of advancing to declining stocks. A percentage above 50% indicates more stocks are rising than falling, while below 50% indicates more stocks are falling than rising. This helps gauge overall market sentiment.">
-                          <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
-                        </Tooltip>
-                      </>
-                    )}
-                  </Space>
-                }
-              >
-                <Row gutter={16}>
-                  <Col span={8}>
-                    <Statistic
-                      title="Advances"
-                      value={equities.filter(e => e.change > 0).length}
-                      loading={equitiesLoading}
-                      valueStyle={{ color: '#3f8600' }}
+                      </Space>
+                    }
+                  >
+                    <Table
+                      size="small"
+                      dataSource={[...equities]
+                        .filter(e => e.change > 0)
+                        .sort((a, b) => b.changePercent - a.changePercent)
+                        .slice(0, 5)}
+                      columns={[
+                        {
+                          title: 'Symbol',
+                          dataIndex: 'symbol',
+                          key: 'symbol',
+                          render: (text: string) => (
+                            <a onClick={() => navigate(`/equity/${text}`)}>{text}</a>
+                          ),
+                        },
+                        {
+                          title: 'Change %',
+                          dataIndex: 'changePercent',
+                          key: 'changePercent',
+                          render: (value: number) => (
+                            <Tag color="success">
+                              <ArrowUpOutlined />
+                              {value.toFixed(2)}%
+                            </Tag>
+                          ),
+                        },
+                        {
+                          title: 'Price',
+                          dataIndex: 'lastPrice',
+                          key: 'lastPrice',
+                          render: (value: number) => formatNumber(value),
+                        },
+                      ]}
+                      pagination={false}
+                      loading={equitiesLoading && equities.length === 0}
                     />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="Declines"
-                      value={equities.filter(e => e.change < 0).length}
-                      loading={equitiesLoading}
-                      valueStyle={{ color: '#cf1322' }}
+                  </Card>
+                </Col>
+
+                <Col span={12}>
+                  <Card 
+                    title={
+                      <Space>
+                        Top Losers
+                        <Tag color="error">
+                          <ArrowDownOutlined />
+                          {equities.length > 0 ? equities.filter(e => e.change < 0).length : 0}
+                        </Tag>
+                      </Space>
+                    }
+                  >
+                    <Table
+                      size="small"
+                      dataSource={[...equities]
+                        .filter(e => e.change < 0)
+                        .sort((a, b) => a.changePercent - b.changePercent)
+                        .slice(0, 5)}
+                      columns={[
+                        {
+                          title: 'Symbol',
+                          dataIndex: 'symbol',
+                          key: 'symbol',
+                          render: (text: string) => (
+                            <a onClick={() => navigate(`/equity/${text}`)}>{text}</a>
+                          ),
+                        },
+                        {
+                          title: 'Change %',
+                          dataIndex: 'changePercent',
+                          key: 'changePercent',
+                          render: (value: number) => (
+                            <Tag color="error">
+                              <ArrowDownOutlined />
+                              {Math.abs(value).toFixed(2)}%
+                            </Tag>
+                          ),
+                        },
+                        {
+                          title: 'Price',
+                          dataIndex: 'lastPrice',
+                          key: 'lastPrice',
+                          render: (value: number) => formatNumber(value),
+                        },
+                      ]}
+                      pagination={false}
+                      loading={equitiesLoading && equities.length === 0}
                     />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="Unchanged"
-                      value={equities.filter(e => e.change === 0).length}
-                      loading={equitiesLoading}
-                      valueStyle={{ color: '#8c8c8c' }}
-                    />
-                  </Col>
-                </Row>
-              </Card>
+                  </Card>
+                </Col>
+              </Row>
             </Col>
           </Row>
 
@@ -529,7 +695,7 @@ const Indices: React.FC = () => {
               columns={equityColumns}
               dataSource={equities}
               rowKey="symbol"
-              loading={equitiesLoading}
+              loading={equitiesLoading && equities.length === 0}
               pagination={{
                 pageSize: equitiesPageSize,
                 pageSizeOptions: ['10', '20', '50', '100'],
