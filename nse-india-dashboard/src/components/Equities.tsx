@@ -167,21 +167,6 @@ const Equities: React.FC = () => {
     });
   };
 
-  const equityColumns = [
-    {
-      title: 'Field',
-      dataIndex: 'field',
-      key: 'field',
-      width: '40%',
-    },
-    {
-      title: 'Value',
-      dataIndex: 'value',
-      key: 'value',
-      width: '60%',
-    },
-  ];
-
   const getEquityTableData = (equity: EquityDetails): EquityTableRow[] => {
     if (!equity) return [];
     return [
@@ -320,15 +305,120 @@ const Equities: React.FC = () => {
         </Card>
       )}
 
+      {equity?.priceInfo && (
+        <Card style={{ marginTop: 16 }}>
+          <Spin spinning={detailsLoading}>
+            <Row gutter={[16, 16]}>
+              <Col span={4}>
+                <Statistic
+                  title={<span style={{ fontWeight: 'bold' }}>Last Price</span>}
+                  value={formatPrice(equity.priceInfo.lastPrice)}
+                  valueStyle={{
+                    fontSize: '24px',
+                    color: equity.priceInfo.change >= 0 ? '#3f8600' : '#cf1322'
+                  }}
+                />
+              </Col>
+              <Col span={4}>
+                <Statistic
+                  title={<span style={{ fontWeight: 'bold' }}>Open</span>}
+                  value={formatPrice(equity.priceInfo.open)}
+                  valueStyle={{ fontSize: '20px' }}
+                />
+              </Col>
+              <Col span={4}>
+                <Statistic
+                  title={<span style={{ fontWeight: 'bold' }}>High</span>}
+                  value={formatPrice(equity.priceInfo.stockIndClosePrice)}
+                  valueStyle={{ fontSize: '20px', color: '#3f8600' }}
+                />
+              </Col>
+              <Col span={4}>
+                <Statistic
+                  title={<span style={{ fontWeight: 'bold' }}>Low</span>}
+                  value={formatPrice(parseFloat(equity.priceInfo.lowerCP))}
+                  valueStyle={{ fontSize: '20px', color: '#cf1322' }}
+                />
+              </Col>
+              <Col span={4}>
+                <Statistic
+                  title={<span style={{ fontWeight: 'bold' }}>Change</span>}
+                  value={formatPrice(equity.priceInfo.change)}
+                  valueStyle={{
+                    fontSize: '20px',
+                    color: equity.priceInfo.change >= 0 ? '#3f8600' : '#cf1322'
+                  }}
+                  prefix={equity.priceInfo.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                />
+              </Col>
+              <Col span={4}>
+                <Statistic
+                  title={<span style={{ fontWeight: 'bold' }}>Change %</span>}
+                  value={equity.priceInfo.pChange.toFixed(2)}
+                  valueStyle={{
+                    fontSize: '20px',
+                    color: equity.priceInfo.change >= 0 ? '#3f8600' : '#cf1322'
+                  }}
+                  prefix={equity.priceInfo.change >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                  suffix="%"
+                />
+              </Col>
+            </Row>
+          </Spin>
+        </Card>
+      )}
+
       {equity && (
         <Card style={{ marginTop: 16 }}>
           <Spin spinning={detailsLoading}>
-            <Table
-              columns={equityColumns}
-              dataSource={getEquityTableData(equity)}
-              rowKey={(record) => record.field}
-              pagination={false}
-            />
+            <Row gutter={[16, 16]}>
+              <Col span={12}>
+                <Table
+                  columns={[
+                    {
+                      title: 'Field',
+                      dataIndex: 'field',
+                      key: 'field',
+                      width: '40%',
+                      render: (text: string) => <span style={{ fontWeight: 'bold' }}>{text}</span>
+                    },
+                    {
+                      title: 'Value',
+                      dataIndex: 'value',
+                      key: 'value',
+                      width: '60%',
+                    },
+                  ]}
+                  dataSource={getEquityTableData(equity).slice(0, 5)}
+                  rowKey={(record) => record.field}
+                  pagination={false}
+                  showHeader={false}
+                />
+              </Col>
+              <Col span={12}>
+                <Table
+                  columns={[
+                    {
+                      title: 'Field',
+                      dataIndex: 'field',
+                      key: 'field',
+                      width: '40%',
+                      render: (text: string) => <span style={{ fontWeight: 'bold' }}>{text}</span>
+                    },
+                    {
+                      title: 'Value',
+                      dataIndex: 'value',
+                      key: 'value',
+                      width: '60%',
+                    },
+                  ]}
+                  dataSource={getEquityTableData(equity).slice(5)}
+                  rowKey={(record) => record.field}
+                  pagination={false}
+                  showHeader={false}
+                />
+              </Col>
+            </Row>
           </Spin>
         </Card>
       )}
