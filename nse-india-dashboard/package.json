@@ -14,6 +14,8 @@
     "@types/react-router-dom": "^5.3.3",
     "antd": "^5.24.6",
     "axios": "^1.8.4",
+    "highcharts": "^12.2.0",
+    "highcharts-react-official": "^3.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.1",

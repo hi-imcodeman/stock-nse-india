@@ -6,7 +6,9 @@ import api from '../services/api';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Line } from 'recharts';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import 'highcharts/modules/stock';
 
 // Configure dayjs plugins
 dayjs.extend(utc);
@@ -59,6 +61,14 @@ interface EquityData {
   high: number;
   low: number;
   volume: number;
+}
+
+interface HighchartsPoint {
+  x: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
 }
 
 const StatisticTitle = ({ children }: { children: React.ReactNode }) => (
@@ -411,6 +421,92 @@ const Indices: React.FC = () => {
     },
   ];
 
+  const chartOptions = {
+    chart: {
+      type: 'candlestick',
+      height: 600,
+    },
+    title: {
+      text: `${selectedIndex} Price Chart`,
+    },
+    xAxis: {
+      type: 'datetime',
+      labels: {
+        rotation: -45,
+        style: {
+          fontSize: '10px',
+        },
+        formatter: function(this: { value: number }): string {
+          return dayjs(this.value).format('DD-MMM-YYYY');
+        },
+      },
+      ordinal: true,
+    },
+    yAxis: {
+      title: {
+        text: 'Price',
+      },
+      labels: {
+        formatter: function(this: { value: number }): string {
+          return formatNumber(this.value);
+        },
+      },
+    },
+    tooltip: {
+      formatter: function(this: { point: HighchartsPoint }): string {
+        const point = this.point;
+        return `<b>${dayjs(point.x).format('DD-MMM-YYYY')}</b><br/>
+          Open: ${formatNumber(point.open)}<br/>
+          High: ${formatNumber(point.high)}<br/>
+          Low: ${formatNumber(point.low)}<br/>
+          Close: ${formatNumber(point.close)}`;
+      },
+    },
+    series: [{
+      name: selectedIndex,
+      data: chartData.map(record => ({
+        x: dayjs(record.date, 'DD-MMM-YYYY').valueOf(),
+        open: record.open,
+        high: record.high,
+        low: record.low,
+        close: record.close,
+        color: record.isUp ? '#3f8600' : '#cf1322',
+      })),
+      upColor: '#3f8600',
+      color: '#cf1322',
+    }],
+    credits: {
+      enabled: false,
+    },
+    navigator: {
+      enabled: true,
+    },
+    rangeSelector: {
+      enabled: true,
+      buttons: [{
+        type: 'day',
+        count: 1,
+        text: '1D'
+      }, {
+        type: 'week',
+        count: 1,
+        text: '1W'
+      }, {
+        type: 'month',
+        count: 1,
+        text: '1M'
+      }, {
+        type: 'month',
+        count: 3,
+        text: '3M'
+      }, {
+        type: 'all',
+        text: 'All'
+      }],
+      selected: 2
+    },
+  };
+
   return (
     <div>
       <Row gutter={[16, 16]}>
@@ -716,65 +812,10 @@ const Indices: React.FC = () => {
         <>
           <Card title="Price Chart" style={{ marginTop: 16 }}>
             <div style={{ height: 600, paddingLeft: 20, paddingBottom: 20, position: 'relative' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="date" 
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis 
-                    domain={[(dataMin: number) => dataMin * 0.999, (dataMax: number) => dataMax * 1.001]}
-                    tickFormatter={(value) => formatInteger(value)}
-                    width={80}
-                  />
-                  <RechartsTooltip 
-                    formatter={(value: number, name: string) => [formatNumber(value), name]}
-                  />
-                  <Legend 
-                    verticalAlign="top"
-                    height={36}
-                    wrapperStyle={{ paddingBottom: 20 }}
-                  />
-                  {/* Open price line */}
-                  <Line
-                    type="monotone"
-                    dataKey="open"
-                    name="Open"
-                    stroke="#1890ff"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  {/* Close price line */}
-                  <Line
-                    type="monotone"
-                    dataKey="close"
-                    name="Close"
-                    stroke="#722ed1"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                  {/* High-Low wicks */}
-                  <Line
-                    type="monotone"
-                    dataKey="high"
-                    name="High"
-                    stroke="#82ca9d"
-                    strokeWidth={1}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="low"
-                    name="Low"
-                    stroke="#ff7875"
-                    strokeWidth={1}
-                    dot={false}
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={chartOptions}
+              />
               {historicalLoading && (
                 <div style={{ 
                   position: 'absolute', 
