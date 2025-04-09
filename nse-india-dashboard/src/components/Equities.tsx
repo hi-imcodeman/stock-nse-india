@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Card, Input, DatePicker, Table, Statistic, Row, Col, Tag, Spin } from 'antd';
+import { Card, Input, DatePicker, Table, Statistic, Row, Col, Tag, Spin, Tabs, Space } from 'antd';
 import { SearchOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import api, { EquityDetails, EquityHistoricalData } from '../services/api';
@@ -7,6 +7,9 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import debounce from 'lodash/debounce';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import 'highcharts/modules/stock';
 
 // Configure dayjs plugins
 dayjs.extend(utc);
@@ -30,6 +33,14 @@ interface EquityTableRow {
   value: string | number;
 }
 
+interface HighchartsPoint {
+  x: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+}
+
 const { RangePicker } = DatePicker;
 
 const Equities: React.FC = () => {
@@ -45,6 +56,7 @@ const Equities: React.FC = () => {
   ]);
   const [searchText, setSearchText] = useState(symbol || '');
   const [pageSize, setPageSize] = useState(10);
+  const [activeTab, setActiveTab] = useState('chart');
 
   const fetchEquityDetails = async (symbol: string) => {
     if (!symbol) return;
@@ -167,6 +179,13 @@ const Equities: React.FC = () => {
     });
   };
 
+  const formatNumber = (value: number): string => {
+    return new Intl.NumberFormat('en-IN', {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2
+    }).format(value);
+  };
+
   const getEquityTableData = (equity: EquityDetails): EquityTableRow[] => {
     if (!equity) return [];
     return [
@@ -250,26 +269,78 @@ const Equities: React.FC = () => {
     }
   };
 
+  const chartOptions = {
+    chart: {
+      type: 'candlestick',
+      height: 600,
+    },
+    title: {
+      text: `${equity?.info.symbol} Price Chart`,
+    },
+    legend: {
+      enabled: false,
+    },
+    xAxis: {
+      type: 'datetime',
+      labels: {
+        rotation: -45,
+        style: {
+          fontSize: '10px',
+        },
+        formatter: function(this: { value: number }): string {
+          return dayjs(this.value).format('DD-MMM-YYYY');
+        },
+      },
+      ordinal: true,
+    },
+    yAxis: {
+      title: {
+        text: 'Price',
+      },
+      labels: {
+        formatter: function(this: { value: number }): string {
+          return formatNumber(this.value);
+        },
+      },
+    },
+    tooltip: {
+      formatter: function(this: { point: HighchartsPoint }): string {
+        const point = this.point;
+        return `<b>${dayjs(point.x).format('DD-MMM-YYYY')}</b><br/>
+          Open: ${formatNumber(point.open)}<br/>
+          High: ${formatNumber(point.high)}<br/>
+          Low: ${formatNumber(point.low)}<br/>
+          Close: ${formatNumber(point.close)}`;
+      },
+    },
+    series: [{
+      name: equity?.info.symbol,
+      data: historicalData.map(record => ({
+        x: dayjs(record.date, 'DD-MM-YYYY').valueOf(),
+        open: record.open,
+        high: record.high,
+        low: record.low,
+        close: record.close,
+        color: record.change >= 0 ? '#3f8600' : '#cf1322',
+      })),
+      upColor: '#3f8600',
+      color: '#cf1322',
+    }],
+    credits: {
+      enabled: false,
+    },
+  };
+
   return (
     <div>
       <Row gutter={[16, 16]}>
-        <Col span={12}>
+        <Col span={24}>
           <Input
             placeholder="Enter equity symbol"
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             onPressEnter={() => handleSearch(searchText)}
-            disabled={detailsLoading || historicalLoading}
-          />
-        </Col>
-        <Col span={12}>
-          <RangePicker
-            value={dateRange}
-            onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
-            style={{ width: '100%' }}
-            format="DD-MM-YYYY"
-            disabledDate={(current) => current && current > dayjs().endOf('day')}
             disabled={detailsLoading || historicalLoading}
           />
         </Col>
@@ -329,7 +400,7 @@ const Equities: React.FC = () => {
               <Col span={4}>
                 <Statistic
                   title={<span style={{ fontWeight: 'bold' }}>High</span>}
-                  value={formatPrice(equity.priceInfo.stockIndClosePrice)}
+                  value={formatPrice(equity.priceInfo.intraDayHighLow.max)}
                   valueStyle={{ fontSize: '20px', color: '#3f8600' }}
                 />
               </Col>
@@ -424,24 +495,76 @@ const Equities: React.FC = () => {
       )}
 
       {historicalData.length > 0 && (
-        <Card style={{ marginTop: 16 }}>
-          <Spin spinning={historicalLoading}>
-            <Table
-              columns={historicalColumns}
-              dataSource={historicalData}
-              rowKey={(record) => record.date}
-              pagination={{
-                pageSize: pageSize,
-                pageSizeOptions: ['10', '20', '50', '100'],
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total) => `Total ${total} records`,
-                onShowSizeChange: (current, size) => {
-                  setPageSize(size);
-                }
-              }}
+        <Card title="Price Data" style={{ marginTop: 16 }}>
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space>
+              <RangePicker
+                value={dateRange}
+                onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])}
+                style={{ width: '100%' }}
+                format="DD-MM-YYYY"
+                disabledDate={(current) => current && current > dayjs().endOf('day')}
+                disabled={detailsLoading || historicalLoading}
+              />
+              {historicalLoading && <Spin size="small" />}
+            </Space>
+            <Tabs
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              items={[
+                {
+                  key: 'chart',
+                  label: 'Chart',
+                  children: (
+                    <div style={{ height: 600, paddingLeft: 20, paddingBottom: 20, position: 'relative' }}>
+                      <HighchartsReact
+                        highcharts={Highcharts}
+                        options={chartOptions}
+                      />
+                      {historicalLoading && (
+                        <div style={{ 
+                          position: 'absolute', 
+                          top: 0, 
+                          left: 0, 
+                          right: 0, 
+                          bottom: 0, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                          zIndex: 1
+                        }}>
+                          <Spin size="large" />
+                        </div>
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  key: 'table',
+                  label: 'Historical Data',
+                  children: (
+                    <Table
+                      columns={historicalColumns}
+                      dataSource={historicalData}
+                      rowKey={(record) => record.date}
+                      loading={historicalLoading}
+                      pagination={{
+                        pageSize: pageSize,
+                        pageSizeOptions: ['10', '20', '50', '100'],
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total) => `Total ${total} records`,
+                        onShowSizeChange: (current, size) => {
+                          setPageSize(size);
+                        }
+                      }}
+                    />
+                  ),
+                },
+              ]}
             />
-          </Spin>
+          </Space>
         </Card>
       )}
 
