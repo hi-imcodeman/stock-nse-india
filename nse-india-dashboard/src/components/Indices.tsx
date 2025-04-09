@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, DatePicker, Select, Space, Spin, Tooltip, Typography } from 'antd';
+import { Card, Row, Col, Statistic, Table, Tag, DatePicker, Select, Space, Spin, Tooltip, Typography, Tabs } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -91,6 +91,7 @@ const Indices: React.FC = () => {
   const [equitiesLoading, setEquitiesLoading] = useState(false);
   const [equitiesPageSize, setEquitiesPageSize] = useState(10);
   const [historicalPageSize, setHistoricalPageSize] = useState(10);
+  const [activeTab, setActiveTab] = useState('chart');
 
   // Add effect to scroll to top when component mounts or symbol changes
   useEffect(() => {
@@ -429,6 +430,9 @@ const Indices: React.FC = () => {
     title: {
       text: `${selectedIndex} Price Chart`,
     },
+    legend: {
+      enabled: false,
+    },
     xAxis: {
       type: 'datetime',
       labels: {
@@ -478,33 +482,6 @@ const Indices: React.FC = () => {
     credits: {
       enabled: false,
     },
-    navigator: {
-      enabled: true,
-    },
-    rangeSelector: {
-      enabled: true,
-      buttons: [{
-        type: 'day',
-        count: 1,
-        text: '1D'
-      }, {
-        type: 'week',
-        count: 1,
-        text: '1W'
-      }, {
-        type: 'month',
-        count: 1,
-        text: '1M'
-      }, {
-        type: 'month',
-        count: 3,
-        text: '3M'
-      }, {
-        type: 'all',
-        text: 'All'
-      }],
-      selected: 2
-    },
   };
 
   return (
@@ -521,21 +498,6 @@ const Indices: React.FC = () => {
                   onChange={setSelectedIndex}
                   loading={loading}
                 />
-                <Space>
-                  <RangePicker 
-                    value={dateRange}
-                    onChange={(dates) => {
-                      if (dates && dates[0] && dates[1]) {
-                        setDateRange([dates[0], dates[1]]);
-                      }
-                    }}
-                    disabledDate={(current) => {
-                      return current && current > dayjs().endOf('day');
-                    }}
-                    disabled={loading || historicalLoading}
-                  />
-                  {historicalLoading && <Spin size="small" />}
-                </Space>
               </Space>
               {selectedIndexData && (
                 <Row gutter={16}>
@@ -809,52 +771,82 @@ const Indices: React.FC = () => {
       )}
 
       {dateRange && (
-        <>
-          <Card title="Price Chart" style={{ marginTop: 16 }}>
-            <div style={{ height: 600, paddingLeft: 20, paddingBottom: 20, position: 'relative' }}>
-              <HighchartsReact
-                highcharts={Highcharts}
-                options={chartOptions}
+        <Card title="Price Data" style={{ marginTop: 16 }}>
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space>
+              <RangePicker 
+                value={dateRange}
+                onChange={(dates) => {
+                  if (dates && dates[0] && dates[1]) {
+                    setDateRange([dates[0], dates[1]]);
+                  }
+                }}
+                disabledDate={(current) => {
+                  return current && current > dayjs().endOf('day');
+                }}
+                disabled={loading || historicalLoading}
               />
-              {historicalLoading && (
-                <div style={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  left: 0, 
-                  right: 0, 
-                  bottom: 0, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                  zIndex: 1
-                }}>
-                  <Spin size="large" />
-                </div>
-              )}
-            </div>
-          </Card>
-
-          <Card title="Historical Data" style={{ marginTop: 16 }}>
-            <Table
-              columns={columns}
-              dataSource={historicalData}
-              rowKey="date"
-              loading={historicalLoading}
-              pagination={{
-                pageSize: historicalPageSize,
-                pageSizeOptions: ['10', '20', '50', '100'],
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total) => `Total ${total} records`,
-                position: ['bottomCenter'],
-                onShowSizeChange: (current, size) => {
-                  setHistoricalPageSize(size);
-                }
-              }}
+              {historicalLoading && <Spin size="small" />}
+            </Space>
+            <Tabs
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              items={[
+                {
+                  key: 'chart',
+                  label: 'Chart',
+                  children: (
+                    <div style={{ height: 600, paddingLeft: 20, paddingBottom: 20, position: 'relative' }}>
+                      <HighchartsReact
+                        highcharts={Highcharts}
+                        options={chartOptions}
+                      />
+                      {historicalLoading && (
+                        <div style={{ 
+                          position: 'absolute', 
+                          top: 0, 
+                          left: 0, 
+                          right: 0, 
+                          bottom: 0, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                          zIndex: 1
+                        }}>
+                          <Spin size="large" />
+                        </div>
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  key: 'table',
+                  label: 'Historical Data',
+                  children: (
+                    <Table
+                      columns={columns}
+                      dataSource={historicalData}
+                      rowKey="date"
+                      loading={historicalLoading}
+                      pagination={{
+                        pageSize: historicalPageSize,
+                        pageSizeOptions: ['10', '20', '50', '100'],
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total) => `Total ${total} records`,
+                        position: ['bottomCenter'],
+                        onShowSizeChange: (current, size) => {
+                          setHistoricalPageSize(size);
+                        }
+                      }}
+                    />
+                  ),
+                },
+              ]}
             />
-          </Card>
-        </>
+          </Space>
+        </Card>
       )}
     </div>
   );
