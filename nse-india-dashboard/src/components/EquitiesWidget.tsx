@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip, Input } from 'antd';
+import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip, Input, Popover } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Configure dayjs plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+// Set default timezone to IST
+dayjs.tz.setDefault('Asia/Kolkata');
 
 type SortField = 'symbol' | 'lastPrice' | 'change' | 'pChange' | 'totalMarketCap';
 type SortOrder = 'ascend' | 'descend';
@@ -30,6 +40,24 @@ interface EquityInfo {
   companyName: string;
   industry: string;
   detailsLoading: boolean;
+  technicalIndicators?: {
+    sma5: number;
+    sma10: number;
+    sma20: number;
+    sma50: number;
+    sma100: number;
+    sma200: number;
+    ema5: number;
+    ema10: number;
+    ema20: number;
+    ema50: number;
+    ema100: number;
+    ema200: number;
+  };
+  signals?: {
+    buy: number;
+    sell: number;
+  };
 }
 
 const EquitiesWidget: React.FC = () => {
@@ -41,6 +69,117 @@ const EquitiesWidget: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('descend');
   const [searchText, setSearchText] = useState<string>('');
   const [filteredEquities, setFilteredEquities] = useState<EquityInfo[]>([]);
+
+  // Calculate SMA
+  const calculateSMA = (data: number[], period: number): number[] => {
+    const sma: number[] = [];
+    for (let i = 0; i < data.length; i++) {
+      if (i < period - 1) {
+        sma.push(NaN);
+        continue;
+      }
+      const sum = data.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0);
+      sma.push(sum / period);
+    }
+    return sma;
+  };
+
+  // Calculate EMA
+  const calculateEMA = (data: number[], period: number): number[] => {
+    const ema: number[] = [];
+    const multiplier = 2 / (period + 1);
+    
+    // Start with SMA for the first EMA value
+    const sma = calculateSMA(data, period);
+    ema[period - 1] = sma[period - 1];
+    
+    for (let i = period; i < data.length; i++) {
+      ema[i] = (data[i] - ema[i - 1]) * multiplier + ema[i - 1];
+    }
+    
+    return ema;
+  };
+
+  // Calculate technical indicators for an equity
+  const calculateTechnicalIndicators = async (symbol: string, lastPrice: number) => {
+    try {
+      const response = await api.getEquityHistorical(symbol, 
+        new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        new Date().toISOString().split('T')[0]
+      );
+      
+      if (!response || !Array.isArray(response) || response.length === 0) {
+        return null;
+      }
+
+      // Process historical data exactly like in Equities.tsx
+      const allData = response.reduce((acc, curr) => {
+        if (curr.data) {
+          return [...acc, ...curr.data];
+        }
+        return acc;
+      }, [] as typeof response[0]['data']);
+
+      const transformedData = allData.map(item => ({
+        date: dayjs(item.TIMESTAMP).tz('Asia/Kolkata').format('DD-MM-YYYY'),
+        open: item.CH_OPENING_PRICE,
+        high: item.CH_TRADE_HIGH_PRICE,
+        low: item.CH_TRADE_LOW_PRICE,
+        close: item.CH_CLOSING_PRICE,
+        change: item.CH_LAST_TRADED_PRICE - item.CH_PREVIOUS_CLS_PRICE,
+        changePercent: ((item.CH_LAST_TRADED_PRICE - item.CH_PREVIOUS_CLS_PRICE) / item.CH_PREVIOUS_CLS_PRICE) * 100
+      }))
+      .sort((a, b) => dayjs(b.date, 'DD-MM-YYYY').valueOf() - dayjs(a.date, 'DD-MM-YYYY').valueOf());
+
+      const closePrices = transformedData.map(item => item.close).reverse();
+
+      // Calculate all indicators
+      const sma5 = calculateSMA(closePrices, 5);
+      const sma10 = calculateSMA(closePrices, 10);
+      const sma20 = calculateSMA(closePrices, 20);
+      const sma50 = calculateSMA(closePrices, 50);
+      const sma100 = calculateSMA(closePrices, 100);
+      const sma200 = calculateSMA(closePrices, 200);
+      const ema5 = calculateEMA(closePrices, 5);
+      const ema10 = calculateEMA(closePrices, 10);
+      const ema20 = calculateEMA(closePrices, 20);
+      const ema50 = calculateEMA(closePrices, 50);
+      const ema100 = calculateEMA(closePrices, 100);
+      const ema200 = calculateEMA(closePrices, 200);
+
+      // Get the latest values
+      const indicators = {
+        sma5: sma5[sma5.length - 1],
+        sma10: sma10[sma10.length - 1],
+        sma20: sma20[sma20.length - 1],
+        sma50: sma50[sma50.length - 1],
+        sma100: sma100[sma100.length - 1],
+        sma200: sma200[sma200.length - 1],
+        ema5: ema5[ema5.length - 1],
+        ema10: ema10[ema10.length - 1],
+        ema20: ema20[ema20.length - 1],
+        ema50: ema50[ema50.length - 1],
+        ema100: ema100[ema100.length - 1],
+        ema200: ema200[ema200.length - 1],
+      };
+
+      // Count buy and sell signals
+      const allIndicators = Object.values(indicators);
+      const buySignals = allIndicators.filter(value => value && value < lastPrice).length;
+      const sellSignals = allIndicators.filter(value => value && value > lastPrice).length;
+
+      return {
+        technicalIndicators: indicators,
+        signals: {
+          buy: buySignals,
+          sell: sellSignals
+        }
+      };
+    } catch (error) {
+      console.error(`Error calculating technical indicators for ${symbol}:`, error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     fetchEquities();
@@ -80,7 +219,7 @@ const EquitiesWidget: React.FC = () => {
         }));
       setEquities(equitiesData);
 
-      // Fetch market cap and equity details in parallel
+      // Fetch market cap, equity details, and technical indicators in parallel
       equitiesData.forEach(async (equity) => {
         try {
           // Fetch market cap data
@@ -112,6 +251,20 @@ const EquitiesWidget: React.FC = () => {
                 }
               : e
           ));
+
+          // Calculate technical indicators
+          const technicalData = await calculateTechnicalIndicators(equity.symbol, equity.lastPrice);
+          if (technicalData) {
+            setEquities(prev => prev.map(e => 
+              e.symbol === equity.symbol 
+                ? { 
+                    ...e,
+                    technicalIndicators: technicalData.technicalIndicators,
+                    signals: technicalData.signals
+                  }
+                : e
+            ));
+          }
         } catch (error) {
           console.error(`Error fetching data for ${equity.symbol}:`, error);
           setEquities(prev => prev.map(e => 
@@ -307,6 +460,66 @@ const EquitiesWidget: React.FC = () => {
                     formatter={(value) => value ? formatMarketCap(value as number) : 'N/A'}
                     suffix={equity.marketCapLoading ? <Spin size="small" /> : null}
                   />
+                  {equity.signals && (
+                    <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between' }}>
+                      <Popover 
+                        content={
+                          <div style={{ maxWidth: 300 }}>
+                            <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Technical Indicators (Buy):</div>
+                            {equity.technicalIndicators && Object.entries(equity.technicalIndicators)
+                              .filter(([, value]) => value && value < equity.lastPrice)
+                              .map(([key, value]) => (
+                                <div key={key} style={{ fontSize: '12px', marginBottom: 4, color: '#3f8600' }}>
+                                  {key.toUpperCase()}: {value.toFixed(2)}
+                                </div>
+                              ))}
+                          </div>
+                        }
+                        title="Buy Signal Details"
+                        trigger="hover"
+                        placement="topLeft"
+                        mouseEnterDelay={0.3}
+                        mouseLeaveDelay={0.3}
+                        overlayStyle={{ maxWidth: 300 }}
+                      >
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Statistic
+                            title="Buy Signals"
+                            value={equity.signals.buy}
+                            valueStyle={{ color: '#3f8600', fontSize: '16px' }}
+                          />
+                        </div>
+                      </Popover>
+                      <Popover 
+                        content={
+                          <div style={{ maxWidth: 300 }}>
+                            <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Technical Indicators (Sell):</div>
+                            {equity.technicalIndicators && Object.entries(equity.technicalIndicators)
+                              .filter(([, value]) => value && value > equity.lastPrice)
+                              .map(([key, value]) => (
+                                <div key={key} style={{ fontSize: '12px', marginBottom: 4, color: '#cf1322' }}>
+                                  {key.toUpperCase()}: {value.toFixed(2)}
+                                </div>
+                              ))}
+                          </div>
+                        }
+                        title="Sell Signal Details"
+                        trigger="hover"
+                        placement="topRight"
+                        mouseEnterDelay={0.3}
+                        mouseLeaveDelay={0.3}
+                        overlayStyle={{ maxWidth: 300 }}
+                      >
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <Statistic
+                            title="Sell Signals"
+                            value={equity.signals.sell}
+                            valueStyle={{ color: '#cf1322', fontSize: '16px' }}
+                          />
+                        </div>
+                      </Popover>
+                    </div>
+                  )}
                 </Card>
               </Col>
             ))
