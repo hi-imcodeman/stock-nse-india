@@ -39,26 +39,98 @@ interface EquityInfo {
   companyName: string;
   industry: string;
   detailsLoading: boolean;
-  technicalIndicators?: {
-    sma5: number;
-    sma10: number;
-    sma20: number;
-    sma50: number;
-    sma100: number;
-    sma200: number;
-    ema5: number;
-    ema10: number;
-    ema20: number;
-    ema50: number;
-    ema100: number;
-    ema200: number;
-  };
+  technicalIndicators?: TechnicalIndicators;
   signals?: {
     buy: number;
     sell: number;
   };
   signalsLoading: boolean;
 }
+
+interface TechnicalIndicators {
+  sma5: number;
+  sma10: number;
+  sma20: number;
+  sma50: number;
+  sma100: number;
+  sma200: number;
+  ema5: number;
+  ema10: number;
+  ema20: number;
+  ema50: number;
+  ema100: number;
+  ema200: number;
+  latestClosePrice: number;
+}
+
+interface CachedTechnicalData {
+  data: {
+    technicalIndicators: TechnicalIndicators;
+    signals: {
+      buy: number;
+      sell: number;
+    };
+  };
+  timestamp: number;
+}
+
+interface CachedCompanyDetails {
+  data: {
+    companyName: string;
+    industry: string;
+    totalMarketCap?: number;
+  };
+  timestamp: number;
+}
+
+const TECHNICAL_DATA_EXPIRY = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+const COMPANY_DETAILS_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
+
+const getCachedTechnicalData = (symbol: string): CachedTechnicalData | null => {
+  const cached = localStorage.getItem(`technical_${symbol}`);
+  if (!cached) return null;
+  
+  const data = JSON.parse(cached) as CachedTechnicalData;
+  const now = Date.now();
+  
+  if (now - data.timestamp > TECHNICAL_DATA_EXPIRY) {
+    localStorage.removeItem(`technical_${symbol}`);
+    return null;
+  }
+  
+  return data;
+};
+
+const setCachedTechnicalData = (symbol: string, data: CachedTechnicalData['data']) => {
+  const cacheData: CachedTechnicalData = {
+    data,
+    timestamp: Date.now()
+  };
+  localStorage.setItem(`technical_${symbol}`, JSON.stringify(cacheData));
+};
+
+const getCachedCompanyDetails = (symbol: string): CachedCompanyDetails | null => {
+  const cached = localStorage.getItem(`company_${symbol}`);
+  if (!cached) return null;
+  
+  const data = JSON.parse(cached) as CachedCompanyDetails;
+  const now = Date.now();
+  
+  if (now - data.timestamp > COMPANY_DETAILS_EXPIRY) {
+    localStorage.removeItem(`company_${symbol}`);
+    return null;
+  }
+  
+  return data;
+};
+
+const setCachedCompanyDetails = (symbol: string, data: CachedCompanyDetails['data']) => {
+  const cacheData: CachedCompanyDetails = {
+    data,
+    timestamp: Date.now()
+  };
+  localStorage.setItem(`company_${symbol}`, JSON.stringify(cacheData));
+};
 
 const EquitiesWidget: React.FC = () => {
   const [selectedIndex, setSelectedIndex] = useState<string>('NIFTY 50');
@@ -100,8 +172,14 @@ const EquitiesWidget: React.FC = () => {
   };
 
   // Calculate technical indicators for an equity
-  const calculateTechnicalIndicators = async (symbol: string, lastPrice: number) => {
+  const calculateTechnicalIndicators = async (symbol: string) => {
     try {
+      // Check cache first
+      const cachedData = getCachedTechnicalData(symbol);
+      if (cachedData) {
+        return cachedData.data;
+      }
+
       const response = await api.getEquityHistorical(symbol, 
         new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         new Date().toISOString().split('T')[0]
@@ -131,6 +209,7 @@ const EquitiesWidget: React.FC = () => {
       .sort((a, b) => dayjs(b.date, 'DD-MM-YYYY').valueOf() - dayjs(a.date, 'DD-MM-YYYY').valueOf());
 
       const closePrices = transformedData.map(item => item.close).reverse();
+      const latestClosePrice = closePrices[closePrices.length - 1];
 
       // Calculate all indicators
       const sma5 = calculateSMA(closePrices, 5);
@@ -147,7 +226,7 @@ const EquitiesWidget: React.FC = () => {
       const ema200 = calculateEMA(closePrices, 200);
 
       // Get the latest values
-      const indicators = {
+      const indicators: TechnicalIndicators = {
         sma5: sma5[sma5.length - 1],
         sma10: sma10[sma10.length - 1],
         sma20: sma20[sma20.length - 1],
@@ -160,20 +239,28 @@ const EquitiesWidget: React.FC = () => {
         ema50: ema50[ema50.length - 1],
         ema100: ema100[ema100.length - 1],
         ema200: ema200[ema200.length - 1],
+        latestClosePrice
       };
 
       // Count buy and sell signals
-      const allIndicators = Object.values(indicators);
-      const buySignals = allIndicators.filter(value => value && value < lastPrice).length;
-      const sellSignals = allIndicators.filter(value => value && value > lastPrice).length;
+      const allIndicators = Object.entries(indicators)
+        .filter(([key]) => key !== 'latestClosePrice')
+        .map(([, value]) => value);
+      const buySignals = allIndicators.filter(value => value && value < latestClosePrice).length;
+      const sellSignals = allIndicators.filter(value => value && value > latestClosePrice).length;
 
-      return {
+      const result = {
         technicalIndicators: indicators,
         signals: {
           buy: buySignals,
           sell: sellSignals
         }
       };
+
+      // Cache the result
+      setCachedTechnicalData(symbol, result);
+
+      return result;
     } catch (error) {
       console.error(`Error calculating technical indicators for ${symbol}:`, error);
       return null;
@@ -222,38 +309,54 @@ const EquitiesWidget: React.FC = () => {
       // Fetch market cap, equity details, and technical indicators in parallel
       equitiesData.forEach(async (equity) => {
         try {
-          // Fetch market cap data
-          const tradeInfo = await api.getEquityTradeInfo(equity.symbol);
-          if (tradeInfo && tradeInfo.marketDeptOrderBook?.tradeInfo?.totalMarketCap) {
+          // Check cache for company details first
+          const cachedDetails = getCachedCompanyDetails(equity.symbol);
+          if (cachedDetails) {
             setEquities(prev => prev.map(e => 
               e.symbol === equity.symbol 
-                ? { ...e, totalMarketCap: tradeInfo.marketDeptOrderBook.tradeInfo.totalMarketCap, marketCapLoading: false }
+                ? { 
+                    ...e, 
+                    companyName: cachedDetails.data.companyName,
+                    industry: cachedDetails.data.industry,
+                    totalMarketCap: cachedDetails.data.totalMarketCap,
+                    marketCapLoading: false,
+                    detailsLoading: false
+                  }
                 : e
             ));
           } else {
-            console.warn(`No market cap data available for ${equity.symbol}`);
+            // Fetch market cap data
+            const tradeInfo = await api.getEquityTradeInfo(equity.symbol);
+            const marketCap = tradeInfo?.marketDeptOrderBook?.tradeInfo?.totalMarketCap;
+
+            // Fetch equity details
+            const equityDetails = await api.getEquityDetails(equity.symbol);
+            const companyName = equityDetails?.info?.companyName || equity.symbol;
+            const industry = equityDetails?.info?.industry || 'N/A';
+
+            // Cache the company details
+            setCachedCompanyDetails(equity.symbol, {
+              companyName,
+              industry,
+              totalMarketCap: marketCap
+            });
+
             setEquities(prev => prev.map(e => 
               e.symbol === equity.symbol 
-                ? { ...e, marketCapLoading: false }
+                ? { 
+                    ...e, 
+                    companyName,
+                    industry,
+                    totalMarketCap: marketCap,
+                    marketCapLoading: false,
+                    detailsLoading: false
+                  }
                 : e
             ));
           }
 
-          // Fetch equity details
-          const equityDetails = await api.getEquityDetails(equity.symbol);
-          setEquities(prev => prev.map(e => 
-            e.symbol === equity.symbol 
-              ? { 
-                  ...e, 
-                  companyName: equityDetails?.info?.companyName || equity.symbol,
-                  industry: equityDetails?.info?.industry || 'N/A',
-                  detailsLoading: false
-                }
-              : e
-          ));
-
           // Calculate technical indicators
-          const technicalData = await calculateTechnicalIndicators(equity.symbol, equity.lastPrice);
+          const technicalData = await calculateTechnicalIndicators(equity.symbol);
           if (technicalData) {
             setEquities(prev => prev.map(e => 
               e.symbol === equity.symbol 
@@ -501,14 +604,20 @@ const EquitiesWidget: React.FC = () => {
                       <Popover 
                         content={
                           <div style={{ maxWidth: 300 }}>
+                            <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Latest Close Price: ₹{equity.technicalIndicators?.latestClosePrice?.toFixed(2) || 'N/A'}</div>
                             <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Technical Indicators (Buy):</div>
-                            {equity.technicalIndicators && Object.entries(equity.technicalIndicators)
-                              .filter(([, value]) => value && value < equity.lastPrice)
-                              .map(([key, value]) => (
-                                <div key={key} style={{ fontSize: '12px', marginBottom: 4, color: '#3f8600' }}>
-                                  {key.toUpperCase()}: {value.toFixed(2)}
-                                </div>
-                              ))}
+                            {equity.technicalIndicators?.latestClosePrice ? (
+                              Object.entries(equity.technicalIndicators!)
+                                .filter(([key]) => key !== 'latestClosePrice')
+                                .filter(([, value]) => value && value < equity.technicalIndicators!.latestClosePrice)
+                                .map(([key, value]) => (
+                                  <div key={key} style={{ fontSize: '12px', marginBottom: 4, color: '#3f8600' }}>
+                                    {key.toUpperCase()}: {value.toFixed(2)}
+                                  </div>
+                                ))
+                            ) : (
+                              <div style={{ fontSize: '12px', color: '#999' }}>No indicators available</div>
+                            )}
                           </div>
                         }
                         title="Buy Signal Details"
@@ -530,14 +639,20 @@ const EquitiesWidget: React.FC = () => {
                       <Popover 
                         content={
                           <div style={{ maxWidth: 300 }}>
+                            <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Latest Close Price: ₹{equity.technicalIndicators?.latestClosePrice?.toFixed(2) || 'N/A'}</div>
                             <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Technical Indicators (Sell):</div>
-                            {equity.technicalIndicators && Object.entries(equity.technicalIndicators)
-                              .filter(([, value]) => value && value > equity.lastPrice)
-                              .map(([key, value]) => (
-                                <div key={key} style={{ fontSize: '12px', marginBottom: 4, color: '#cf1322' }}>
-                                  {key.toUpperCase()}: {value.toFixed(2)}
-                                </div>
-                              ))}
+                            {equity.technicalIndicators?.latestClosePrice ? (
+                              Object.entries(equity.technicalIndicators!)
+                                .filter(([key]) => key !== 'latestClosePrice')
+                                .filter(([, value]) => value && value > equity.technicalIndicators!.latestClosePrice)
+                                .map(([key, value]) => (
+                                  <div key={key} style={{ fontSize: '12px', marginBottom: 4, color: '#cf1322' }}>
+                                    {key.toUpperCase()}: {value.toFixed(2)}
+                                  </div>
+                                ))
+                            ) : (
+                              <div style={{ fontSize: '12px', color: '#999' }}>No indicators available</div>
+                            )}
                           </div>
                         }
                         title="Sell Signal Details"
