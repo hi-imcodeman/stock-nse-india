@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Card, Row, Col, Table, Statistic, Typography, Space } from 'antd';
+import { Card, Row, Col, Table, Statistic, Typography, Space, Tag } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -144,16 +144,6 @@ const Dashboard: React.FC = () => {
       maximumFractionDigits: 2,
       minimumFractionDigits: 2
     }).format(value);
-  };
-
-  const formatMarketCap = (value: string): string => {
-    const numValue = parseFloat(value.replace(/,/g, ''));
-    if (numValue >= 100000) {
-      return `${(numValue / 100000).toFixed(2)} Lakh Cr`;
-    } else if (numValue >= 1000) {
-      return `${(numValue / 1000).toFixed(2)} Thousand Cr`;
-    }
-    return `${numValue.toFixed(2)} Cr`;
   };
 
   const formatPercentage = (value: number): string => {
@@ -330,8 +320,40 @@ const Dashboard: React.FC = () => {
   const nextHoliday = getNextHoliday();
   console.log('Next holiday:', nextHoliday);
 
+  const isTodayHoliday = () => {
+    if (!Array.isArray(holidays) || holidays.length === 0) {
+      return false;
+    }
+    const today = dayjs().format('YYYY-MM-DD');
+    return holidays.find(holiday => dayjs(holiday.tradingDate).format('YYYY-MM-DD') === today);
+  };
+
+  const todayHoliday = isTodayHoliday();
+
   return (
     <div>
+      {todayHoliday && (
+        <div style={{
+          backgroundColor: '#ff4d4f',
+          color: 'white',
+          padding: '12px 24px',
+          textAlign: 'center',
+          marginBottom: '16px',
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px'
+        }}>
+          <CalendarOutlined style={{ fontSize: '16px' }} />
+          <Text strong style={{ color: 'white' }}>
+            Market Holiday: {todayHoliday.description || todayHoliday.holiday || 'Holiday'}
+          </Text>
+          <Tag color="white" style={{ color: '#ff4d4f', marginLeft: '8px' }}>
+            Trading Holiday
+          </Tag>
+        </div>
+      )}
       <Title level={2} style={{ marginBottom: 24 }}>
         NSE India Market Dashboard
         <Space style={{ marginLeft: 12, fontSize: 16 }}>
@@ -356,25 +378,7 @@ const Dashboard: React.FC = () => {
       </Title>
 
       <Row gutter={[16, 16]}>
-        <Col span={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="Market Cap"
-              value={formatMarketCap(marketStatus.marketcap.marketCapinCRRupeesFormatted)}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="Total Indices"
-              value={indices.length}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
+        <Col span={12}>
           <Card loading={loading}>
             <Statistic
               title="Active Markets"
@@ -383,7 +387,7 @@ const Dashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={12}>
           <Card loading={loading}>
             <Statistic
               title="NIFTY50 Advances/Declines"
