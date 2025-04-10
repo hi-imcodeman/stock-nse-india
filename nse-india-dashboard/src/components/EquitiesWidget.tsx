@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip, Input, Popover } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, SearchOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -14,7 +13,7 @@ dayjs.extend(timezone);
 // Set default timezone to IST
 dayjs.tz.setDefault('Asia/Kolkata');
 
-type SortField = 'symbol' | 'lastPrice' | 'change' | 'pChange' | 'totalMarketCap';
+type SortField = 'symbol' | 'lastPrice' | 'change' | 'pChange' | 'totalMarketCap' | 'buySignals' | 'sellSignals';
 type SortOrder = 'ascend' | 'descend';
 
 interface IndexEquity {
@@ -58,10 +57,10 @@ interface EquityInfo {
     buy: number;
     sell: number;
   };
+  signalsLoading: boolean;
 }
 
 const EquitiesWidget: React.FC = () => {
-  const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState<string>('NIFTY 50');
   const [equities, setEquities] = useState<EquityInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -215,7 +214,8 @@ const EquitiesWidget: React.FC = () => {
           marketCapLoading: true,
           companyName: equity.symbol,
           industry: 'Loading...',
-          detailsLoading: true
+          detailsLoading: true,
+          signalsLoading: true
         }));
       setEquities(equitiesData);
 
@@ -260,7 +260,8 @@ const EquitiesWidget: React.FC = () => {
                 ? { 
                     ...e,
                     technicalIndicators: technicalData.technicalIndicators,
-                    signals: technicalData.signals
+                    signals: technicalData.signals,
+                    signalsLoading: false
                   }
                 : e
             ));
@@ -273,6 +274,7 @@ const EquitiesWidget: React.FC = () => {
                   ...e, 
                   marketCapLoading: false,
                   detailsLoading: false,
+                  signalsLoading: false,
                   industry: 'N/A'
                 }
               : e
@@ -309,6 +311,7 @@ const EquitiesWidget: React.FC = () => {
     // Handle different sort fields
     let comparison = 0;
     let aMarketCap, bMarketCap;
+    let aBuySignals, bBuySignals, aSellSignals, bSellSignals;
     
     switch (sortField) {
       case 'symbol':
@@ -329,6 +332,18 @@ const EquitiesWidget: React.FC = () => {
         bMarketCap = b.totalMarketCap || 0;
         comparison = aMarketCap - bMarketCap;
         break;
+      case 'buySignals':
+        // Handle undefined signals
+        aBuySignals = a.signals?.buy || 0;
+        bBuySignals = b.signals?.buy || 0;
+        comparison = aBuySignals - bBuySignals;
+        break;
+      case 'sellSignals':
+        // Handle undefined signals
+        aSellSignals = a.signals?.sell || 0;
+        bSellSignals = b.signals?.sell || 0;
+        comparison = aSellSignals - bSellSignals;
+        break;
       default:
         comparison = a.symbol.localeCompare(b.symbol);
     }
@@ -338,7 +353,7 @@ const EquitiesWidget: React.FC = () => {
   });
 
   const handleCardClick = (symbol: string) => {
-    navigate(`/equity/${symbol}`);
+    window.open(`/equity/${symbol}`, '_blank');
   };
 
   return (
@@ -374,6 +389,8 @@ const EquitiesWidget: React.FC = () => {
             { value: 'change', label: 'Change' },
             { value: 'pChange', label: 'Change %' },
             { value: 'totalMarketCap', label: 'Market Cap' },
+            { value: 'buySignals', label: 'Buy Signals' },
+            { value: 'sellSignals', label: 'Sell Signals' },
           ]}
         />
         <Select
@@ -460,7 +477,26 @@ const EquitiesWidget: React.FC = () => {
                     formatter={(value) => value ? formatMarketCap(value as number) : 'N/A'}
                     suffix={equity.marketCapLoading ? <Spin size="small" /> : null}
                   />
-                  {equity.signals && (
+                  {equity.signalsLoading ? (
+                    <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between' }}>
+                      <div>
+                        <Statistic
+                          title="Buy Signals"
+                          value={0}
+                          valueStyle={{ color: '#3f8600', fontSize: '16px' }}
+                          suffix={<Spin size="small" />}
+                        />
+                      </div>
+                      <div>
+                        <Statistic
+                          title="Sell Signals"
+                          value={0}
+                          valueStyle={{ color: '#cf1322', fontSize: '16px' }}
+                          suffix={<Spin size="small" />}
+                        />
+                      </div>
+                    </div>
+                  ) : equity.signals && (
                     <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between' }}>
                       <Popover 
                         content={
@@ -485,8 +521,9 @@ const EquitiesWidget: React.FC = () => {
                         <div onClick={(e) => e.stopPropagation()}>
                           <Statistic
                             title="Buy Signals"
-                            value={equity.signals.buy}
+                            value={((equity.signals.buy / 12) * 100).toFixed(1)}
                             valueStyle={{ color: '#3f8600', fontSize: '16px' }}
+                            suffix="%"
                           />
                         </div>
                       </Popover>
@@ -513,8 +550,9 @@ const EquitiesWidget: React.FC = () => {
                         <div onClick={(e) => e.stopPropagation()}>
                           <Statistic
                             title="Sell Signals"
-                            value={equity.signals.sell}
+                            value={((equity.signals.sell / 12) * 100).toFixed(1)}
                             valueStyle={{ color: '#cf1322', fontSize: '16px' }}
+                            suffix="%"
                           />
                         </div>
                       </Popover>
