@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip, Input, Popover } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined, SearchOutlined } from '@ant-design/icons';
+import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip, Input, Popover, Space, Button, InputNumber } from 'antd';
+import { ArrowUpOutlined, ArrowDownOutlined, SearchOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -15,6 +15,19 @@ dayjs.tz.setDefault('Asia/Kolkata');
 
 type SortField = 'symbol' | 'lastPrice' | 'change' | 'pChange' | 'totalMarketCap' | 'buySignals' | 'sellSignals' | 'totalTradedVolume' | 'industry';
 type SortOrder = 'ascend' | 'descend';
+
+interface NumberRangeFilter {
+  min?: number;
+  max?: number;
+}
+
+interface Filters {
+  price: NumberRangeFilter[];
+  volume: NumberRangeFilter[];
+  marketCap: NumberRangeFilter[];
+  buySignals: NumberRangeFilter[];
+  sellSignals: NumberRangeFilter[];
+}
 
 interface IndexEquity {
   symbol: string;
@@ -140,6 +153,14 @@ const EquitiesWidget: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('descend');
   const [searchText, setSearchText] = useState<string>('');
   const [filteredEquities, setFilteredEquities] = useState<EquityInfo[]>([]);
+  const [filters, setFilters] = useState<Filters>({
+    price: [],
+    volume: [],
+    marketCap: [],
+    buySignals: [],
+    sellSignals: []
+  });
+  const [selectedFilterType, setSelectedFilterType] = useState<keyof Filters | null>(null);
 
   // Calculate SMA
   const calculateSMA = (data: number[], period: number): number[] => {
@@ -272,18 +293,66 @@ const EquitiesWidget: React.FC = () => {
   }, [selectedIndex]);
 
   useEffect(() => {
-    // Apply filtering when search text changes
-    if (searchText.trim() === '') {
-      setFilteredEquities(equities);
-    } else {
-      const filtered = equities.filter(equity => 
+    // Apply filtering when search text or filters change
+    let filtered = [...equities];
+
+    // Apply search filter
+    if (searchText.trim() !== '') {
+      filtered = filtered.filter(equity => 
         equity.symbol.toLowerCase().includes(searchText.toLowerCase()) ||
         (equity.companyName && equity.companyName.toLowerCase().includes(searchText.toLowerCase())) ||
         (equity.industry && equity.industry.toLowerCase().includes(searchText.toLowerCase()))
       );
-      setFilteredEquities(filtered);
     }
-  }, [searchText, equities]);
+
+    // Apply number range filters
+    filters.price.forEach(filter => {
+      filtered = filtered.filter(equity => {
+        if (filter.min !== undefined && equity.lastPrice < filter.min) return false;
+        if (filter.max !== undefined && equity.lastPrice > filter.max) return false;
+        return true;
+      });
+    });
+
+    filters.volume.forEach(filter => {
+      filtered = filtered.filter(equity => {
+        if (filter.min !== undefined && equity.totalTradedVolume < filter.min) return false;
+        if (filter.max !== undefined && equity.totalTradedVolume > filter.max) return false;
+        return true;
+      });
+    });
+
+    filters.marketCap.forEach(filter => {
+      filtered = filtered.filter(equity => {
+        if (!equity.totalMarketCap) return false;
+        if (filter.min !== undefined && equity.totalMarketCap < filter.min) return false;
+        if (filter.max !== undefined && equity.totalMarketCap > filter.max) return false;
+        return true;
+      });
+    });
+
+    filters.buySignals.forEach(filter => {
+      filtered = filtered.filter(equity => {
+        if (!equity.signals) return false;
+        const buySignalPercentage = ((equity.signals.buy / 12) * 100);
+        if (filter.min !== undefined && buySignalPercentage < filter.min) return false;
+        if (filter.max !== undefined && buySignalPercentage > filter.max) return false;
+        return true;
+      });
+    });
+
+    filters.sellSignals.forEach(filter => {
+      filtered = filtered.filter(equity => {
+        if (!equity.signals) return false;
+        const sellSignalPercentage = ((equity.signals.sell / 12) * 100);
+        if (filter.min !== undefined && sellSignalPercentage < filter.min) return false;
+        if (filter.max !== undefined && sellSignalPercentage > filter.max) return false;
+        return true;
+      });
+    });
+
+    setFilteredEquities(filtered);
+  }, [searchText, equities, filters]);
 
   const fetchEquities = async () => {
     setLoading(true);
@@ -465,6 +534,76 @@ const EquitiesWidget: React.FC = () => {
     window.open(`/equity/${symbol}`, '_blank');
   };
 
+  const addFilter = (type: keyof Filters) => {
+    // Only add filter if there are no existing filters of this type
+    if (filters[type].length === 0) {
+      setFilters(prev => ({
+        ...prev,
+        [type]: [{ min: undefined, max: undefined }]
+      }));
+    }
+  };
+
+  const removeFilter = (type: keyof Filters, index: number) => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: prev[type].filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateFilter = (type: keyof Filters, index: number, field: 'min' | 'max', value: number | undefined) => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: prev[type].map((filter, i) => 
+        i === index ? { ...filter, [field]: value } : filter
+      )
+    }));
+  };
+
+  const renderFilterInputs = (type: keyof Filters) => {
+    return (
+      <Space direction="vertical" style={{ width: '100%' }}>
+        {filters[type].map((filter, index) => (
+          <Space key={index} style={{ width: '100%' }}>
+            <InputNumber
+              placeholder="Min"
+              value={filter.min}
+              onChange={(value) => updateFilter(type, index, 'min', value || undefined)}
+              style={{ width: '100px' }}
+              min={0}
+              max={type === 'buySignals' || type === 'sellSignals' ? 100 : undefined}
+              formatter={type === 'buySignals' || type === 'sellSignals' ? value => `${value}%` : undefined}
+              parser={type === 'buySignals' || type === 'sellSignals' ? (value: string | undefined) => value ? parseFloat(value.replace('%', '')) : 0 : undefined}
+            />
+            <InputNumber
+              placeholder="Max"
+              value={filter.max}
+              onChange={(value) => updateFilter(type, index, 'max', value || undefined)}
+              style={{ width: '100px' }}
+              min={0}
+              max={type === 'buySignals' || type === 'sellSignals' ? 100 : undefined}
+              formatter={type === 'buySignals' || type === 'sellSignals' ? value => `${value}%` : undefined}
+              parser={type === 'buySignals' || type === 'sellSignals' ? (value: string | undefined) => value ? parseFloat(value.replace('%', '')) : 0 : undefined}
+            />
+            <Button
+              icon={<MinusOutlined />}
+              onClick={() => removeFilter(type, index)}
+              danger
+            />
+          </Space>
+        ))}
+      </Space>
+    );
+  };
+
+  const filterOptions = [
+    { value: 'price', label: 'Price' },
+    { value: 'volume', label: 'Volume' },
+    { value: 'marketCap', label: 'Market Cap' },
+    { value: 'buySignals', label: 'Buy Signals' },
+    { value: 'sellSignals', label: 'Sell Signals' }
+  ].filter(option => filters[option.value as keyof Filters].length === 0);
+
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
@@ -513,6 +652,79 @@ const EquitiesWidget: React.FC = () => {
             { value: 'descend', label: 'Descending' },
           ]}
         />
+      </div>
+
+      <div style={{ marginBottom: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <Space>
+          <Select
+            placeholder="Select filter type"
+            style={{ width: 200 }}
+            options={filterOptions}
+            value={selectedFilterType}
+            onChange={(value) => setSelectedFilterType(value as keyof Filters)}
+          />
+          <Button
+            icon={<PlusOutlined />}
+            type="primary"
+            onClick={() => {
+              if (selectedFilterType) {
+                addFilter(selectedFilterType);
+                setSelectedFilterType(null); // Reset selection after adding
+              }
+            }}
+            disabled={!selectedFilterType}
+          >
+            Add Filter
+          </Button>
+        </Space>
+      </div>
+
+      <div style={{ marginBottom: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        {filters.price.length > 0 && (
+          <Popover
+            title="Price Filters"
+            content={renderFilterInputs('price')}
+            trigger="click"
+          >
+            <Button>Price ({filters.price.length})</Button>
+          </Popover>
+        )}
+        {filters.volume.length > 0 && (
+          <Popover
+            title="Volume Filters"
+            content={renderFilterInputs('volume')}
+            trigger="click"
+          >
+            <Button>Volume ({filters.volume.length})</Button>
+          </Popover>
+        )}
+        {filters.marketCap.length > 0 && (
+          <Popover
+            title="Market Cap Filters"
+            content={renderFilterInputs('marketCap')}
+            trigger="click"
+          >
+            <Button>Market Cap ({filters.marketCap.length})</Button>
+          </Popover>
+        )}
+        {filters.buySignals.length > 0 && (
+          <Popover
+            title="Buy Signal Filters"
+            content={renderFilterInputs('buySignals')}
+            trigger="click"
+          >
+            <Button>Buy Signals ({filters.buySignals.length})</Button>
+          </Popover>
+        )}
+        {filters.sellSignals.length > 0 && (
+          <Popover
+            title="Sell Signal Filters"
+            content={renderFilterInputs('sellSignals')}
+            trigger="click"
+          >
+            <Button>Sell Signals ({filters.sellSignals.length})</Button>
+          </Popover>
+        )}
       </div>
 
       {loading ? (
