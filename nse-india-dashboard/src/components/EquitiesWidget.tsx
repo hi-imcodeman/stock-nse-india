@@ -13,7 +13,7 @@ dayjs.extend(timezone);
 // Set default timezone to IST
 dayjs.tz.setDefault('Asia/Kolkata');
 
-type SortField = 'symbol' | 'lastPrice' | 'change' | 'pChange' | 'totalMarketCap' | 'buySignals' | 'sellSignals';
+type SortField = 'symbol' | 'lastPrice' | 'change' | 'pChange' | 'totalMarketCap' | 'buySignals' | 'sellSignals' | 'totalTradedVolume' | 'industry';
 type SortOrder = 'ascend' | 'descend';
 
 interface IndexEquity {
@@ -447,6 +447,12 @@ const EquitiesWidget: React.FC = () => {
         bSellSignals = b.signals?.sell || 0;
         comparison = aSellSignals - bSellSignals;
         break;
+      case 'totalTradedVolume':
+        comparison = a.totalTradedVolume - b.totalTradedVolume;
+        break;
+      case 'industry':
+        comparison = (a.industry || '').localeCompare(b.industry || '');
+        break;
       default:
         comparison = a.symbol.localeCompare(b.symbol);
     }
@@ -494,6 +500,8 @@ const EquitiesWidget: React.FC = () => {
             { value: 'totalMarketCap', label: 'Market Cap' },
             { value: 'buySignals', label: 'Buy Signals' },
             { value: 'sellSignals', label: 'Sell Signals' },
+            { value: 'totalTradedVolume', label: 'Volume' },
+            { value: 'industry', label: 'Industry' },
           ]}
         />
         <Select
