@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip, Input, Popover, Space, Button, InputNumber } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined, SearchOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
+import { Card, Select, Spin, Row, Col, Statistic, Tag, Typography, Tooltip, Input, Popover, Space, Button, InputNumber, Table } from 'antd';
+import { ArrowUpOutlined, ArrowDownOutlined, SearchOutlined, PlusOutlined, MinusOutlined, AppstoreOutlined, TableOutlined } from '@ant-design/icons';
 import api from '../services/api';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -161,6 +161,10 @@ const EquitiesWidget: React.FC = () => {
     sellSignals: []
   });
   const [selectedFilterType, setSelectedFilterType] = useState<keyof Filters | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'table'>(() => {
+    const savedView = sessionStorage.getItem('equitiesViewMode');
+    return (savedView as 'card' | 'table') || 'card';
+  });
 
   // Calculate SMA
   const calculateSMA = (data: number[], period: number): number[] => {
@@ -604,6 +608,178 @@ const EquitiesWidget: React.FC = () => {
     { value: 'sellSignals', label: 'Sell Signals' }
   ].filter(option => filters[option.value as keyof Filters].length === 0);
 
+  const tableColumns = [
+    {
+      title: 'Symbol',
+      dataIndex: 'symbol',
+      key: 'symbol',
+      width: 240,
+      fixed: 'left' as const,
+      render: (text: string) => (
+        <Typography.Text strong>{text}</Typography.Text>
+      ),
+    },
+    {
+      title: 'Company & Industry',
+      dataIndex: 'companyName',
+      key: 'companyName',
+      width: 300,
+      render: (text: string, record: EquityInfo) => (
+        <div>
+          <Tooltip title={record.detailsLoading ? 'Loading...' : text}>
+            <Typography.Text type="secondary" style={{ 
+              display: 'block',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              marginBottom: 4
+            }}>
+              {record.detailsLoading ? <Spin size="small" /> : text}
+            </Typography.Text>
+          </Tooltip>
+          <Tooltip title={record.detailsLoading ? 'Loading...' : record.industry}>
+            <Typography.Text type="secondary" style={{ 
+              display: 'block',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              fontSize: '12px'
+            }}>
+              {record.detailsLoading ? <Spin size="small" /> : record.industry}
+            </Typography.Text>
+          </Tooltip>
+        </div>
+      ),
+    },
+    {
+      title: 'Price',
+      dataIndex: 'lastPrice',
+      key: 'lastPrice',
+      width: 100,
+      render: (value: number) => `₹${value.toFixed(2)}`,
+    },
+    {
+      title: 'Change',
+      dataIndex: 'change',
+      key: 'change',
+      width: 100,
+      render: (value: number, record: EquityInfo) => (
+        <Tag color={record.pChange >= 0 ? 'success' : 'error'}>
+          {record.pChange >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+          {Math.abs(record.pChange).toFixed(2)}%
+        </Tag>
+      ),
+    },
+    {
+      title: 'Volume',
+      dataIndex: 'totalTradedVolume',
+      key: 'totalTradedVolume',
+      width: 120,
+      render: (value: number) => formatVolume(value),
+    },
+    {
+      title: 'Market Cap',
+      dataIndex: 'totalMarketCap',
+      key: 'totalMarketCap',
+      width: 200,
+      render: (value: number | undefined, record: EquityInfo) => (
+        <span>
+          {value ? formatMarketCap(value) : 'N/A'}
+          {record.marketCapLoading && <Spin size="small" style={{ marginLeft: 8 }} />}
+        </span>
+      ),
+    },
+    {
+      title: 'Buy Signals',
+      dataIndex: 'signals',
+      key: 'buySignals',
+      width: 120,
+      render: (signals: { buy: number; sell: number } | undefined, record: EquityInfo) => (
+        record.signalsLoading ? (
+          <Spin size="small" />
+        ) : signals ? (
+          <Popover 
+            content={
+              <div style={{ maxWidth: 300 }}>
+                <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Latest Close Price: ₹{record.technicalIndicators?.latestClosePrice?.toFixed(2) || 'N/A'}</div>
+                <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Technical Indicators (Buy):</div>
+                {record.technicalIndicators?.latestClosePrice ? (
+                  Object.entries(record.technicalIndicators!)
+                    .filter(([key]) => key !== 'latestClosePrice')
+                    .filter(([, value]) => value && value < record.technicalIndicators!.latestClosePrice)
+                    .map(([key, value]) => (
+                      <div key={key} style={{ fontSize: '12px', marginBottom: 4, color: '#3f8600' }}>
+                        {key.toUpperCase()}: {value.toFixed(2)}
+                      </div>
+                    ))
+                ) : (
+                  <div style={{ fontSize: '12px', color: '#999' }}>No indicators available</div>
+                )}
+              </div>
+            }
+            title="Buy Signal Details"
+            trigger="hover"
+            placement="topLeft"
+            mouseEnterDelay={0.3}
+            mouseLeaveDelay={0.3}
+            overlayStyle={{ maxWidth: 300 }}
+          >
+            <Tag color="success">
+              {((signals.buy / 12) * 100).toFixed(1)}%
+            </Tag>
+          </Popover>
+        ) : 'N/A'
+      ),
+    },
+    {
+      title: 'Sell Signals',
+      dataIndex: 'signals',
+      key: 'sellSignals',
+      width: 120,
+      render: (signals: { buy: number; sell: number } | undefined, record: EquityInfo) => (
+        record.signalsLoading ? (
+          <Spin size="small" />
+        ) : signals ? (
+          <Popover 
+            content={
+              <div style={{ maxWidth: 300 }}>
+                <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Latest Close Price: ₹{record.technicalIndicators?.latestClosePrice?.toFixed(2) || 'N/A'}</div>
+                <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Technical Indicators (Sell):</div>
+                {record.technicalIndicators?.latestClosePrice ? (
+                  Object.entries(record.technicalIndicators!)
+                    .filter(([key]) => key !== 'latestClosePrice')
+                    .filter(([, value]) => value && value > record.technicalIndicators!.latestClosePrice)
+                    .map(([key, value]) => (
+                      <div key={key} style={{ fontSize: '12px', marginBottom: 4, color: '#cf1322' }}>
+                        {key.toUpperCase()}: {value.toFixed(2)}
+                      </div>
+                    ))
+                ) : (
+                  <div style={{ fontSize: '12px', color: '#999' }}>No indicators available</div>
+                )}
+              </div>
+            }
+            title="Sell Signal Details"
+            trigger="hover"
+            placement="topRight"
+            mouseEnterDelay={0.3}
+            mouseLeaveDelay={0.3}
+            overlayStyle={{ maxWidth: 300 }}
+          >
+            <Tag color="error">
+              {((signals.sell / 12) * 100).toFixed(1)}%
+            </Tag>
+          </Popover>
+        ) : 'N/A'
+      ),
+    },
+  ];
+
+  const handleViewModeChange = (mode: 'card' | 'table') => {
+    setViewMode(mode);
+    sessionStorage.setItem('equitiesViewMode', mode);
+  };
+
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
@@ -652,6 +828,22 @@ const EquitiesWidget: React.FC = () => {
             { value: 'descend', label: 'Descending' },
           ]}
         />
+        <Button.Group>
+          <Button
+            icon={<AppstoreOutlined />}
+            type={viewMode === 'card' ? 'primary' : 'default'}
+            onClick={() => handleViewModeChange('card')}
+          >
+            Card View
+          </Button>
+          <Button
+            icon={<TableOutlined />}
+            type={viewMode === 'table' ? 'primary' : 'default'}
+            onClick={() => handleViewModeChange('table')}
+          >
+            Table View
+          </Button>
+        </Button.Group>
       </div>
 
       <div style={{ marginBottom: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
@@ -731,6 +923,18 @@ const EquitiesWidget: React.FC = () => {
         <div style={{ textAlign: 'center', padding: '50px' }}>
           <Spin size="large" />
         </div>
+      ) : viewMode === 'table' ? (
+        <Table
+          dataSource={sortedEquities}
+          columns={tableColumns}
+          rowKey="symbol"
+          pagination={{ pageSize: 20 }}
+          scroll={{ x: true }}
+          onRow={(record) => ({
+            onClick: () => handleCardClick(record.symbol),
+            style: { cursor: 'pointer' }
+          })}
+        />
       ) : (
         <Row gutter={[16, 16]}>
           {sortedEquities.length > 0 ? (
