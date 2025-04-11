@@ -61,7 +61,18 @@ const MainLayout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider width={200} theme="dark">
+      <Sider 
+        width={200} 
+        theme="dark"
+        style={{
+          position: 'fixed',
+          height: '100vh',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: 1000
+        }}
+      >
         <div style={{ 
           height: 64, 
           margin: 16, 
@@ -83,7 +94,7 @@ const MainLayout: React.FC<LayoutProps> = ({ children }) => {
           style={{ height: '100%', borderRight: 0 }}
         />
       </Sider>
-      <Layout>
+      <Layout style={{ marginLeft: 200 }}>
         <Header style={{ padding: 0, background: '#fff' }} />
         <Content style={{ margin: '24px 16px', padding: 24, background: '#fff' }}>
           {children}
