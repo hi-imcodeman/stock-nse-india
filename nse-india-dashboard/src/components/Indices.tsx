@@ -745,6 +745,154 @@ const Indices: React.FC = () => {
                   </Card>
                 </Col>
               </Row>
+
+              <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+                <Col span={12}>
+                  <Card 
+                    title={
+                      <Space>
+                        Most Active by Value
+                      </Space>
+                    }
+                    bodyStyle={{ padding: 0 }}
+                  >
+                    <Table
+                      size="small"
+                      dataSource={[...equities]
+                        .sort((a, b) => (b.lastPrice * b.volume) - (a.lastPrice * a.volume))
+                        .slice(0, 5)}
+                      columns={[
+                        {
+                          title: 'Symbol',
+                          dataIndex: 'symbol',
+                          key: 'symbol',
+                          render: (text: string) => (
+                            <a onClick={() => navigate(`/equity/${text}`)} style={{ fontSize: '12px' }}>{text}</a>
+                          ),
+                        },
+                        {
+                          title: 'LTP',
+                          dataIndex: 'lastPrice',
+                          key: 'lastPrice',
+                          render: (value: number) => <span style={{ fontSize: '12px' }}>{formatNumber(value)}</span>,
+                        },
+                        {
+                          title: 'Change',
+                          dataIndex: 'change',
+                          key: 'change',
+                          render: (value: number) => (
+                            <Tag color={value >= 0 ? 'success' : 'error'} style={{ fontSize: '12px' }}>
+                              {value >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                              {Math.abs(value).toFixed(2)}
+                            </Tag>
+                          ),
+                        },
+                        {
+                          title: 'Change %',
+                          dataIndex: 'changePercent',
+                          key: 'changePercent',
+                          render: (value: number) => (
+                            <Tag color={value >= 0 ? 'success' : 'error'} style={{ fontSize: '12px' }}>
+                              {value >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                              {Math.abs(value).toFixed(2)}%
+                            </Tag>
+                          ),
+                        },
+                        {
+                          title: 'Volume',
+                          dataIndex: 'volume',
+                          key: 'volume',
+                          render: (value: number) => <span style={{ fontSize: '12px' }}>{formatInteger(value)}</span>,
+                        },
+                        {
+                          title: 'Value (₹ Cr)',
+                          dataIndex: 'lastPrice',
+                          key: 'value',
+                          render: (value: number, record: EquityData) => (
+                            <span style={{ fontSize: '12px' }}>{(value * record.volume / 10000000).toFixed(2)}</span>
+                          ),
+                        },
+                      ]}
+                      pagination={false}
+                      loading={equitiesLoading && equities.length === 0}
+                      style={{ fontSize: '12px' }}
+                    />
+                  </Card>
+                </Col>
+
+                <Col span={12}>
+                  <Card 
+                    title={
+                      <Space>
+                        Most Active by Volume
+                      </Space>
+                    }
+                    bodyStyle={{ padding: 0 }}
+                  >
+                    <Table
+                      size="small"
+                      dataSource={[...equities]
+                        .sort((a, b) => b.volume - a.volume)
+                        .slice(0, 5)}
+                      columns={[
+                        {
+                          title: 'Symbol',
+                          dataIndex: 'symbol',
+                          key: 'symbol',
+                          render: (text: string) => (
+                            <a onClick={() => navigate(`/equity/${text}`)} style={{ fontSize: '12px' }}>{text}</a>
+                          ),
+                        },
+                        {
+                          title: 'LTP',
+                          dataIndex: 'lastPrice',
+                          key: 'lastPrice',
+                          render: (value: number) => <span style={{ fontSize: '12px' }}>{formatNumber(value)}</span>,
+                        },
+                        {
+                          title: 'Change',
+                          dataIndex: 'change',
+                          key: 'change',
+                          render: (value: number) => (
+                            <Tag color={value >= 0 ? 'success' : 'error'} style={{ fontSize: '12px' }}>
+                              {value >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                              {Math.abs(value).toFixed(2)}
+                            </Tag>
+                          ),
+                        },
+                        {
+                          title: 'Change %',
+                          dataIndex: 'changePercent',
+                          key: 'changePercent',
+                          render: (value: number) => (
+                            <Tag color={value >= 0 ? 'success' : 'error'} style={{ fontSize: '12px' }}>
+                              {value >= 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                              {Math.abs(value).toFixed(2)}%
+                            </Tag>
+                          ),
+                        },
+                        {
+                          title: 'Volume',
+                          dataIndex: 'volume',
+                          key: 'volume',
+                          render: (value: number) => <span style={{ fontSize: '12px' }}>{formatInteger(value)}</span>,
+                        },
+                        {
+                          title: 'Value (₹ Cr)',
+                          dataIndex: 'lastPrice',
+                          key: 'value',
+                          render: (value: number, record: EquityData) => (
+                            <span style={{ fontSize: '12px' }}>{(value * record.volume / 10000000).toFixed(2)}</span>
+                          ),
+                        },
+                      ]}
+                      pagination={false}
+                      loading={equitiesLoading && equities.length === 0}
+                      style={{ fontSize: '12px' }}
+                    />
+                  </Card>
+                </Col>
+              </Row>
             </Col>
           </Row>
 

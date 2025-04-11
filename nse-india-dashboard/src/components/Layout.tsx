@@ -8,6 +8,7 @@ import {
   SettingOutlined,
   AppstoreOutlined,
 } from '@ant-design/icons';
+import TopGainersTicker from './TopGainersTicker';
 
 const { Header, Sider, Content } = Layout;
 
@@ -95,6 +96,7 @@ const MainLayout: React.FC<LayoutProps> = ({ children }) => {
         />
       </Sider>
       <Layout style={{ marginLeft: 200 }}>
+        <TopGainersTicker />
         <Header style={{ padding: 0, background: '#fff' }} />
         <Content style={{ margin: '24px 16px', padding: 24, background: '#fff' }}>
           {children}
