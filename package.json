@@ -1,6 +1,6 @@
 {
   "name": "stock-nse-india",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "This package will help us to get equity/index details and historical data from National Stock Exchange of India.",
   "main": "build/index.js",
   "browser": false,
@@ -67,7 +67,7 @@
     "apollo-server-core": "^3.10.0",
     "apollo-server-express": "^3.10.0",
     "asciichart": "^1.5.25",
-    "axios": "^0.21.2",
+    "axios": "^1.7.9",
     "chalk": "^4.1.0",
     "cheerio": "^1.0.0-rc.10",
     "express": "^4.17.2",
