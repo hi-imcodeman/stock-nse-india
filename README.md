@@ -133,6 +133,34 @@ yarn start
 
 For API service documentation please hit http://localhost:3000/api-docs
 
+## Environment Variables
+
+The application supports the following environment variables for configuration:
+
+### Server Configuration
+- `PORT` - Server port (default: 3000)
+- `HOST_URL` - Server host URL (default: http://localhost:3000)
+- `NODE_ENV` - Node environment (default: development)
+
+### CORS Configuration
+- `CORS_ORIGINS` - Comma-separated list of allowed origins (e.g., `https://example.com,https://app.example.com`)
+- `CORS_METHODS` - Comma-separated list of allowed HTTP methods (default: `GET,POST,PUT,DELETE,OPTIONS`)
+- `CORS_HEADERS` - Comma-separated list of allowed headers (default: `Content-Type,Authorization`)
+- `CORS_CREDENTIALS` - Enable/disable credentials (default: `true`, set to `false` to disable)
+
+**Note:** Localhost patterns (`http://localhost:*` and `http://127.0.0.1:*`) are always allowed for development purposes.
+
+#### Example .env file:
+```bash
+PORT=3000
+HOST_URL=http://localhost:3000
+NODE_ENV=development
+CORS_ORIGINS=https://myapp.com,https://admin.myapp.com
+CORS_METHODS=GET,POST,OPTIONS
+CORS_HEADERS=Content-Type,Authorization,X-Requested-With
+CORS_CREDENTIALS=true
+```
+
 ## CLI
 
 We can use this package in CLI.
