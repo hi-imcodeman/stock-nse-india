@@ -562,16 +562,25 @@ mainRouter.get('/api/equity/intraday/:symbol', async (req, res) => {
  */
 mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
     try {
-        const { symbol } = req.params;
-        const { dateStart, dateEnd } = req.query;
-        const range = {
-            start: new Date(dateStart as string),
-            end: new Date(dateEnd as string)
-        };
-        const data = await nseIndia.getEquityHistoricalData(symbol, range);
-        res.json(data);
+        const dateStart = req.query.dateStart as string
+        const dateEnd = req.query.dateEnd as string
+        if (dateStart) {
+            const start = new Date(dateStart)
+            const end = dateEnd ? new Date(dateEnd) : new Date()
+            if (start.getTime() > 0 && end.getTime() > 0) {
+                const range = {
+                    start,
+                    end
+                }
+                res.json(await nseIndia.getEquityHistoricalData(req.params.symbol, range))
+            } else {
+                res.status(400).json({ error: 'Invalid date format. Please use the format (YYYY-MM-DD)' })
+            }
+        } else {
+            res.json(await nseIndia.getEquityHistoricalData(req.params.symbol))
+        }
     } catch (error) {
-        res.status(400).json(error);
+        res.status(400).json(error)
     }
 })
 
