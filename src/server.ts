@@ -12,10 +12,41 @@ import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { openapiSpecification } from './swaggerDocOptions'
 import path from 'path';
 import { mainRouter } from './routes'
+import cors from 'cors';
 
 const app = express()
 const port = process.env.PORT || 3000
 const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
+
+// CORS Configuration from environment variables
+// CORS_ORIGINS: Comma-separated list of allowed origins
+// CORS_METHODS: Comma-separated list of allowed HTTP methods  
+// CORS_HEADERS: Comma-separated list of allowed headers
+// CORS_CREDENTIALS: Enable/disable credentials (default: true)
+
+// Enable CORS for all routes
+const corsOrigins = process.env.CORS_ORIGINS ? 
+  process.env.CORS_ORIGINS.split(',').map(origin => origin.trim()) : 
+  [];
+
+const corsMethods = process.env.CORS_METHODS ? 
+  process.env.CORS_METHODS.split(',').map(method => method.trim()) : 
+  ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
+
+const corsHeaders = process.env.CORS_HEADERS ? 
+  process.env.CORS_HEADERS.split(',').map(header => header.trim()) : 
+  ['Content-Type', 'Authorization'];
+
+app.use(cors({
+  origin: [
+    ...corsOrigins,
+    /^http:\/\/localhost:\d+$/,  // Allow any localhost port
+    /^http:\/\/127\.0\.0\.1:\d+$/ // Allow any 127.0.0.1 port
+  ],
+  methods: corsMethods,
+  allowedHeaders: corsHeaders,
+  credentials: process.env.CORS_CREDENTIALS !== 'false'
+}));
 
 app.use(mainRouter)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
@@ -40,7 +71,7 @@ const httpServer = http.createServer(app);
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
 });
 
 server.start().then(() => {
@@ -50,5 +81,13 @@ server.start().then(() => {
         console.log(`For API docs: ${hostUrl}/api-docs`);
         console.log(`Open ${hostUrl} in browser.`);
         console.log(`For graphql: ${hostUrl}${server.graphqlPath}`);
+        
+        // Log CORS configuration
+        if (corsOrigins.length > 0) {
+            console.log(`CORS Origins: ${corsOrigins.join(', ')}`);
+        }
+        console.log(`CORS Methods: ${corsMethods.join(', ')}`);
+        console.log(`CORS Headers: ${corsHeaders.join(', ')}`);
+        console.log(`CORS Credentials: ${process.env.CORS_CREDENTIALS !== 'false'}`);
     })
 })

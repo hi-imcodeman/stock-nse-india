@@ -11,7 +11,16 @@ import {
     IndexDetails,
     IndexHistoricalData,
     OptionChainData,
-    EquityCorporateInfo
+    EquityCorporateInfo,
+    Glossary,
+    Holiday,
+    MarketStatus,
+    MarketTurnover,
+    IndexName,
+    Circular,
+    EquityMaster,
+    PreOpenMarketData,
+    DailyReport
 } from './interface'
 
 export enum ApiList {
@@ -251,5 +260,117 @@ export class NseIndia {
     getCommodityOptionChain(symbol: string): Promise<OptionChainData> {
         return this.getDataByEndpoint(`/api/option-chain-com?symbol=${encodeURIComponent(symbol
             .toUpperCase())}`)
+    }
+
+    /**
+     * Get NSE glossary content
+     * @returns Glossary content
+     */
+    getGlossary(): Promise<Glossary> {
+        return this.getDataByEndpoint(ApiList.GLOSSARY)
+    }
+
+    /**
+     * Get trading holidays
+     * @returns List of trading holidays
+     */
+    getTradingHolidays(): Promise<Holiday[]> {
+        return this.getDataByEndpoint(ApiList.HOLIDAY_TRADING)
+    }
+
+    /**
+     * Get clearing holidays
+     * @returns List of clearing holidays
+     */
+    getClearingHolidays(): Promise<Holiday[]> {
+        return this.getDataByEndpoint(ApiList.HOLIDAY_CLEARING)
+    }
+
+    /**
+     * Get market status
+     * @returns Current market status
+     */
+    getMarketStatus(): Promise<MarketStatus> {
+        return this.getDataByEndpoint(ApiList.MARKET_STATUS)
+    }
+
+    /**
+     * Get market turnover
+     * @returns Market turnover data
+     */
+    getMarketTurnover(): Promise<MarketTurnover> {
+        return this.getDataByEndpoint(ApiList.MARKET_TURNOVER)
+    }
+
+    /**
+     * Get all indices
+     * @returns List of all indices
+     */
+    getAllIndices(): Promise<IndexDetails[]> {
+        return this.getDataByEndpoint(ApiList.ALL_INDICES)
+    }
+
+    /**
+     * Get index names
+     * @returns List of index names
+     */
+    getIndexNames(): Promise<IndexName[]> {
+        return this.getDataByEndpoint(ApiList.INDEX_NAMES)
+    }
+
+    /**
+     * Get circulars
+     * @returns List of circulars
+     */
+    getCirculars(): Promise<Circular[]> {
+        return this.getDataByEndpoint(ApiList.CIRCULARS)
+    }
+
+    /**
+     * Get latest circulars
+     * @returns List of latest circulars
+     */
+    getLatestCirculars(): Promise<Circular[]> {
+        return this.getDataByEndpoint(ApiList.LATEST_CIRCULARS)
+    }
+
+    /**
+     * Get equity master
+     * @returns Equity master data with categorized indices
+     */
+    getEquityMaster(): Promise<EquityMaster> {
+        return this.getDataByEndpoint(ApiList.EQUITY_MASTER)
+    }
+
+    /**
+     * Get pre-open market data
+     * @returns Pre-open market data
+     */
+    getPreOpenMarketData(): Promise<PreOpenMarketData[]> {
+        return this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
+    }
+
+    /**
+     * Get merged daily reports for capital market
+     * @returns Daily reports for capital market
+     */
+    getMergedDailyReportsCapital(): Promise<DailyReport[]> {
+        return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_CAPITAL)
+    }
+
+    /**
+     * Get merged daily reports for derivatives
+     * @returns Daily reports for derivatives
+     */
+    getMergedDailyReportsDerivatives(): Promise<DailyReport[]> {
+        return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DERIVATIVES)
+    }
+
+    /**
+     * Get merged daily reports for debt market
+     * @returns Daily reports for debt market
+     */
+    getMergedDailyReportsDebt(): Promise<DailyReport[]> {
+        return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DEBT)
     }
 }

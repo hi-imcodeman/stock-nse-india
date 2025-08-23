@@ -86,6 +86,7 @@ export interface OptionsDetails {
 
 export enum Underlying {
     Nifty = "NIFTY",
+    Gold = "GOLD"
 }
 
 export interface EquityMetadata {
@@ -280,7 +281,7 @@ export interface EquityHistoricalInfo {
     CH_TOT_TRADED_VAL: number
     CH_52WEEK_HIGH_PRICE: number
     CH_52WEEK_LOW_PRICE: number
-    CH_TOTAL_TRADES: number | null,
+    CH_TOTAL_TRADES: number | null
     CH_ISIN: string
     CH_TIMESTAMP: string
     TIMESTAMP: string
@@ -402,4 +403,295 @@ export interface IndexDetails {
     },
     date30dAgo: string,
     date365dAgo: string
+}
+
+// New interfaces for additional APIs
+export interface GlossaryData {
+    data: {
+        content: string
+        title: string
+        url: string
+    }
+}
+
+export interface HolidayData {
+    data: {
+        date: string
+        description: string
+        trading: boolean
+        clearing: boolean
+    }[]
+}
+
+export interface MarketStatusData {
+    marketState: string
+    marketStatus: string
+    tradeDate: string
+    index: string
+    last: number
+    variation: number
+    percentChange: number
+    marketStatusMessage: string
+}
+
+export interface MarketTurnoverData {
+    data: {
+        date: string
+        totalTradedValue: number
+        totalTradedVolume: number
+        totalTrades: number
+    }[]
+}
+
+export interface AllIndicesData {
+    data: {
+        indexName: string
+        open: number
+        high: number
+        low: number
+        previousClose: number
+        last: number
+        percChange: number
+        change: number
+        timeVal: string
+        yearHigh: number
+        yearLow: number
+        totalTradedVolume: number
+        totalTradedValue: number
+        ffmc_sum: number
+    }[]
+}
+
+export interface IndexNamesData {
+    data: string[]
+}
+
+export interface CircularsData {
+    data: {
+        date: string
+        subject: string
+        url: string
+    }[]
+}
+
+export interface LatestCircularData {
+    data: {
+        date: string
+        subject: string
+        url: string
+    }
+}
+
+export interface EquityMasterData {
+    data: {
+        symbol: string
+        series: string
+        isin: string
+        status: string
+        listingDate: string
+        industry: string
+        lastUpdateTime: string
+    }[]
+}
+
+export interface MarketDataPreOpenData {
+    data: {
+        metadata: {
+            symbol: string
+            series: string
+            isin: string
+            status: string
+            listingDate: string
+            industry: string
+            lastUpdateTime: string
+        }
+        priceInfo: {
+            lastPrice: number
+            change: number
+            pChange: number
+            previousClose: number
+            open: number
+            close: number
+            vwap: number
+            lowerCP: string
+            upperCP: string
+            pPriceBand: string
+            basePrice: number
+        }
+        preOpenMarket: {
+            preopen: PreOpenDetails[]
+            ato: {
+                buy: number
+                sell: number
+            }
+            IEP: number
+            totalTradedVolume: number
+            finalPrice: number
+            finalQuantity: number
+            lastUpdateTime: string
+            totalBuyQuantity: number
+            totalSellQuantity: number
+            atoBuyQty: number
+            atoSellQty: number
+        }
+    }[]
+}
+
+export interface MergedDailyReportsData {
+    data: {
+        date: string
+        symbol: string
+        series: string
+        openPrice: number
+        highPrice: number
+        lowPrice: number
+        closePrice: number
+        lastPrice: number
+        prevClose: number
+        totalTradedQuantity: number
+        totalTradedValue: number
+        totalTrades: number
+        isin: string
+        deliveryQuantity: number
+        deliveryToTradedQuantity: number
+    }[]
+}
+
+export interface Glossary {
+    content: string
+    title: string
+    url: string
+}
+
+export interface Holiday {
+    tradingDate: string
+    holiday: string
+    description: string
+}
+
+export interface MarketState {
+    market: string;
+    marketStatus: string;
+    tradeDate: string;
+    index: string;
+    last: number | string;
+    variation: number | string;
+    percentChange: number | string;
+    marketStatusMessage: string;
+    expiryDate?: string;
+    underlying?: string;
+    updated_time?: string;
+    tradeDateFormatted?: string;
+    slickclass?: string;
+}
+
+export interface MarketCap {
+    timeStamp: string;
+    marketCapinTRDollars: number;
+    marketCapinLACCRRupees: number;
+    marketCapinCRRupees: number;
+    marketCapinCRRupeesFormatted: string;
+    marketCapinLACCRRupeesFormatted: string;
+    underlying: string;
+}
+
+export interface IndicativeNifty50 {
+    dateTime: string;
+    indicativeTime: string | null;
+    indexName: string;
+    indexLast: number | null;
+    indexPercChange: number | null;
+    indexTimeVal: string | null;
+    closingValue: number;
+    finalClosingValue: number;
+    change: number;
+    perChange: number;
+    status: string;
+}
+
+export interface GiftNifty {
+    INSTRUMENTTYPE: string;
+    SYMBOL: string;
+    EXPIRYDATE: string;
+    OPTIONTYPE: string;
+    STRIKEPRICE: string;
+    LASTPRICE: number;
+    DAYCHANGE: string;
+    PERCHANGE: string;
+    CONTRACTSTRADED: number;
+    TIMESTMP: string;
+    id: string;
+}
+
+export interface MarketStatus {
+    marketState: MarketState[];
+    marketcap: MarketCap;
+    indicativenifty50: IndicativeNifty50;
+    giftnifty: GiftNifty;
+}
+
+export interface MarketTurnover {
+    totalTradedValue: number
+    totalTradedVolume: number
+    totalTrades: number
+    lastUpdateTime: string
+}
+
+export interface IndexName {
+    indexSymbol: string
+    indexName: string
+}
+
+export interface Circular {
+    subject: string
+    description: string
+    date: string
+    attachment: string
+}
+
+export interface IndexCategories {
+    [category: string]: string[];
+}
+
+export interface EquityMaster {
+    categories: IndexCategories;
+}
+
+export interface PreOpenMarketData {
+    metadata: {
+        symbol: string
+        companyName: string
+        industry: string
+        isinCode: string
+    }
+    priceInfo: {
+        lastPrice: number
+        change: number
+        pChange: number
+        open: number
+        high: number
+        low: number
+        close: number
+        prevClose: number
+        totalTradedVolume: number
+        totalTradedValue: number
+    }
+}
+
+export interface DailyReport {
+    symbol: string
+    series: string
+    openPrice: number
+    highPrice: number
+    lowPrice: number
+    closePrice: number
+    lastTradedPrice: number
+    totalTradedQuantity: number
+    totalTradedValue: number
+    prevClosePrice: number
+    change: number
+    pChange: number
+    totalTrades: number
+    isin: string
+    tradingDate: string
 }
