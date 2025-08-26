@@ -49,7 +49,8 @@ app.use(cors({
 }));
 
 app.use(mainRouter)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
+app.use('/api-docs', swaggerUi.serve as any);
+app.use('/api-docs', swaggerUi.setup(openapiSpecification) as any);
 
 const loadedTypeDefs = loadSchemaSync(path.join(__dirname, './**/*.graphql'), { loaders: [new GraphQLFileLoader()] })
 const loadedResolvers = loadFilesSync(path.join(__dirname, './**/*.resolver.{ts,js}'))
