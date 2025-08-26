@@ -22,6 +22,8 @@ A comprehensive package and API server for accessing equity/index details and hi
 
 ## 🚀 Quick Start
 
+**⚠️ Prerequisites:** Node.js 18+ required
+
 ### As an NPM Package
 
 ```bash
@@ -68,6 +70,11 @@ npm start
 - **API Documentation:** http://localhost:3000/api-docs
 
 ## 📦 Installation
+
+### Prerequisites
+
+- **Node.js:** Version 18 or higher
+- **npm:** Version 8 or higher (comes with Node.js 18+)
 
 ### NPM Package
 ```bash
@@ -264,6 +271,8 @@ CORS_CREDENTIALS=true
 - **`getMostActiveEquities()`** - Most actively traded stocks
 
 ## 🏃‍♂️ Development
+
+**⚠️ Prerequisites:** Node.js 18+ required
 
 ### Local Development
 
