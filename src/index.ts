@@ -65,15 +65,19 @@ export class NseIndia {
             const response = await axios.get(`${this.baseUrl}/get-quotes/equity?symbol=TCS`, {
                 headers: {...this.baseHeaders,'User-Agent': this.userAgent}
             })
-            const setCookies:string[] = response.headers['set-cookie']
+            const setCookies: string[] | undefined = response.headers['set-cookie']
             const cookies: string[] = []
-            setCookies.forEach((cookie: string) => {
-                const cookieKeyValue = cookie.split(';')[0]
-                cookies.push(cookieKeyValue)
-            })
-            this.cookies = cookies.join('; ')
-            this.cookieUsedCount = 0
-            this.cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
+            if (setCookies) {
+                setCookies.forEach((cookie: string) => {
+                    const cookieKeyValue = cookie.split(';')[0]
+                    cookies.push(cookieKeyValue)
+                })
+                this.cookies = cookies.join('; ')
+                this.cookieUsedCount = 0
+                this.cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
+            }
+            this.cookieUsedCount++
+            return this.cookies
         }
         this.cookieUsedCount++
         return this.cookies
