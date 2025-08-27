@@ -29,6 +29,9 @@ const corsOrigins = process.env.CORS_ORIGINS ?
   process.env.CORS_ORIGINS.split(',').map(origin => origin.trim()) : 
   [];
 
+// In development mode, allow all origins for easier testing
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const corsMethods = process.env.CORS_METHODS ? 
   process.env.CORS_METHODS.split(',').map(method => method.trim()) : 
   ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
@@ -38,10 +41,12 @@ const corsHeaders = process.env.CORS_HEADERS ?
   ['Content-Type', 'Authorization'];
 
 app.use(cors({
-  origin: [
+  origin: isDevelopment ? true : [
     ...corsOrigins,
     /^http:\/\/localhost:\d+$/,  // Allow any localhost port
-    /^http:\/\/127\.0\.0\.1:\d+$/ // Allow any 127.0.0.1 port
+    /^http:\/\/127\.0\.0\.1:\d+$/, // Allow any 127.0.0.1 port
+    'https://studio.apollographql.com', // Allow Apollo Studio
+    'https://studio.apollographql.com:443' // Allow Apollo Studio with explicit port
   ],
   methods: corsMethods,
   allowedHeaders: corsHeaders,
