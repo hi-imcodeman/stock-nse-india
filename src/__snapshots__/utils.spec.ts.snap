@@ -1,30 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Utils getDataSchema for date value having typeStrict:false 1`] = `
-Array [
+[
   "a: any",
   "b: any",
-  Object {
+  {
     "c": "any",
   },
-  Object {
-    "d": Array [
+  {
+    "d": [
       "a: any",
-      Object {
+      {
         "b": "any",
       },
-      Object {
-        "c": Array [
+      {
+        "c": [
           "d: any",
         ],
       },
-      Object {
+      {
         "e": "any",
       },
     ],
   },
   "e: any",
-  Object {
+  {
     "f": "any",
   },
 ]
@@ -33,30 +33,30 @@ Array [
 exports[`Utils getDataSchema for date value having typeStrict:false: array_validation 1`] = `"any"`;
 
 exports[`Utils getDataSchema with type strict 1`] = `
-Array [
+[
   "a: number",
   "b: string | null",
-  Object {
+  {
     "c": "number",
   },
-  Object {
-    "d": Array [
+  {
+    "d": [
       "a: number",
-      Object {
+      {
         "b": "number",
       },
-      Object {
-        "c": Array [
+      {
+        "c": [
           "d: number",
         ],
       },
-      Object {
-        "e": Array [],
+      {
+        "e": [],
       },
     ],
   },
   "e: Date",
-  Object {
+  {
     "f": "number[]",
   },
 ]

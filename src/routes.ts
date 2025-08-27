@@ -353,9 +353,11 @@ mainRouter.get('/api/allSymbols', async (_req, res) => {
  */
 mainRouter.get('/api/equity/:symbol', async (req, res) => {
     try {
-        res.json(await nseIndia.getEquityDetails(req.params.symbol))
+        const { symbol } = req.params;
+        const data = await nseIndia.getEquityDetails(symbol);
+        res.json(data);
     } catch (error: any) {
-        res.status(500).json({error: error.message})
+        res.status(500).json({error: error.message});
     }
 })
 
@@ -515,14 +517,12 @@ mainRouter.get('/api/equity/options/:symbol', async (req, res) => {
  */
 mainRouter.get('/api/equity/intraday/:symbol', async (req, res) => {
     try {
-        const isPreOpen = req.query.preOpen as string
-        if (isPreOpen === "true") {
-            res.json(await nseIndia.getEquityIntradayData(req.params.symbol, true))
-        } else {
-            res.json(await nseIndia.getEquityIntradayData(req.params.symbol))
-        }
+        const { symbol } = req.params;
+        const { preOpen } = req.query;
+        const data = await nseIndia.getEquityIntradayData(symbol, preOpen === 'true');
+        res.json(data);
     } catch (error: any) {
-        res.status(500).json({error: error.message})
+        res.status(500).json({error: error.message});
     }
 })
 
@@ -567,9 +567,9 @@ mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
     try {
         const dateStart = req.query.dateStart as string
         const dateEnd = req.query.dateEnd as string
-        if (dateStart && dateEnd) {
+        if (dateStart) {
             const start = new Date(dateStart)
-            const end = new Date(dateEnd)
+            const end = dateEnd ? new Date(dateEnd) : new Date()
             if (start.getTime() > 0 && end.getTime() > 0) {
                 const range = {
                     start,

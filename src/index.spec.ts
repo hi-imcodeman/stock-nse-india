@@ -1,6 +1,8 @@
 import { NseIndia, ApiList } from "./index";
 jest.setTimeout(999999)
 
+jest.setTimeout(999999)
+
 describe('Class: NseIndia', () => {
     const symbol = 'ITC'
     const nseIndia = new NseIndia()
@@ -120,6 +122,91 @@ describe('Class: NseIndia', () => {
         } catch (error) {
             expect((error as Error).message).toBe('Request failed with status code 404')
         }
+    })
+
+    // Test convenience methods for better coverage
+    test('getGlossary', async () => {
+        const glossary = await nseIndia.getGlossary()
+        expect(glossary).toBeDefined()
+        expect(JSON.stringify(glossary).length).toBeGreaterThan(0)
+    })
+
+    test('getTradingHolidays', async () => {
+        const holidays = await nseIndia.getTradingHolidays()
+        expect(holidays).toBeDefined()
+        expect(JSON.stringify(holidays).length).toBeGreaterThan(0)
+    })
+
+    test('getClearingHolidays', async () => {
+        const holidays = await nseIndia.getClearingHolidays()
+        expect(holidays).toBeDefined()
+        expect(JSON.stringify(holidays).length).toBeGreaterThan(0)
+    })
+
+    test('getMarketStatus', async () => {
+        const status = await nseIndia.getMarketStatus()
+        expect(status).toBeDefined()
+        expect(JSON.stringify(status).length).toBeGreaterThan(0)
+    })
+
+    test('getMarketTurnover', async () => {
+        const turnover = await nseIndia.getMarketTurnover()
+        expect(turnover).toBeDefined()
+        expect(JSON.stringify(turnover).length).toBeGreaterThan(0)
+    })
+
+    test('getAllIndices', async () => {
+        const indices = await nseIndia.getAllIndices()
+        expect(indices).toBeDefined()
+        expect(JSON.stringify(indices).length).toBeGreaterThan(0)
+    })
+
+    test('getIndexNames', async () => {
+        const names = await nseIndia.getIndexNames()
+        expect(names).toBeDefined()
+        expect(JSON.stringify(names).length).toBeGreaterThan(0)
+    })
+
+    test('getCirculars', async () => {
+        const circulars = await nseIndia.getCirculars()
+        expect(circulars).toBeDefined()
+        expect(JSON.stringify(circulars).length).toBeGreaterThan(0)
+    })
+
+    test('getLatestCirculars', async () => {
+        const circulars = await nseIndia.getLatestCirculars()
+        expect(circulars).toBeDefined()
+        expect(JSON.stringify(circulars).length).toBeGreaterThan(0)
+    })
+
+    test('getEquityMaster', async () => {
+        const master = await nseIndia.getEquityMaster()
+        expect(master).toBeDefined()
+        expect(JSON.stringify(master).length).toBeGreaterThan(0)
+    })
+
+    test('getPreOpenMarketData', async () => {
+        const data = await nseIndia.getPreOpenMarketData()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getMergedDailyReportsCapital', async () => {
+        const reports = await nseIndia.getMergedDailyReportsCapital()
+        expect(reports).toBeDefined()
+        expect(JSON.stringify(reports).length).toBeGreaterThan(0)
+    })
+
+    test('getMergedDailyReportsDerivatives', async () => {
+        const reports = await nseIndia.getMergedDailyReportsDerivatives()
+        expect(reports).toBeDefined()
+        expect(JSON.stringify(reports).length).toBeGreaterThan(0)
+    })
+
+    test('getMergedDailyReportsDebt', async () => {
+        const reports = await nseIndia.getMergedDailyReportsDebt()
+        expect(reports).toBeDefined()
+        expect(JSON.stringify(reports).length).toBeGreaterThan(0)
     })
 
     describe('ApiList', () => {
