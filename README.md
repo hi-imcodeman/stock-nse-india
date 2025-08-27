@@ -105,7 +105,7 @@ The project now includes a powerful GraphQL API for flexible data querying:
 ```graphql
 # Get equity information
 query GetEquity {
-  equities(symbolFilter: { symbols: ["IRCTC", "RELIANCE"] }) {
+  equities(symbolFilter: {in: ["TCS","ITC"]}) {
     symbol
     details {
       info {
@@ -123,7 +123,12 @@ query GetEquity {
 
 # Get indices data
 query GetIndices {
-  indices(filter: { filterBy: "NIFTY" }) {
+  indices(filter: {
+    filterBy: "index",
+    criteria: {
+      regex: "AUTO"
+    }
+  }) {
     key
     index
     last
