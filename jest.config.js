@@ -5,6 +5,9 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
+  moduleNameMapper: {
+    '^node:(.*)$': '<rootDir>/node_modules/$1'
+  },
   coverageThreshold: {
     global: {
       branches: 97.73,

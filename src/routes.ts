@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Router } from 'express'
 import { openapiSpecification } from './swaggerDocOptions'
 import { NseIndia, ApiList } from './index'
@@ -5,8 +6,10 @@ import {
     getGainersAndLosersByIndex,
     getMostActiveEquities
 } from './helpers'
+import { Message, UsageInfo, appendMessage, getUsageCost, runConversation } from './openai'
+import { toolsData } from './tools'
 
-const mainRouter:Router = Router()
+const mainRouter: Router = Router()
 
 const nseIndia = new NseIndia()
 
@@ -23,14 +26,14 @@ const nseIndia = new NseIndia()
  *     responses:
  *       200:
  *         description: Returns a JSON object of NSE market status
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
- mainRouter.get('/', async (_req, res) => {
+mainRouter.get('/', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -63,14 +66,14 @@ mainRouter.get('/api/v1/swagger.json', (_req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of glossary for NSE India
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/glossary', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.GLOSSARY))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -86,14 +89,14 @@ mainRouter.get('/api/glossary', async (_req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of NSE market status
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/marketStatus', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -109,14 +112,14 @@ mainRouter.get('/api/marketStatus', async (_req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of NSE market turn over
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/marketTurnover', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_TURNOVER))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -132,14 +135,14 @@ mainRouter.get('/api/marketTurnover', async (_req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of NSE equity master
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/equityMaster', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.EQUITY_MASTER))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -163,7 +166,7 @@ mainRouter.get('/api/equityMaster', async (_req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of NSE India's holidays
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/holidays', async (req, res) => {
@@ -174,8 +177,8 @@ mainRouter.get('/api/holidays', async (req, res) => {
         } else {
             res.json(await nseIndia.getDataByEndpoint(ApiList.HOLIDAY_TRADING))
         }
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -199,7 +202,7 @@ mainRouter.get('/api/holidays', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of NSE India's circulars
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/circulars', async (req, res) => {
@@ -210,8 +213,8 @@ mainRouter.get('/api/circulars', async (req, res) => {
         } else {
             res.json(await nseIndia.getDataByEndpoint(ApiList.CIRCULARS))
         }
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -235,7 +238,7 @@ mainRouter.get('/api/circulars', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of NSE India's merged daily reports
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/mergedDailyReports', async (req, res) => {
@@ -248,8 +251,8 @@ mainRouter.get('/api/mergedDailyReports', async (req, res) => {
         } else {
             res.json(await nseIndia.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_CAPITAL))
         }
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -265,15 +268,15 @@ mainRouter.get('/api/mergedDailyReports', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of all NSE indices
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/allIndices', async (_req, res) => {
     try {
         const allIndices = await nseIndia.getDataByEndpoint(ApiList.ALL_INDICES)
         res.json(allIndices)
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -289,15 +292,15 @@ mainRouter.get('/api/allIndices', async (_req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of all NSE index names
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/indexNames', async (_req, res) => {
     try {
         const indexNames = await nseIndia.getDataByEndpoint(ApiList.INDEX_NAMES)
         res.json(indexNames)
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -313,15 +316,15 @@ mainRouter.get('/api/indexNames', async (_req, res) => {
  *     responses:
  *       200:
  *         description: Returns an array of NSE equity symbols
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/allSymbols', async (_req, res) => {
     try {
         const symbols = await nseIndia.getAllStockSymbols()
         res.json(symbols)
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -345,7 +348,7 @@ mainRouter.get('/api/allSymbols', async (_req, res) => {
  *     responses:
  *       200:
  *         description: Returns a details of the NSE symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/equity/:symbol', async (req, res) => {
@@ -353,8 +356,8 @@ mainRouter.get('/api/equity/:symbol', async (req, res) => {
         const { symbol } = req.params;
         const data = await nseIndia.getEquityDetails(symbol);
         res.json(data);
-    } catch (error) {
-        res.status(400).json(error);
+    } catch (error: any) {
+        res.status(500).json({error: error.message});
     }
 })
 
@@ -378,14 +381,14 @@ mainRouter.get('/api/equity/:symbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a equity series of the NSE symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/equity/series/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquitySeries(req.params.symbol))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -409,14 +412,14 @@ mainRouter.get('/api/equity/series/:symbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a trade info of the NSE symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/equity/tradeInfo/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityTradeInfo(req.params.symbol))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -440,14 +443,14 @@ mainRouter.get('/api/equity/tradeInfo/:symbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a corporate info of the NSE symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/equity/corporateInfo/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityCorporateInfo(req.params.symbol))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -471,14 +474,14 @@ mainRouter.get('/api/equity/corporateInfo/:symbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a options chain of the NSE symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/equity/options/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityOptionChain(req.params.symbol))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -509,7 +512,7 @@ mainRouter.get('/api/equity/options/:symbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a intraday trade info of the NSE symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/equity/intraday/:symbol', async (req, res) => {
@@ -518,8 +521,8 @@ mainRouter.get('/api/equity/intraday/:symbol', async (req, res) => {
         const { preOpen } = req.query;
         const data = await nseIndia.getEquityIntradayData(symbol, preOpen === 'true');
         res.json(data);
-    } catch (error) {
-        res.status(400).json(error);
+    } catch (error: any) {
+        res.status(500).json({error: error.message});
     }
 })
 
@@ -557,7 +560,7 @@ mainRouter.get('/api/equity/intraday/:symbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a historical data of the NSE symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
@@ -579,8 +582,8 @@ mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
         } else {
             res.json(await nseIndia.getEquityHistoricalData(req.params.symbol))
         }
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -604,14 +607,14 @@ mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a details of the NSE index symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/index/:indexSymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityStockIndices(req.params.indexSymbol))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -638,15 +641,15 @@ mainRouter.get('/api/index/:indexSymbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns Data for Index OPTION CHAIN
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 
 mainRouter.get('/api/index/options/:indexSymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getIndexOptionChain(req.params.indexSymbol))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -671,15 +674,15 @@ mainRouter.get('/api/index/options/:indexSymbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a option chain data of the NSE commodity symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 
 mainRouter.get('/api/commodity/options/:commoditySymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getCommodityOptionChain(req.params.commoditySymbol))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -710,7 +713,7 @@ mainRouter.get('/api/commodity/options/:commoditySymbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a intraday trade info of the NSE index symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/index/intraday/:indexSymbol', async (req, res) => {
@@ -721,8 +724,8 @@ mainRouter.get('/api/index/intraday/:indexSymbol', async (req, res) => {
         } else {
             res.json(await nseIndia.getIndexIntradayData(req.params.indexSymbol))
         }
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -760,7 +763,7 @@ mainRouter.get('/api/index/intraday/:indexSymbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a historical data of the NSE index symbol
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/index/historical/:indexSymbol', async (req, res) => {
@@ -782,8 +785,8 @@ mainRouter.get('/api/index/historical/:indexSymbol', async (req, res) => {
         } else {
             res.status(400).json({ error: 'Missing arguments "dateStart" or "dateEnd". Please pass those argumets.' })
         }
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -807,14 +810,14 @@ mainRouter.get('/api/index/historical/:indexSymbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of the specified index's gainers and losers
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/gainersAndLosers/:indexSymbol', async (req, res) => {
     try {
         res.json(await getGainersAndLosersByIndex(req.params.indexSymbol))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
     }
 })
 
@@ -838,14 +841,118 @@ mainRouter.get('/api/gainersAndLosers/:indexSymbol', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a JSON object of most active equities of the specified index
- *       400:
+ *       500:
  *         description: Returns a JSON error object of API call
  */
 mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
     try {
         res.json(await getMostActiveEquities(req.params.indexSymbol))
-    } catch (error) {
-        res.status(400).json(error)
+    } catch (error: any) {
+        res.status(500).json({error: error.message})
+    }
+})
+
+/**
+ * @openapi
+ * /api/ai/trading:
+ *   post:
+ *     description: To get AI response related to trading
+ *     tags:
+ *       - AI
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             properties:
+ *               query:
+ *                 type: string
+ *                 description: Query to ask AI
+ *                 required: true
+ *                 example: "What is the current market sentiment?"
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a AI response
+ *       401:
+ *         description: Returns a JSON error object of API call when API key is invalid
+ *       500:
+ *         description: Returns a JSON error object of API call
+ */
+mainRouter.post('/api/ai/trading', async (req, res) => {
+    try {
+        if(req.body.query === undefined) {
+            res.status(400).json('Missing argument "query". Please pass that argumet.')
+            return
+        }
+        const messages: Message[] = []
+        const usage: UsageInfo[] = []
+        appendMessage(messages, 'You are a trading advisor.', 'system')
+        appendMessage(messages, req.body.query, 'user')
+        const result = await runConversation(messages,toolsData, usage)
+        res.json({
+            result,
+            usage: getUsageCost(usage)
+        })
+    } catch (error: any) {
+        if(error.status) {
+            res.status(error.status).json(error)
+            return
+        }
+        res.status(500).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/ai/general:
+ *   post:
+ *     description: To get AI response
+ *     tags:
+ *       - AI
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             properties:
+ *               query:
+ *                 type: string
+ *                 description: Query to ask AI
+ *                 required: true
+ *                 example: "What you can do?"
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a AI response
+ *       401:
+ *         description: Returns a JSON error object of API call when API key is invalid
+ *       500:
+ *         description: Returns a JSON error object of API call
+ */
+mainRouter.post('/api/ai/general', async (req, res) => {
+    try {
+        if(req.body.query === undefined) {
+            res.status(400).json('Missing argument "query". Please pass that argumet.')
+            return
+        }
+        const messages: Message[] = []
+        const usage: UsageInfo[] = []
+        appendMessage(messages, 'You are a AI assistant.', 'system')
+        appendMessage(messages, req.body.query, 'user')
+        const result = await runConversation(messages, undefined, usage)
+        res.json({
+            result,
+            usage: getUsageCost(usage)
+        })
+    } catch (error: any) {
+        if(error.status) {
+            res.status(error.status).json(error)
+            return
+        }
+        res.status(500).json(error)
     }
 })
 

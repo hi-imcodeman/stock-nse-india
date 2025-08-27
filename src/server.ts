@@ -12,6 +12,7 @@ import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { openapiSpecification } from './swaggerDocOptions'
 import path from 'path';
 import { mainRouter } from './routes'
+import bodyParser from 'body-parser'
 import cors from 'cors';
 
 const app = express()
@@ -48,9 +49,9 @@ app.use(cors({
   credentials: process.env.CORS_CREDENTIALS !== 'false'
 }));
 
+app.use(bodyParser.json())
+app.use('/api-docs', swaggerUi.serve as any, swaggerUi.setup(openapiSpecification) as any);
 app.use(mainRouter)
-app.use('/api-docs', swaggerUi.serve as any);
-app.use('/api-docs', swaggerUi.setup(openapiSpecification) as any);
 
 const loadedTypeDefs = loadSchemaSync(path.join(__dirname, './**/*.graphql'), { loaders: [new GraphQLFileLoader()] })
 const loadedResolvers = loadFilesSync(path.join(__dirname, './**/*.resolver.{ts,js}'))

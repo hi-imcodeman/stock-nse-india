@@ -1,4 +1,5 @@
 import { NseIndia, ApiList } from "./index";
+jest.setTimeout(999999)
 
 jest.setTimeout(999999)
 

@@ -48,6 +48,10 @@ export const swaggerDocOptions = {
                 "name": "Helpers",
                 "description": "Contains all helper APIs of NSE India"
             },
+            {
+                "name": "AI",
+                "description": "Can be used to get AI responses"
+            },
         ]
     },
     apis: ['./build/routes.js']

@@ -11,3 +11,4 @@ examples/
 *.map
 Dockerfile
 coverage
+aiTest.*
