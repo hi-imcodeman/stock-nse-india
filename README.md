@@ -14,6 +14,7 @@ A comprehensive package and API server for accessing equity/index details and hi
 - **📦 NPM Package** - Direct integration into your Node.js projects
 - **🔌 GraphQL API** - Modern GraphQL interface with Apollo Server
 - **🌐 REST API** - Comprehensive REST endpoints with Swagger documentation
+- **🤖 MCP Server** - Model Context Protocol server for AI assistants
 - **💻 CLI Tool** - Command-line interface for quick data access
 - **🐳 Docker Support** - Containerized deployment
 - **🔒 CORS Configuration** - Configurable cross-origin resource sharing
@@ -139,6 +140,125 @@ The API includes schemas for:
 - **Equity** - Stock information, metadata, and details
 - **Indices** - Market index data and performance
 - **Filters** - Flexible query filtering options
+
+## 🤖 MCP Server
+
+The project includes a Model Context Protocol (MCP) server that allows AI assistants to access NSE India stock market data:
+
+### What is MCP?
+
+Model Context Protocol (MCP) is a standard for AI assistants to communicate with external data sources and tools. This MCP server exposes all NSE India functions as tools that AI models can use.
+
+### Architecture
+
+The MCP server is built with a modular architecture for maintainability and consistency:
+
+- **`src/mcp-tools.ts`**: Common tools configuration and handler functions shared across all server implementations
+- **`src/mcp-server.ts`**: Stdio-based MCP server for local AI assistant integration
+- **`src/mcp-server-tcp.ts`**: TCP-based MCP server for network-based communication
+- **`src/mcp-server-http.ts`**: HTTP-based MCP server with REST API endpoints for web integration
+
+All server implementations share the same tool definitions and business logic, ensuring consistency across different transport protocols and making maintenance easier.
+
+### Benefits of Common Tools Configuration
+
+- **🔄 Consistency**: All server implementations use identical tool definitions and behavior
+- **🛠️ Maintainability**: Single source of truth for tool configurations and business logic
+- **📝 Easy Updates**: Add new tools or modify existing ones in one place
+- **🧪 Testing**: Unified testing approach across all server implementations
+- **📚 Documentation**: Centralized tool documentation and examples
+
+### Available Tools
+
+The MCP server provides **32 tools** covering:
+- **Equity Data** - Stock details, trade info, corporate info, intraday data, historical data
+- **Index Data** - Market indices, intraday data, historical data, option chains
+- **Market Data** - Market status, turnover, pre-open data, all indices
+- **Reports** - Circulars, daily reports for capital/derivatives/debt markets
+- **Commodity Data** - Option chain data for commodities
+
+### Usage
+
+#### Standard I/O (stdio) Server
+```bash
+# Start the stdio MCP server
+npm run start:mcp
+
+# Test the stdio MCP server
+npm run test:mcp
+```
+
+#### TCP Server (Recommended for production)
+```bash
+# Start the TCP MCP server on port 3001
+npm run start:mcp:tcp
+
+# Test the TCP MCP server
+npm run test:mcp:tcp
+
+# Custom port (set environment variable)
+MCP_PORT=3002 npm run start:mcp:tcp
+```
+
+#### HTTP Server (Best for web integration)
+```bash
+# Start the HTTP MCP server on port 3001
+npm run start:mcp:http
+
+# Custom port (set environment variable)
+MCP_PORT=3002 npm run start:mcp:http
+```
+
+### Configuration
+
+#### For stdio server (AI assistant integration):
+```json
+{
+  "mcpServers": {
+    "nse-india-stdio": {
+      "command": "node",
+      "args": ["build/mcp-server.js"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
+```
+
+#### For TCP server (network access):
+```json
+{
+  "mcpServers": {
+    "nse-india-tcp": {
+      "command": "node",
+      "args": ["build/mcp-server-tcp.js"],
+      "env": {
+        "NODE_ENV": "production",
+        "MCP_PORT": "3001"
+      }
+    }
+  }
+}
+```
+
+#### For HTTP server (web integration):
+```json
+{
+  "mcpServers": {
+    "nse-india-http": {
+      "command": "node",
+      "args": ["build/mcp-server-http.js"],
+      "env": {
+        "NODE_ENV": "production",
+        "MCP_PORT": "3001"
+      }
+    }
+  }
+}
+```
+
+For detailed MCP documentation, see [MCP_README.md](./MCP_README.md).
 
 ## 🌐 REST API
 
