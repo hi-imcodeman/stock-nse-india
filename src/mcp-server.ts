@@ -7,8 +7,8 @@ const nseClient = new NseIndia()
 // MCP Protocol Implementation
 class MCPServer {
   private serverInfo = {
-    name: 'nse-india-mcp-server',
-    version: '1.0.0',
+    name: 'nse-india-stdio',
+    version: '1.2.2',
   }
 
   constructor() {
@@ -40,9 +40,35 @@ class MCPServer {
   }
 
   private async handleMessage(message: string) {
+    let parsed: any
     try {
-      const parsed = JSON.parse(message)
+      parsed = JSON.parse(message)
       const { id, method, params } = parsed
+
+      // Check if this is a notification (no id) or a request (with id)
+      if (id === undefined) {
+        // This is a notification - handle it but don't send response
+        if (method === 'notifications/initialized') {
+          // Just acknowledge the notification silently
+          return
+        }
+        // For other notifications without id, ignore them
+        return
+      }
+
+      // This is a request - validate required fields
+      if (method === undefined) {
+        const response = {
+          jsonrpc: '2.0',
+          id,
+          error: {
+            code: -32600,
+            message: 'Invalid Request: missing method',
+          },
+        }
+        this.sendResponse(response)
+        return
+      }
 
       let result: any
       let error: any = null
@@ -54,6 +80,8 @@ class MCPServer {
               protocolVersion: '2024-11-05',
               capabilities: {
                 tools: {},
+                prompts: {},
+                resources: {},
               },
               serverInfo: this.serverInfo,
             }
@@ -64,7 +92,23 @@ class MCPServer {
             break
 
           case 'tools/call':
-            result = await this.handleToolCall(params)
+            if (!params || !params.name) {
+              error = {
+                code: -32602,
+                message: 'Invalid params: missing tool name',
+              }
+            } else {
+              result = await this.handleToolCall(params)
+            }
+            break
+
+          // Add missing MCP protocol methods
+          case 'prompts/list':
+            result = { prompts: [] }
+            break
+
+          case 'resources/list':
+            result = { resources: [] }
             break
 
           default:
@@ -88,16 +132,18 @@ class MCPServer {
 
       this.sendResponse(response)
     } catch (err) {
-      // Invalid JSON
-      const response = {
-        jsonrpc: '2.0',
-        id: null,
-        error: {
-          code: -32700,
-          message: 'Parse error',
-        },
+      // Invalid JSON - only send error if we have an id
+      if (parsed && parsed.id !== undefined) {
+        const response = {
+          jsonrpc: '2.0',
+          id: parsed.id,
+          error: {
+            code: -32700,
+            message: 'Parse error',
+          },
+        }
+        this.sendResponse(response)
       }
-      this.sendResponse(response)
     }
   }
 
@@ -116,7 +162,14 @@ class MCPServer {
   }
 
   private sendResponse(response: any) {
-    process.stdout.write(JSON.stringify(response) + '\n')
+    // Ensure response has all required fields
+    const validResponse = {
+      jsonrpc: '2.0',
+      id: response.id,
+      ...(response.error ? { error: response.error } : { result: response.result }),
+    }
+    
+    process.stdout.write(JSON.stringify(validResponse) + '\n')
   }
 }
 

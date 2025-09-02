@@ -73,6 +73,24 @@ async function testMCP() {
 
   await sleep(5000)
 
+  console.log('\n5. Testing prompts/list...')
+  sendMessage({
+    jsonrpc: '2.0',
+    id: 5,
+    method: 'prompts/list',
+    params: {}
+  })
+
+  await sleep(5000)
+
+  console.log('\n6. Testing resources/list...')
+  sendMessage({
+    jsonrpc: '2.0',
+    id: 6,
+    method: 'resources/list',
+    params: {}
+  })
+
   // Close the server
   console.log('\nTests completed. Closing server...')
   mcpServer.kill()

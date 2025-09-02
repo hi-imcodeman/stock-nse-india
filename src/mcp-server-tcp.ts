@@ -8,8 +8,8 @@ const nseClient = new NseIndia()
 // MCP Protocol Implementation for TCP
 class MCPServerTCP {
   private serverInfo = {
-    name: 'nse-india-mcp-server',
-    version: '1.0.0',
+    name: 'nse-india-stdio',
+    version: '1.2.2',
   }
   private server: NetServer
   private port: number
@@ -82,6 +82,8 @@ class MCPServerTCP {
               protocolVersion: '2024-11-05',
               capabilities: {
                 tools: {},
+                prompts: {},
+                resources: {},
               },
               serverInfo: this.serverInfo,
             }
@@ -92,7 +94,28 @@ class MCPServerTCP {
             break
 
           case 'tools/call':
-            result = await this.handleToolCall(params)
+            if (!params || !params.name) {
+              error = {
+                code: -32602,
+                message: 'Invalid params: missing tool name',
+              }
+            } else {
+              result = await this.handleToolCall(params)
+            }
+            break
+
+          // Add missing MCP protocol methods
+          case 'prompts/list':
+            result = { prompts: [] }
+            break
+
+          case 'resources/list':
+            result = { resources: [] }
+            break
+
+          case 'notifications/initialized':
+            // Acknowledge initialization notification
+            result = { success: true }
             break
 
           default:

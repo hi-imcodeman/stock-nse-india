@@ -460,7 +460,7 @@ export async function handleMCPToolCall(
         break
       }
 
-          case 'get_glossary': {
+      case 'get_glossary': {
         result = await nseClient.getGlossary()
         break
       }

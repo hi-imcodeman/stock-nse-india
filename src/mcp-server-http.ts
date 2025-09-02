@@ -29,6 +29,10 @@ app.post('/mcp', (req, res) => {
     case 'notifications/initialized':
       // Handle notification (no response needed)
       return res.status(200).json({ jsonrpc: '2.0', result: null })
+    case 'prompts/list':
+      return handlePromptsList(req, res)
+    case 'resources/list':
+      return handleResourcesList(req, res)
     default:
       res.status(400).json({
         jsonrpc: '2.0',
@@ -49,10 +53,12 @@ function handleInitialize(req: any, res: any) {
     protocolVersion: '2024-11-05',
     capabilities: {
       tools: {},
+      prompts: {},
+      resources: {},
     },
     serverInfo: {
-      name: 'nse-india-mcp-server',
-      version: '1.0.0',
+      name: 'nse-india-stdio',
+      version: '1.2.2',
     },
   }
 
@@ -78,6 +84,17 @@ async function handleToolsCall(req: any, res: any) {
   
   try {
     const { name, arguments: args } = params
+    if (!name) {
+      return res.json({
+        jsonrpc: '2.0',
+        id,
+        error: {
+          code: -32602,
+          message: 'Invalid params: missing tool name'
+        }
+      })
+    }
+    
     const result = await handleMCPToolCall(nseClient, name, args)
 
     res.json({
@@ -104,68 +121,26 @@ async function handleToolsCall(req: any, res: any) {
   }
 }
 
-// MCP Protocol endpoints
-app.post('/mcp/initialize', (req, res) => {
-  const { id } = req.body
-  
-  const result = {
-    protocolVersion: '2024-11-05',
-    capabilities: {
-      tools: {},
-    },
-    serverInfo: {
-      name: 'nse-india-mcp-server',
-      version: '1.0.0',
-    },
-  }
-
-  res.json({
-    jsonrpc: '2.0',
-    id,
-    result,
-  })
-})
-
-app.post('/mcp/tools/list', (req, res) => {
+// Handler functions for prompts and resources
+function handlePromptsList(req: any, res: any) {
   const { id } = req.body
   
   res.json({
     jsonrpc: '2.0',
     id,
-    result: { tools: mcpTools },
+    result: { prompts: [] },
   })
-})
+}
 
-app.post('/mcp/tools/call', async (req, res) => {
-  const { id, params } = req.body
+function handleResourcesList(req: any, res: any) {
+  const { id } = req.body
   
-  try {
-    const { name, arguments: args } = params
-    const result = await handleMCPToolCall(nseClient, name, args)
-
-    res.json({
-      jsonrpc: '2.0',
-      id,
-      result: {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      },
-    })
-  } catch (error) {
-    res.json({
-      jsonrpc: '2.0',
-      id,
-      error: {
-        code: -32603,
-        message: error instanceof Error ? error.message : String(error),
-      },
-    })
-  }
-})
+  res.json({
+    jsonrpc: '2.0',
+    id,
+    result: { resources: [] },
+  })
+}
 
 // Convenience endpoints for direct API access
 app.get('/api/tools', (req, res) => {
@@ -212,8 +187,8 @@ app.get('/api/equity/:symbol/historical', async (req, res) => {
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
-    server: 'nse-india-mcp-server',
-    version: '1.0.0',
+    server: 'nse-india-stdio',
+    version: '1.2.2',
     timestamp: new Date().toISOString()
   })
 })
@@ -222,13 +197,13 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     name: 'NSE India MCP Server',
-    version: '1.0.0',
+    version: '1.2.2',
     description: 'Model Context Protocol server for NSE India stock market data',
     endpoints: {
       mcp: {
-        initialize: 'POST /mcp/initialize',
-        tools_list: 'POST /mcp/tools/list',
-        tools_call: 'POST /mcp/tools/call'
+        initialize: 'POST /mcp',
+        tools_list: 'POST /mcp',
+        tools_call: 'POST /mcp'
       },
       api: {
         tools: 'GET /api/tools',
@@ -246,9 +221,7 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.error(`🚀 NSE India MCP Server (HTTP) started on port ${port}`)
   console.error(`📡 MCP Endpoints:`)
-  console.error(`   POST http://localhost:${port}/mcp/initialize`)
-  console.error(`   POST http://localhost:${port}/mcp/tools/list`)
-  console.error(`   POST http://localhost:${port}/mcp/tools/call`)
+  console.error(`   POST http://localhost:${port}/mcp`)
   console.error(`🌐 API Endpoints:`)
   console.error(`   GET  http://localhost:${port}/api/tools`)
   console.error(`   GET  http://localhost:${port}/api/market-status`)
