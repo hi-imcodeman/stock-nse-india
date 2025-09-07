@@ -48,6 +48,10 @@ app.use(cors({
   credentials: process.env.CORS_CREDENTIALS !== 'false'
 }));
 
+// Add JSON body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(mainRouter)
 app.use('/api-docs', swaggerUi.serve as any);
 app.use('/api-docs', swaggerUi.setup(openapiSpecification) as any);

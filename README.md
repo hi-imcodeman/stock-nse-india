@@ -151,14 +151,15 @@ Model Context Protocol (MCP) is a standard for AI assistants to communicate with
 
 ### Architecture
 
-The MCP server is built with a modular architecture for maintainability and consistency:
+The MCP implementation is built with a modular architecture for maintainability and consistency:
 
-- **`src/mcp-tools.ts`**: Common tools configuration and handler functions shared across all server implementations
+- **`src/mcp-tools.ts`**: Common tools configuration and handler functions shared across all implementations
 - **`src/mcp-server.ts`**: Stdio-based MCP server for local AI assistant integration
 - **`src/mcp-server-tcp.ts`**: TCP-based MCP server for network-based communication
 - **`src/mcp-server-http.ts`**: HTTP-based MCP server with REST API endpoints for web integration
+- **`src/mcp-client-openai-functions.ts`**: OpenAI Functions-based MCP client for natural language queries
 
-All server implementations share the same tool definitions and business logic, ensuring consistency across different transport protocols and making maintenance easier.
+All implementations share the same tool definitions and business logic, ensuring consistency across different transport protocols and making maintenance easier.
 
 ### Benefits of Common Tools Configuration
 
@@ -176,6 +177,38 @@ The MCP server provides **32 tools** covering:
 - **Market Data** - Market status, turnover, pre-open data, all indices
 - **Reports** - Circulars, daily reports for capital/derivatives/debt markets
 - **Commodity Data** - Option chain data for commodities
+
+### OpenAI Functions MCP Client
+
+The project includes an advanced MCP client that uses OpenAI's native function calling feature for intelligent query processing:
+
+#### Features
+- **🤖 Natural Language Processing**: Query data using plain English
+- **🔧 Automatic Tool Selection**: AI intelligently chooses the right NSE API tools
+- **📊 Real-time Data**: Access live market data, historical information, and more
+- **🎯 Smart Parameter Extraction**: Automatically extracts symbols, dates, and other parameters
+- **📈 Comprehensive Coverage**: Access to all 32+ NSE India API endpoints
+- **🔄 Multiple Query Types**: Support for both simple and complex multi-step queries
+
+#### Query Methods
+- **`processQuery()`**: Single-round query processing for straightforward requests
+- **`processQueryWithMultipleFunctions()`**: Multi-step query processing for complex analysis
+
+#### Example Usage
+```javascript
+import { mcpClientOpenAIFunctions } from './mcp-client-openai-functions'
+
+// Simple query
+const response = await mcpClientOpenAIFunctions.processQuery({
+  query: "What is the current price of TCS stock?",
+  model: "gpt-4o-mini"
+})
+
+// Complex multi-step query
+const complexResponse = await mcpClientOpenAIFunctions.processQueryWithMultipleFunctions({
+  query: "Compare the performance of Reliance and TCS over the last month and analyze their trends"
+})
+```
 
 ### Usage
 
@@ -204,6 +237,9 @@ MCP_PORT=3002 npm run start:mcp:tcp
 ```bash
 # Start the HTTP MCP server on port 3001
 npm run start:mcp:http
+
+# Test the HTTP MCP server
+npm run test:mcp:http
 
 # Custom port (set environment variable)
 MCP_PORT=3002 npm run start:mcp:http
@@ -273,6 +309,11 @@ Comprehensive REST endpoints with automatic Swagger documentation:
 - `GET /api/equity/:symbol/historical` - Historical data
 - `GET /api/indices` - Market indices
 - `GET /api-docs` - Interactive API documentation
+
+### MCP Client Endpoints
+
+- `POST /api/mcp/query` - Natural language query using OpenAI Functions
+- `POST /api/mcp/query-multiple` - Multi-step natural language queries
 
 ### API Documentation
 
@@ -425,6 +466,15 @@ npm run docs
 - **`npm test`** - Run test suite with coverage
 - **`npm run docs`** - Generate TypeDoc documentation
 - **`npm run lint`** - Run ESLint
+
+### MCP Scripts
+
+- **`npm run start:mcp`** - Start stdio MCP server
+- **`npm run start:mcp:tcp`** - Start TCP MCP server
+- **`npm run start:mcp:http`** - Start HTTP MCP server
+- **`npm run test:mcp`** - Test stdio MCP server
+- **`npm run test:mcp:tcp`** - Test TCP MCP server
+- **`npm run test:mcp:http`** - Test HTTP MCP server
 
 ## 🧪 Testing
 

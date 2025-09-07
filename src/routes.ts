@@ -5,6 +5,7 @@ import {
     getGainersAndLosersByIndex,
     getMostActiveEquities
 } from './helpers'
+import { mcpClientOpenAIFunctions, MCPClientRequest } from './mcp-client-openai-functions'
 
 const mainRouter:Router = Router()
 
@@ -846,6 +847,345 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
         res.json(await getMostActiveEquities(req.params.indexSymbol))
     } catch (error) {
         res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/query:
+ *   post:
+ *     description: Query NSE India data using natural language with ChatGPT GPT-4o-mini
+ *     tags:
+ *       - MCP Client
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - query
+ *             properties:
+ *               query:
+ *                 type: string
+ *                 description: Natural language query about NSE India stock market data
+ *                 example: "What is the current price of TCS stock?"
+ *               model:
+ *                 type: string
+ *                 description: OpenAI model to use
+ *                 default: gpt-4o-mini
+ *               temperature:
+ *                 type: number
+ *                 description: Temperature for response generation
+ *                 default: 0.7
+ *               max_tokens:
+ *                 type: number
+ *                 description: Maximum tokens in response
+ *                 default: 2000
+ *     responses:
+ *       200:
+ *         description: Returns AI-generated response with NSE data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 response:
+ *                   type: string
+ *                   description: AI-generated response
+ *                 tools_used:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: List of MCP tools used
+ *                 data_sources:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: Data sources used
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Response timestamp
+ *       400:
+ *         description: Returns error if query processing fails
+ *       500:
+ *         description: Returns error if OpenAI API fails
+ */
+mainRouter.post('/api/mcp/query', async (req, res) => {
+    try {
+        const { query, model, temperature, max_tokens } = req.body as MCPClientRequest
+
+        if (!query || typeof query !== 'string') {
+            return res.status(400).json({ 
+                error: 'Query is required and must be a string' 
+            })
+        }
+
+        if (!process.env.OPENAI_API_KEY) {
+            return res.status(500).json({ 
+                error: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.' 
+            })
+        }
+
+        const result = await mcpClientOpenAIFunctions.processQuery({
+            query,
+            model,
+            temperature,
+            max_tokens
+        })
+
+        res.json(result)
+    } catch (error) {
+        console.error('MCP Query Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/tools:
+ *   get:
+ *     description: Get list of available MCP tools for NSE India data
+ *     tags:
+ *       - MCP Client
+ *     responses:
+ *       200:
+ *         description: Returns list of available MCP tools
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 tools:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                         description: Tool name
+ *                       description:
+ *                         type: string
+ *                         description: Tool description
+ *                       inputSchema:
+ *                         type: object
+ *                         description: Tool input schema
+ *       500:
+ *         description: Returns error if tools cannot be retrieved
+ */
+mainRouter.get('/api/mcp/tools', async (_req, res) => {
+    try {
+        const tools = mcpClientOpenAIFunctions.getAvailableTools()
+        res.json({ tools })
+    } catch (error) {
+        console.error('MCP Tools Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/test:
+ *   get:
+ *     description: Test MCP client connection and OpenAI integration
+ *     tags:
+ *       - MCP Client
+ *     responses:
+ *       200:
+ *         description: Returns test result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Test status
+ *                 message:
+ *                   type: string
+ *                   description: Test message
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Test timestamp
+ *       500:
+ *         description: Returns error if test fails
+ */
+mainRouter.get('/api/mcp/test', async (_req, res) => {
+    try {
+        if (!process.env.OPENAI_API_KEY) {
+            return res.status(500).json({ 
+                status: 'error',
+                message: 'OpenAI API key not configured',
+                timestamp: new Date().toISOString()
+            })
+        }
+
+        const isConnected = await mcpClientOpenAIFunctions.testConnection()
+        
+        if (isConnected) {
+            res.json({
+                status: 'success',
+                message: 'MCP client is working correctly',
+                timestamp: new Date().toISOString()
+            })
+        } else {
+            res.status(500).json({
+                status: 'error',
+                message: 'MCP client test failed',
+                timestamp: new Date().toISOString()
+            })
+        }
+    } catch (error) {
+        console.error('MCP Test Error:', error)
+        res.status(500).json({ 
+            status: 'error',
+            message: error instanceof Error ? error.message : 'Test failed',
+            timestamp: new Date().toISOString()
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/query-multiple:
+ *   post:
+ *     description: Query NSE India data using natural language with multiple function calls
+ *     tags:
+ *       - MCP Client
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - query
+ *             properties:
+ *               query:
+ *                 type: string
+ *                 description: Natural language query about NSE India stock market data
+ *                 example: "Show me the market status and list some stock symbols"
+ *               model:
+ *                 type: string
+ *                 description: OpenAI model to use
+ *                 default: gpt-4o-mini
+ *               temperature:
+ *                 type: number
+ *                 description: Temperature for response generation
+ *                 default: 0.7
+ *               max_tokens:
+ *                 type: number
+ *                 description: Maximum tokens in response
+ *                 default: 2000
+ *     responses:
+ *       200:
+ *         description: Returns AI-generated response with NSE data using multiple function calls
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 response:
+ *                   type: string
+ *                   description: AI-generated response
+ *                 tools_used:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: List of MCP tools used
+ *                 data_sources:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: Data sources used
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Response timestamp
+ *       400:
+ *         description: Returns error if query processing fails
+ *       500:
+ *         description: Returns error if OpenAI API fails
+ */
+mainRouter.post('/api/mcp/query-multiple', async (req, res) => {
+    try {
+        const { query, model, temperature, max_tokens } = req.body as MCPClientRequest
+
+        if (!query || typeof query !== 'string') {
+            return res.status(400).json({ 
+                error: 'Query is required and must be a string' 
+            })
+        }
+
+        if (!process.env.OPENAI_API_KEY) {
+            return res.status(500).json({ 
+                error: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.' 
+            })
+        }
+
+        const result = await mcpClientOpenAIFunctions.processQueryWithMultipleFunctions({
+            query,
+            model,
+            temperature,
+            max_tokens
+        })
+
+        res.json(result)
+    } catch (error) {
+        console.error('MCP Query Multiple Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/functions:
+ *   get:
+ *     description: Get list of available MCP tools in OpenAI function format
+ *     tags:
+ *       - MCP Client
+ *     responses:
+ *       200:
+ *         description: Returns list of available MCP tools in OpenAI function format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 functions:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                         description: Function name
+ *                       description:
+ *                         type: string
+ *                         description: Function description
+ *                       parameters:
+ *                         type: object
+ *                         description: Function parameters schema
+ *       500:
+ *         description: Returns error if functions cannot be retrieved
+ */
+mainRouter.get('/api/mcp/functions', async (_req, res) => {
+    try {
+        const functions = mcpClientOpenAIFunctions.getOpenAIFunctions()
+        res.json({ functions })
+    } catch (error) {
+        console.error('MCP Functions Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
     }
 })
 
