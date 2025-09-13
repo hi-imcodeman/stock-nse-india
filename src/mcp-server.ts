@@ -5,7 +5,7 @@ import { mcpTools, handleMCPToolCall } from './mcp-tools.js'
 const nseClient = new NseIndia()
 
 // MCP Protocol Implementation
-class MCPServer {
+export class MCPServer {
   private serverInfo = {
     name: 'nse-india-stdio',
     version: '1.2.2',
@@ -173,6 +173,5 @@ class MCPServer {
   }
 }
 
-// Start the server
-const server = new MCPServer()
-console.error('NSE India MCP Server started')
+// Export the server class for use in CLI
+// The server will be instantiated when the CLI command is run
