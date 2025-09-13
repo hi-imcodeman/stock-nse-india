@@ -172,6 +172,3 @@ export class MCPServer {
     process.stdout.write(JSON.stringify(validResponse) + '\n')
   }
 }
-
-// Export the server class for use in CLI
-// The server will be instantiated when the CLI command is run
