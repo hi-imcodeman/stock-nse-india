@@ -329,6 +329,50 @@ export const mcpTools = [
       required: [],
     },
   },
+  {
+    name: 'get_equity_technical_indicators',
+    description: 'Get technical indicators for a specific equity symbol',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        symbol: {
+          type: 'string',
+          description: 'Stock symbol (e.g., TCS, RELIANCE)',
+        },
+        period: {
+          type: 'number',
+          description: 'Number of days for historical data (default: 200)',
+        },
+        sma_periods: {
+          type: 'array',
+          items: { type: 'number' },
+          description: 'Array of periods for SMA indicators (e.g., [5, 10, 20, 50])',
+        },
+        ema_periods: {
+          type: 'array',
+          items: { type: 'number' },
+          description: 'Array of periods for EMA indicators (e.g., [5, 10, 20, 50])',
+        },
+        rsi_period: {
+          type: 'number',
+          description: 'RSI period (default: 14)',
+        },
+        bb_period: {
+          type: 'number',
+          description: 'Bollinger Bands period (default: 20)',
+        },
+        bb_std_dev: {
+          type: 'number',
+          description: 'Bollinger Bands standard deviation (default: 2)',
+        },
+        show_only_latest: {
+          type: 'boolean',
+          description: 'Show only latest values (default: true)',
+        },
+      },
+      required: ['symbol'],
+    },
+  },
 ]
 
 // Common tool call handler function
@@ -374,7 +418,9 @@ export async function handleMCPToolCall(
           throw new Error('Symbol parameter is required and must be a string')
         }
         const isPreOpenData = args.is_pre_open_data && 
-          typeof args.is_pre_open_data === 'boolean' ? args.is_pre_open_data : false
+          typeof args.is_pre_open_data === 'boolean' 
+          ? args.is_pre_open_data 
+          : false
         result = await nseClient.getEquityIntradayData(
           args.symbol,
           isPreOpenData
@@ -387,7 +433,8 @@ export async function handleMCPToolCall(
           throw new Error('Symbol parameter is required and must be a string')
         }
         const range = args.start_date && args.end_date && 
-          typeof args.start_date === 'string' && typeof args.end_date === 'string'
+          typeof args.start_date === 'string' && 
+          typeof args.end_date === 'string'
           ? { start: new Date(args.start_date), end: new Date(args.end_date) }
           : undefined
         result = await nseClient.getEquityHistoricalData(args.symbol, range)
@@ -415,7 +462,9 @@ export async function handleMCPToolCall(
           throw new Error('Index parameter is required and must be a string')
         }
         const isIndexPreOpenData = args.is_pre_open_data && 
-          typeof args.is_pre_open_data === 'boolean' ? args.is_pre_open_data : false
+          typeof args.is_pre_open_data === 'boolean' 
+          ? args.is_pre_open_data 
+          : false
         result = await nseClient.getIndexIntradayData(
           args.index,
           isIndexPreOpenData
@@ -428,10 +477,16 @@ export async function handleMCPToolCall(
           throw new Error('Index parameter is required and must be a string')
         }
         if (!args.start_date || !args.end_date || 
-          typeof args.start_date !== 'string' || typeof args.end_date !== 'string') {
-          throw new Error('Start date and end date are required and must be strings')
+          typeof args.start_date !== 'string' || 
+          typeof args.end_date !== 'string') {
+          throw new Error(
+            'Start date and end date are required and must be strings'
+          )
         }
-        const indexRange = { start: new Date(args.start_date), end: new Date(args.end_date) }
+        const indexRange = { 
+          start: new Date(args.start_date), 
+          end: new Date(args.end_date) 
+        }
         result = await nseClient.getIndexHistoricalData(args.index, indexRange)
         break
       }
@@ -527,6 +582,230 @@ export async function handleMCPToolCall(
 
       case 'get_merged_daily_reports_debt': {
         result = await nseClient.getMergedDailyReportsDebt()
+        break
+      }
+
+      case 'get_equity_technical_indicators': {
+        if (!args?.symbol || typeof args.symbol !== 'string') {
+          throw new Error('Symbol parameter is required and must be a string')
+        }
+        
+        const options: Record<string, unknown> = {}
+        const showOnlyLatest = args.show_only_latest !== undefined 
+          ? args.show_only_latest 
+          : true
+        
+        if (args.period && typeof args.period === 'number') {
+          options.period = args.period
+        }
+        
+        if (args.sma_periods && Array.isArray(args.sma_periods)) {
+          options.smaPeriods = args.sma_periods
+        }
+        
+        if (args.ema_periods && Array.isArray(args.ema_periods)) {
+          options.emaPeriods = args.ema_periods
+        }
+        
+        if (args.rsi_period && typeof args.rsi_period === 'number') {
+          options.rsiPeriod = args.rsi_period
+        }
+        
+        if (args.bb_period && typeof args.bb_period === 'number') {
+          options.bbPeriod = args.bb_period
+        }
+        
+        if (args.bb_std_dev && typeof args.bb_std_dev === 'number') {
+          options.bbStdDev = args.bb_std_dev
+        }
+        
+        const indicators = await nseClient.getTechnicalIndicators(
+          args.symbol, 
+          (options.period as number) || 200, 
+          options
+        )
+        
+        // Helper function to round numbers to 2 decimal places
+        const roundTo2Decimals = (value: number | null | undefined): number | null => {
+          return value !== null && value !== undefined ? Math.round(value * 100) / 100 : null
+        }
+
+        // Helper function to round array of numbers to 2 decimal places
+        const roundArrayTo2Decimals = (arr: number[]): number[] => {
+          return arr.map(value => roundTo2Decimals(value) ?? 0)
+        }
+        
+        if (showOnlyLatest) {
+          // Return only the latest values
+          const latestIndicators: Record<string, unknown> = {}
+          
+          // Process SMA indicators
+          latestIndicators.sma = {}
+          Object.keys(indicators.sma).forEach(key => {
+            const values = indicators.sma[key]
+            ;(latestIndicators.sma as Record<string, unknown>)[key] = 
+              values.length > 0 ? roundTo2Decimals(values[values.length - 1]) : null
+          })
+          
+          // Process EMA indicators
+          latestIndicators.ema = {}
+          Object.keys(indicators.ema).forEach(key => {
+            const values = indicators.ema[key]
+            ;(latestIndicators.ema as Record<string, unknown>)[key] = 
+              values.length > 0 ? roundTo2Decimals(values[values.length - 1]) : null
+          })
+          
+          // Process other indicators
+          latestIndicators.rsi = roundTo2Decimals(
+            indicators.rsi.length > 0 
+              ? indicators.rsi[indicators.rsi.length - 1] 
+              : null
+          )
+          latestIndicators.macd = {
+            macd: roundTo2Decimals(
+              indicators.macd.macd.length > 0 
+                ? indicators.macd.macd[indicators.macd.macd.length - 1] 
+                : null
+            ),
+            signal: roundTo2Decimals(
+              indicators.macd.signal.length > 0 
+                ? indicators.macd.signal[indicators.macd.signal.length - 1] 
+                : null
+            ),
+            histogram: roundTo2Decimals(
+              indicators.macd.histogram.length > 0 
+                ? indicators.macd.histogram[indicators.macd.histogram.length - 1] 
+                : null
+            )
+          }
+          latestIndicators.bollingerBands = {
+            upper: roundTo2Decimals(
+              indicators.bollingerBands.upper.length > 0 
+                ? indicators.bollingerBands.upper[indicators.bollingerBands.upper.length - 1] 
+                : null
+            ),
+            middle: roundTo2Decimals(
+              indicators.bollingerBands.middle.length > 0 
+                ? indicators.bollingerBands.middle[indicators.bollingerBands.middle.length - 1] 
+                : null
+            ),
+            lower: roundTo2Decimals(
+              indicators.bollingerBands.lower.length > 0 
+                ? indicators.bollingerBands.lower[indicators.bollingerBands.lower.length - 1] 
+                : null
+            )
+          }
+          latestIndicators.stochastic = {
+            k: roundTo2Decimals(
+              indicators.stochastic.k.length > 0 
+                ? indicators.stochastic.k[indicators.stochastic.k.length - 1] 
+                : null
+            ),
+            d: roundTo2Decimals(
+              indicators.stochastic.d.length > 0 
+                ? indicators.stochastic.d[indicators.stochastic.d.length - 1] 
+                : null
+            )
+          }
+          latestIndicators.williamsR = roundTo2Decimals(
+            indicators.williamsR.length > 0 
+              ? indicators.williamsR[indicators.williamsR.length - 1] 
+              : null
+          )
+          latestIndicators.atr = roundTo2Decimals(
+            indicators.atr.length > 0 
+              ? indicators.atr[indicators.atr.length - 1] 
+              : null
+          )
+          latestIndicators.adx = roundTo2Decimals(
+            indicators.adx.length > 0 
+              ? indicators.adx[indicators.adx.length - 1] 
+              : null
+          )
+          latestIndicators.obv = roundTo2Decimals(
+            indicators.obv.length > 0 
+              ? indicators.obv[indicators.obv.length - 1] 
+              : null
+          )
+          latestIndicators.cci = roundTo2Decimals(
+            indicators.cci.length > 0 
+              ? indicators.cci[indicators.cci.length - 1] 
+              : null
+          )
+          latestIndicators.mfi = roundTo2Decimals(
+            indicators.mfi.length > 0 
+              ? indicators.mfi[indicators.mfi.length - 1] 
+              : null
+          )
+          latestIndicators.roc = roundTo2Decimals(
+            indicators.roc.length > 0 
+              ? indicators.roc[indicators.roc.length - 1] 
+              : null
+          )
+          latestIndicators.momentum = roundTo2Decimals(
+            indicators.momentum.length > 0 
+              ? indicators.momentum[indicators.momentum.length - 1] 
+              : null
+          )
+          latestIndicators.ad = roundTo2Decimals(
+            indicators.ad.length > 0 
+              ? indicators.ad[indicators.ad.length - 1] 
+              : null
+          )
+          latestIndicators.vwap = roundTo2Decimals(
+            indicators.vwap.length > 0 
+              ? indicators.vwap[indicators.vwap.length - 1] 
+              : null
+          )
+          
+          result = latestIndicators
+        } else {
+          // Return all values with 2 decimal precision
+          const roundedIndicators: Record<string, unknown> = {}
+          
+          // Process SMA indicators
+          roundedIndicators.sma = {}
+          Object.keys(indicators.sma).forEach(key => {
+            (roundedIndicators.sma as Record<string, unknown>)[key] = 
+              roundArrayTo2Decimals(indicators.sma[key])
+          })
+          
+          // Process EMA indicators
+          roundedIndicators.ema = {}
+          Object.keys(indicators.ema).forEach(key => {
+            (roundedIndicators.ema as Record<string, unknown>)[key] = 
+              roundArrayTo2Decimals(indicators.ema[key])
+          })
+          
+          // Process other indicators
+          roundedIndicators.rsi = roundArrayTo2Decimals(indicators.rsi)
+          roundedIndicators.macd = {
+            macd: roundArrayTo2Decimals(indicators.macd.macd),
+            signal: roundArrayTo2Decimals(indicators.macd.signal),
+            histogram: roundArrayTo2Decimals(indicators.macd.histogram)
+          }
+          roundedIndicators.bollingerBands = {
+            upper: roundArrayTo2Decimals(indicators.bollingerBands.upper),
+            middle: roundArrayTo2Decimals(indicators.bollingerBands.middle),
+            lower: roundArrayTo2Decimals(indicators.bollingerBands.lower)
+          }
+          roundedIndicators.stochastic = {
+            k: roundArrayTo2Decimals(indicators.stochastic.k),
+            d: roundArrayTo2Decimals(indicators.stochastic.d)
+          }
+          roundedIndicators.williamsR = roundArrayTo2Decimals(indicators.williamsR)
+          roundedIndicators.atr = roundArrayTo2Decimals(indicators.atr)
+          roundedIndicators.adx = roundArrayTo2Decimals(indicators.adx)
+          roundedIndicators.obv = roundArrayTo2Decimals(indicators.obv)
+          roundedIndicators.cci = roundArrayTo2Decimals(indicators.cci)
+          roundedIndicators.mfi = roundArrayTo2Decimals(indicators.mfi)
+          roundedIndicators.roc = roundArrayTo2Decimals(indicators.roc)
+          roundedIndicators.momentum = roundArrayTo2Decimals(indicators.momentum)
+          roundedIndicators.ad = roundArrayTo2Decimals(indicators.ad)
+          roundedIndicators.vwap = roundArrayTo2Decimals(indicators.vwap)
+          
+          result = roundedIndicators
+        }
         break
       }
 
