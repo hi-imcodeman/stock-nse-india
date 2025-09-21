@@ -695,3 +695,33 @@ export interface DailyReport {
     isin: string
     tradingDate: string
 }
+
+export interface TechnicalIndicators {
+    sma: { [key: string]: number[] } // Dynamic SMA indicators (e.g., sma5, sma10, sma20)
+    ema: { [key: string]: number[] } // Dynamic EMA indicators (e.g., ema5, ema10, ema20)
+    rsi: number[] // Relative Strength Index
+    macd: {
+        macd: number[]
+        signal: number[]
+        histogram: number[]
+    }
+    bollingerBands: {
+        upper: number[]
+        middle: number[]
+        lower: number[]
+    }
+    stochastic: {
+        k: number[]
+        d: number[]
+    }
+    williamsR: number[] // Williams %R
+    atr: number[] // Average True Range
+    adx: number[] // Average Directional Index
+    obv: number[] // On-Balance Volume
+    cci: number[] // Commodity Channel Index
+    mfi: number[] // Money Flow Index
+    roc: number[] // Rate of Change
+    momentum: number[] // Momentum
+    ad: number[] // Accumulation/Distribution
+    vwap: number[] // Volume Weighted Average Price
+}

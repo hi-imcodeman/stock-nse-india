@@ -20,7 +20,8 @@ import {
     Circular,
     EquityMaster,
     PreOpenMarketData,
-    DailyReport
+    DailyReport,
+    TechnicalIndicators
 } from './interface'
 
 export enum ApiList {
@@ -376,5 +377,39 @@ export class NseIndia {
      */
     getMergedDailyReportsDebt(): Promise<DailyReport[]> {
         return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DEBT)
+    }
+
+    /**
+     * Get technical indicators for a specific equity symbol
+     * @param symbol - The equity symbol (e.g., 'RELIANCE', 'TCS')
+     * @param period - Number of days for historical data (default: 200)
+     * @param options - Optional configuration for indicators
+     * @returns Promise<TechnicalIndicators>
+     */
+    async getTechnicalIndicators(
+        symbol: string, 
+        period = 200,
+        options: {
+            smaPeriods?: number[] // Array of periods for SMA (e.g., [5, 10, 20, 50])
+            emaPeriods?: number[] // Array of periods for EMA (e.g., [5, 10, 20, 50])
+            rsiPeriod?: number
+            macdFast?: number
+            macdSlow?: number
+            macdSignal?: number
+            bbPeriod?: number
+            bbStdDev?: number
+            stochK?: number
+            stochD?: number
+            williamsRPeriod?: number
+            atrPeriod?: number
+            adxPeriod?: number
+            cciPeriod?: number
+            mfiPeriod?: number
+            rocPeriod?: number
+            momentumPeriod?: number
+        } = {}
+    ): Promise<TechnicalIndicators> {
+        const { getTechnicalIndicators } = await import('./helpers')
+        return getTechnicalIndicators(symbol, period, options)
     }
 }

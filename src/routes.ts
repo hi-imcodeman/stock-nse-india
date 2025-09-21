@@ -587,6 +587,388 @@ mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
 
 /**
  * @openapi
+ * /api/equity/technicalIndicators/{symbol}:
+ *   get:
+ *     description: To get technical indicators for the NSE symbol
+ *     tags:
+ *       - Equity
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: NSE Symbol of the Equity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: any
+ *       - name: period
+ *         in: query
+ *         description: "Number of days for historical data (default: 200)"
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 200
+ *       - name: smaPeriods
+ *         in: query
+ *         description: "Comma-separated SMA periods (e.g., 5,10,20,50)"
+ *         required: false
+ *         schema:
+ *           type: string
+ *           default: "5,10,20,50,100,200"
+ *       - name: emaPeriods
+ *         in: query
+ *         description: "Comma-separated EMA periods (e.g., 5,10,20,50)"
+ *         required: false
+ *         schema:
+ *           type: string
+ *           default: "5,10,20,50,100,200"
+ *       - name: rsiPeriod
+ *         in: query
+ *         description: "RSI period (default: 14)"
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 14
+ *       - name: bbPeriod
+ *         in: query
+ *         description: "Bollinger Bands period (default: 20)"
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - name: bbStdDev
+ *         in: query
+ *         description: "Bollinger Bands standard deviation (default: 2)"
+ *         required: false
+ *         schema:
+ *           type: number
+ *           default: 2
+ *       - name: showOnlyLatest
+ *         in: query
+ *         description: "Show only latest values (true) or all values (false) - useful for charts (default: true)"
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           default: true
+ *     responses:
+ *       200:
+ *         description: Returns technical indicators for the NSE symbol
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 sma:
+ *                   type: object
+ *                   description: "Simple Moving Averages with dynamic keys (sma5, sma10, etc.)"
+ *                   additionalProperties:
+ *                     type: array
+ *                     items:
+ *                       type: number
+ *                 ema:
+ *                   type: object
+ *                   description: "Exponential Moving Averages with dynamic keys (ema5, ema10, etc.)"
+ *                   additionalProperties:
+ *                     type: array
+ *                     items:
+ *                       type: number
+ *                 rsi:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Relative Strength Index"
+ *                 macd:
+ *                   type: object
+ *                   properties:
+ *                     macd:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                     signal:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                     histogram:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                 bollingerBands:
+ *                   type: object
+ *                   properties:
+ *                     upper:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                     middle:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                     lower:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                 stochastic:
+ *                   type: object
+ *                   properties:
+ *                     k:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                     d:
+ *                       type: array
+ *                       items:
+ *                         type: number
+ *                 williamsR:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Williams %R"
+ *                 atr:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Average True Range"
+ *                 adx:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Average Directional Index"
+ *                 obv:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "On-Balance Volume"
+ *                 cci:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Commodity Channel Index"
+ *                 mfi:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Money Flow Index"
+ *                 roc:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Rate of Change"
+ *                 momentum:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Momentum"
+ *                 ad:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Accumulation/Distribution"
+ *                 vwap:
+ *                   type: array
+ *                   items:
+ *                     type: number
+ *                   description: "Volume Weighted Average Price"
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+mainRouter.get('/api/equity/technicalIndicators/:symbol', async (req, res) => {
+    try {
+        const { symbol } = req.params
+        const { 
+            period, 
+            smaPeriods, 
+            emaPeriods, 
+            rsiPeriod, 
+            bbPeriod, 
+            bbStdDev,
+            showOnlyLatest
+        } = req.query
+
+        // Parse query parameters
+        const options: any = {}
+        
+        if (period) {
+            options.period = parseInt(period as string)
+        }
+        
+        if (smaPeriods) {
+            options.smaPeriods = (smaPeriods as string).split(',').map(p => parseInt(p.trim()))
+        }
+        
+        if (emaPeriods) {
+            options.emaPeriods = (emaPeriods as string).split(',').map(p => parseInt(p.trim()))
+        }
+        
+        if (rsiPeriod) {
+            options.rsiPeriod = parseInt(rsiPeriod as string)
+        }
+        
+        if (bbPeriod) {
+            options.bbPeriod = parseInt(bbPeriod as string)
+        }
+        
+        if (bbStdDev) {
+            options.bbStdDev = parseFloat(bbStdDev as string)
+        }
+
+        const indicators = await nseIndia.getTechnicalIndicators(symbol, (options.period as number) || 200, options)
+        
+        // Parse showOnlyLatest flag (default: true)
+        const showLatest = showOnlyLatest === undefined || showOnlyLatest === 'true'
+        
+        // Helper function to round numbers to 2 decimal places
+        const roundTo2Decimals = (value: number | null): number | null => {
+            return value !== null ? Math.round(value * 100) / 100 : null
+        }
+
+        // Helper function to round array of numbers to 2 decimal places
+        const roundArrayTo2Decimals = (arr: number[]): number[] => {
+            return arr.map(value => roundTo2Decimals(value) as number)
+        }
+
+        if (showLatest) {
+            // Return only the latest values
+            const latestIndicators: any = {}
+            
+            // Process SMA indicators
+            latestIndicators.sma = {}
+            Object.keys(indicators.sma).forEach(key => {
+                const values = indicators.sma[key]
+                latestIndicators.sma[key] = values.length > 0 ? roundTo2Decimals(values[values.length - 1]) : null
+            })
+            
+            // Process EMA indicators
+            latestIndicators.ema = {}
+            Object.keys(indicators.ema).forEach(key => {
+                const values = indicators.ema[key]
+                latestIndicators.ema[key] = values.length > 0 ? roundTo2Decimals(values[values.length - 1]) : null
+            })
+            
+            // Process other indicators
+            latestIndicators.rsi = roundTo2Decimals(
+                indicators.rsi.length > 0 ? indicators.rsi[indicators.rsi.length - 1] : null
+            )
+            latestIndicators.macd = {
+                macd: roundTo2Decimals(
+                    indicators.macd.macd.length > 0 ? indicators.macd.macd[indicators.macd.macd.length - 1] : null
+                ),
+                signal: roundTo2Decimals(
+                    indicators.macd.signal.length > 0 ? indicators.macd.signal[indicators.macd.signal.length - 1] : null
+                ),
+                histogram: roundTo2Decimals(
+                    indicators.macd.histogram.length > 0 ? 
+                        indicators.macd.histogram[indicators.macd.histogram.length - 1] : null
+                )
+            }
+            latestIndicators.bollingerBands = {
+                upper: roundTo2Decimals(
+                    indicators.bollingerBands.upper.length > 0 ? 
+                        indicators.bollingerBands.upper[indicators.bollingerBands.upper.length - 1] : null
+                ),
+                middle: roundTo2Decimals(
+                    indicators.bollingerBands.middle.length > 0 ? 
+                        indicators.bollingerBands.middle[indicators.bollingerBands.middle.length - 1] : null
+                ),
+                lower: roundTo2Decimals(
+                    indicators.bollingerBands.lower.length > 0 ? 
+                        indicators.bollingerBands.lower[indicators.bollingerBands.lower.length - 1] : null
+                )
+            }
+            latestIndicators.stochastic = {
+                k: roundTo2Decimals(
+                    indicators.stochastic.k.length > 0 ? 
+                        indicators.stochastic.k[indicators.stochastic.k.length - 1] : null
+                ),
+                d: roundTo2Decimals(
+                    indicators.stochastic.d.length > 0 ? 
+                        indicators.stochastic.d[indicators.stochastic.d.length - 1] : null
+                )
+            }
+            latestIndicators.williamsR = roundTo2Decimals(
+                indicators.williamsR.length > 0 ? indicators.williamsR[indicators.williamsR.length - 1] : null
+            )
+            latestIndicators.atr = roundTo2Decimals(
+                indicators.atr.length > 0 ? indicators.atr[indicators.atr.length - 1] : null
+            )
+            latestIndicators.adx = roundTo2Decimals(
+                indicators.adx.length > 0 ? indicators.adx[indicators.adx.length - 1] : null
+            )
+            latestIndicators.obv = roundTo2Decimals(
+                indicators.obv.length > 0 ? indicators.obv[indicators.obv.length - 1] : null
+            )
+            latestIndicators.cci = roundTo2Decimals(
+                indicators.cci.length > 0 ? indicators.cci[indicators.cci.length - 1] : null
+            )
+            latestIndicators.mfi = roundTo2Decimals(
+                indicators.mfi.length > 0 ? indicators.mfi[indicators.mfi.length - 1] : null
+            )
+            latestIndicators.roc = roundTo2Decimals(
+                indicators.roc.length > 0 ? indicators.roc[indicators.roc.length - 1] : null
+            )
+            latestIndicators.momentum = roundTo2Decimals(
+                indicators.momentum.length > 0 ? indicators.momentum[indicators.momentum.length - 1] : null
+            )
+            latestIndicators.ad = roundTo2Decimals(
+                indicators.ad.length > 0 ? indicators.ad[indicators.ad.length - 1] : null
+            )
+            latestIndicators.vwap = roundTo2Decimals(
+                indicators.vwap.length > 0 ? indicators.vwap[indicators.vwap.length - 1] : null
+            )
+            
+            res.json(latestIndicators)
+        } else {
+            // Return all values with 2 decimal precision
+            const roundedIndicators: any = {}
+            
+            // Process SMA indicators
+            roundedIndicators.sma = {}
+            Object.keys(indicators.sma).forEach(key => {
+                roundedIndicators.sma[key] = roundArrayTo2Decimals(indicators.sma[key])
+            })
+            
+            // Process EMA indicators
+            roundedIndicators.ema = {}
+            Object.keys(indicators.ema).forEach(key => {
+                roundedIndicators.ema[key] = roundArrayTo2Decimals(indicators.ema[key])
+            })
+            
+            // Process other indicators
+            roundedIndicators.rsi = roundArrayTo2Decimals(indicators.rsi)
+            roundedIndicators.macd = {
+                macd: roundArrayTo2Decimals(indicators.macd.macd),
+                signal: roundArrayTo2Decimals(indicators.macd.signal),
+                histogram: roundArrayTo2Decimals(indicators.macd.histogram)
+            }
+            roundedIndicators.bollingerBands = {
+                upper: roundArrayTo2Decimals(indicators.bollingerBands.upper),
+                middle: roundArrayTo2Decimals(indicators.bollingerBands.middle),
+                lower: roundArrayTo2Decimals(indicators.bollingerBands.lower)
+            }
+            roundedIndicators.stochastic = {
+                k: roundArrayTo2Decimals(indicators.stochastic.k),
+                d: roundArrayTo2Decimals(indicators.stochastic.d)
+            }
+            roundedIndicators.williamsR = roundArrayTo2Decimals(indicators.williamsR)
+            roundedIndicators.atr = roundArrayTo2Decimals(indicators.atr)
+            roundedIndicators.adx = roundArrayTo2Decimals(indicators.adx)
+            roundedIndicators.obv = roundArrayTo2Decimals(indicators.obv)
+            roundedIndicators.cci = roundArrayTo2Decimals(indicators.cci)
+            roundedIndicators.mfi = roundArrayTo2Decimals(indicators.mfi)
+            roundedIndicators.roc = roundArrayTo2Decimals(indicators.roc)
+            roundedIndicators.momentum = roundArrayTo2Decimals(indicators.momentum)
+            roundedIndicators.ad = roundArrayTo2Decimals(indicators.ad)
+            roundedIndicators.vwap = roundArrayTo2Decimals(indicators.vwap)
+            
+            res.json(roundedIndicators)
+        }
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
  * /api/index/{indexSymbol}:
  *   get:
  *     description: To get detailsof the NSE index
