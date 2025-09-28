@@ -5,7 +5,7 @@ import {
     getGainersAndLosersByIndex,
     getMostActiveEquities
 } from './helpers'
-import { mcpClientOpenAIFunctions, MCPClientRequest } from './mcp-client-openai-functions'
+import { mcpClient, MCPClientRequest } from './mcp-client'
 
 const mainRouter:Router = Router()
 
@@ -1232,11 +1232,16 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
     }
 })
 
+// ============================================================================
+// MCP CLIENT - CORE ENDPOINTS
+// ============================================================================
+
 /**
  * @openapi
  * /api/mcp/query:
  *   post:
- *     description: Query NSE India data using natural language with ChatGPT GPT-4o-mini
+ *     description: Query NSE India data using natural language. Supports OpenAI function calling,
+ *       memory, context summarization, and session management.
  *     tags:
  *       - MCP Client
  *     requestBody:
@@ -1251,7 +1256,15 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *               query:
  *                 type: string
  *                 description: Natural language query about NSE India stock market data
- *                 example: "What is the current price of TCS stock?"
+ *                 example: "What is the current price of TCS stock? Also compare it with RELIANCE."
+ *               sessionId:
+ *                 type: string
+ *                 description: Optional session identifier for memory features
+ *                 example: "user123_session456"
+ *               userId:
+ *                 type: string
+ *                 description: Optional user identifier for personalization
+ *                 example: "user123"
  *               model:
  *                 type: string
  *                 description: OpenAI model to use
@@ -1264,6 +1277,22 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *                 type: number
  *                 description: Maximum tokens in response
  *                 default: 2000
+ *               includeContext:
+ *                 type: boolean
+ *                 description: Whether to include conversation context (requires sessionId)
+ *                 default: true
+ *               updatePreferences:
+ *                 type: boolean
+ *                 description: Whether to update user preferences based on query (requires sessionId)
+ *                 default: true
+ *               useMemory:
+ *                 type: boolean
+ *                 description: Whether to use memory features (requires sessionId)
+ *                 default: true
+ *               maxIterations:
+ *                 type: number
+ *                 description: Maximum number of iterations for complex queries
+ *                 default: 5
  *     responses:
  *       200:
  *         description: Returns AI-generated response with NSE data
@@ -1279,7 +1308,7 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *                   type: array
  *                   items:
  *                     type: string
- *                   description: List of MCP tools used
+ *                   description: List of unique MCP tools used across all iterations
  *                 data_sources:
  *                   type: array
  *                   items:
@@ -1289,6 +1318,53 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *                   type: string
  *                   format: date-time
  *                   description: Response timestamp
+ *                 sessionId:
+ *                   type: string
+ *                   description: Session identifier (if memory was used)
+ *                 context_used:
+ *                   type: boolean
+ *                   description: Whether context was used
+ *                 user_preferences_updated:
+ *                   type: boolean
+ *                   description: Whether user preferences were updated
+ *                 conversation_length:
+ *                   type: number
+ *                   description: Current conversation length
+ *                 context_summarized:
+ *                   type: boolean
+ *                   description: Whether context was summarized
+ *                 context_summary:
+ *                   type: object
+ *                   description: Context summary (if summarized)
+ *                 token_count:
+ *                   type: object
+ *                   description: Token count information
+ *                 iterations_used:
+ *                   type: number
+ *                   description: Number of iterations used to process the query
+ *                 iteration_details:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       iteration:
+ *                         type: number
+ *                       tools_called:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       purpose:
+ *                         type: string
+ *                       tool_parameters:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             tool_name:
+ *                               type: string
+ *                             parameters:
+ *                               type: object
+ *                   description: Detailed breakdown of each iteration including tool parameters
  *       400:
  *         description: Returns error if query processing fails
  *       500:
@@ -1296,7 +1372,18 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  */
 mainRouter.post('/api/mcp/query', async (req, res) => {
     try {
-        const { query, model, temperature, max_tokens } = req.body as MCPClientRequest
+        const { 
+            query, 
+            sessionId, 
+            userId, 
+            model, 
+            temperature, 
+            max_tokens, 
+            includeContext, 
+            updatePreferences, 
+            useMemory,
+            maxIterations
+        } = req.body as MCPClientRequest
 
         if (!query || typeof query !== 'string') {
             return res.status(400).json({ 
@@ -1310,11 +1397,17 @@ mainRouter.post('/api/mcp/query', async (req, res) => {
             })
         }
 
-        const result = await mcpClientOpenAIFunctions.processQuery({
+        const result = await mcpClient.processQuery({
             query,
+            sessionId,
+            userId,
             model,
             temperature,
-            max_tokens
+            max_tokens,
+            includeContext,
+            updatePreferences,
+            useMemory,
+            maxIterations
         })
 
         res.json(result)
@@ -1360,7 +1453,7 @@ mainRouter.post('/api/mcp/query', async (req, res) => {
  */
 mainRouter.get('/api/mcp/tools', async (_req, res) => {
     try {
-        const tools = mcpClientOpenAIFunctions.getAvailableTools()
+        const tools = mcpClient.getAvailableTools()
         res.json({ tools })
     } catch (error) {
         console.error('MCP Tools Error:', error)
@@ -1408,7 +1501,7 @@ mainRouter.get('/api/mcp/test', async (_req, res) => {
             })
         }
 
-        const isConnected = await mcpClientOpenAIFunctions.testConnection()
+        const isConnected = await mcpClient.testConnection()
         
         if (isConnected) {
             res.json({
@@ -1433,99 +1526,9 @@ mainRouter.get('/api/mcp/test', async (_req, res) => {
     }
 })
 
-/**
- * @openapi
- * /api/mcp/query-multiple:
- *   post:
- *     description: Query NSE India data using natural language with multiple function calls
- *     tags:
- *       - MCP Client
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - query
- *             properties:
- *               query:
- *                 type: string
- *                 description: Natural language query about NSE India stock market data
- *                 example: "Show me the market status and list some stock symbols"
- *               model:
- *                 type: string
- *                 description: OpenAI model to use
- *                 default: gpt-4o-mini
- *               temperature:
- *                 type: number
- *                 description: Temperature for response generation
- *                 default: 0.7
- *               max_tokens:
- *                 type: number
- *                 description: Maximum tokens in response
- *                 default: 2000
- *     responses:
- *       200:
- *         description: Returns AI-generated response with NSE data using multiple function calls
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 response:
- *                   type: string
- *                   description: AI-generated response
- *                 tools_used:
- *                   type: array
- *                   items:
- *                     type: string
- *                   description: List of MCP tools used
- *                 data_sources:
- *                   type: array
- *                   items:
- *                     type: string
- *                   description: Data sources used
- *                 timestamp:
- *                   type: string
- *                   format: date-time
- *                   description: Response timestamp
- *       400:
- *         description: Returns error if query processing fails
- *       500:
- *         description: Returns error if OpenAI API fails
- */
-mainRouter.post('/api/mcp/query-multiple', async (req, res) => {
-    try {
-        const { query, model, temperature, max_tokens } = req.body as MCPClientRequest
-
-        if (!query || typeof query !== 'string') {
-            return res.status(400).json({ 
-                error: 'Query is required and must be a string' 
-            })
-        }
-
-        if (!process.env.OPENAI_API_KEY) {
-            return res.status(500).json({ 
-                error: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.' 
-            })
-        }
-
-        const result = await mcpClientOpenAIFunctions.processQueryWithMultipleFunctions({
-            query,
-            model,
-            temperature,
-            max_tokens
-        })
-
-        res.json(result)
-    } catch (error) {
-        console.error('MCP Query Multiple Error:', error)
-        res.status(500).json({ 
-            error: error instanceof Error ? error.message : 'Internal server error' 
-        })
-    }
-})
+// ============================================================================
+// MCP CLIENT - UTILITY ENDPOINTS
+// ============================================================================
 
 /**
  * @openapi
@@ -1561,10 +1564,529 @@ mainRouter.post('/api/mcp/query-multiple', async (req, res) => {
  */
 mainRouter.get('/api/mcp/functions', async (_req, res) => {
     try {
-        const functions = mcpClientOpenAIFunctions.getOpenAIFunctions()
+        const functions = mcpClient.getOpenAIFunctions()
         res.json({ functions })
     } catch (error) {
         console.error('MCP Functions Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+// ============================================================================
+// MCP CLIENT - SESSION MANAGEMENT ENDPOINTS
+// ============================================================================
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}:
+ *   get:
+ *     description: Get session information and statistics
+ *     tags:
+ *       - MCP Client
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         description: Session identifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns session information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 sessionId:
+ *                   type: string
+ *                 userId:
+ *                   type: string
+ *                 startTime:
+ *                   type: string
+ *                   format: date-time
+ *                 lastActivity:
+ *                   type: string
+ *                   format: date-time
+ *                 messageCount:
+ *                   type: number
+ *                 recentQueriesCount:
+ *                   type: number
+ *                 frequentlyAccessedStocks:
+ *                   type: number
+ *                 frequentlyUsedTools:
+ *                   type: number
+ *       404:
+ *         description: Session not found
+ */
+mainRouter.get('/api/mcp/session/:sessionId', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        const sessionInfo = mcpClient.getSessionInfo(sessionId)
+        
+        if (!sessionInfo) {
+            return res.status(404).json({ 
+                error: 'Session not found' 
+            })
+        }
+
+        res.json(sessionInfo)
+    } catch (error) {
+        console.error('Get Session Info Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/history:
+ *   get:
+ *     description: Get conversation history for a session
+ *     tags:
+ *       - MCP Client
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         description: Session identifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: maxMessages
+ *         in: query
+ *         description: Maximum number of messages to return
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Returns conversation history
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 messages:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       role:
+ *                         type: string
+ *                         enum: [user, assistant, system]
+ *                       content:
+ *                         type: string
+ *                       timestamp:
+ *                         type: string
+ *                         format: date-time
+ *                       tools_used:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       metadata:
+ *                         type: object
+ *       404:
+ *         description: Session not found
+ */
+mainRouter.get('/api/mcp/session/:sessionId/history', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        const { maxMessages } = req.query
+        
+        const history = mcpClient.getConversationHistory(
+            sessionId, 
+            maxMessages ? parseInt(maxMessages as string) : undefined
+        )
+        
+        if (history.length === 0) {
+            return res.status(404).json({ 
+                error: 'Session not found or no history available' 
+            })
+        }
+
+        res.json({ messages: history })
+    } catch (error) {
+        console.error('Get Conversation History Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/preferences:
+ *   put:
+ *     description: Update user preferences for a session
+ *     tags:
+ *       - MCP Client
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         description: Session identifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               preferredStocks:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of preferred stock symbols
+ *               preferredIndices:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of preferred indices
+ *               analysisStyle:
+ *                 type: string
+ *                 enum: [detailed, brief, technical]
+ *                 description: Preferred analysis style
+ *               language:
+ *                 type: string
+ *                 description: Preferred language
+ *               timezone:
+ *                 type: string
+ *                 description: User timezone
+ *               notificationSettings:
+ *                 type: object
+ *                 properties:
+ *                   priceAlerts:
+ *                     type: boolean
+ *                   marketUpdates:
+ *                     type: boolean
+ *     responses:
+ *       200:
+ *         description: Preferences updated successfully
+ *       400:
+ *         description: Invalid preferences data
+ *       404:
+ *         description: Session not found
+ */
+mainRouter.put('/api/mcp/session/:sessionId/preferences', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        const preferences = req.body
+
+        mcpClient.updateUserPreferences(sessionId, preferences)
+        
+        res.json({ 
+            message: 'Preferences updated successfully',
+            sessionId 
+        })
+    } catch (error) {
+        console.error('Update Preferences Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/clear:
+ *   delete:
+ *     description: Clear session data and conversation history
+ *     tags:
+ *       - MCP Client
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         description: Session identifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Session cleared successfully
+ *       404:
+ *         description: Session not found
+ */
+mainRouter.delete('/api/mcp/session/:sessionId/clear', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        
+        mcpClient.clearSession(sessionId)
+        
+        res.json({ 
+            message: 'Session cleared successfully',
+            sessionId 
+        })
+    } catch (error) {
+        console.error('Clear Session Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/export:
+ *   get:
+ *     description: Export session data
+ *     tags:
+ *       - MCP Client
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         description: Session identifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns exported session data
+ *       404:
+ *         description: Session not found
+ */
+mainRouter.get('/api/mcp/session/:sessionId/export', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        const sessionData = mcpClient.exportSessionData(sessionId)
+        
+        if (!sessionData) {
+            return res.status(404).json({ 
+                error: 'Session not found' 
+            })
+        }
+
+        res.json(sessionData)
+    } catch (error) {
+        console.error('Export Session Data Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/cleanup:
+ *   post:
+ *     description: Cleanup expired sessions
+ *     tags:
+ *       - MCP Client
+ *     responses:
+ *       200:
+ *         description: Cleanup completed successfully
+ */
+mainRouter.post('/api/mcp/cleanup', async (_req, res) => {
+    try {
+        mcpClient.cleanupExpiredSessions()
+        
+        res.json({ 
+            message: 'Cleanup completed successfully',
+            timestamp: new Date().toISOString()
+        })
+    } catch (error) {
+        console.error('Cleanup Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+// ============================================================================
+// MCP CLIENT - CONTEXT MANAGEMENT ENDPOINTS
+// ============================================================================
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/context-stats:
+ *   get:
+ *     description: Get context statistics for a session
+ *     tags:
+ *       - MCP Client
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         description: Session identifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns context statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 messageCount:
+ *                   type: number
+ *                   description: Number of messages in conversation
+ *                 tokenCount:
+ *                   type: object
+ *                   description: Token count breakdown
+ *                 needsSummarization:
+ *                   type: boolean
+ *                   description: Whether context needs summarization
+ *                 contextWindowUsage:
+ *                   type: number
+ *                   description: Context window usage percentage
+ *       404:
+ *         description: Session not found
+ */
+mainRouter.get('/api/mcp/session/:sessionId/context-stats', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        const stats = await mcpClient.getContextStats(sessionId)
+        
+        res.json(stats)
+    } catch (error) {
+        console.error('Get Context Stats Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/summarize:
+ *   post:
+ *     description: Force context summarization for a session
+ *     tags:
+ *       - MCP Client
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         description: Session identifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Context summarization completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 summary:
+ *                   type: object
+ *                   description: Generated context summary
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *       404:
+ *         description: Session not found
+ */
+mainRouter.post('/api/mcp/session/:sessionId/summarize', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        const summary = await mcpClient.forceContextSummarization(sessionId)
+        
+        if (!summary) {
+            return res.status(404).json({ 
+                error: 'Session not found' 
+            })
+        }
+
+        res.json({ 
+            summary,
+            message: 'Context summarization completed successfully'
+        })
+    } catch (error) {
+        console.error('Context Summarization Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/context-window:
+ *   get:
+ *     description: Get context window configuration
+ *     tags:
+ *       - MCP Client
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         description: Session identifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Returns context window configuration
+ */
+mainRouter.get('/api/mcp/session/:sessionId/context-window', async (req, res) => {
+    try {
+        const config = mcpClient.getContextWindowConfig()
+        res.json(config)
+    } catch (error) {
+        console.error('Get Context Window Config Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/context-window:
+ *   put:
+ *     description: Update context window configuration
+ *     tags:
+ *       - MCP Client
+ *     parameters:
+ *       - name: sessionId
+ *         in: path
+ *         description: Session identifier
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               maxTokens:
+ *                 type: number
+ *                 description: Maximum tokens in context window
+ *               reservedTokens:
+ *                 type: number
+ *                 description: Reserved tokens for system prompt and response
+ *               summarizationThreshold:
+ *                 type: number
+ *                 description: Threshold for triggering summarization (0-1)
+ *               minMessagesToSummarize:
+ *                 type: number
+ *                 description: Minimum messages before summarization
+ *               summaryCompressionRatio:
+ *                 type: number
+ *                 description: Compression ratio for summaries (0-1)
+ *     responses:
+ *       200:
+ *         description: Context window configuration updated
+ */
+mainRouter.put('/api/mcp/session/:sessionId/context-window', async (req, res) => {
+    try {
+        const config = req.body
+        mcpClient.updateContextWindowConfig(config)
+        
+        res.json({ 
+            message: 'Context window configuration updated successfully',
+            config: mcpClient.getContextWindowConfig()
+        })
+    } catch (error) {
+        console.error('Update Context Window Config Error:', error)
         res.status(500).json({ 
             error: error instanceof Error ? error.message : 'Internal server error' 
         })

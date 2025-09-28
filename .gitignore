@@ -108,3 +108,6 @@ build/
 
 # MacOS store file
 .DS_Store
+
+# Memory data
+memory-data.json
