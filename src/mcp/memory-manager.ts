@@ -1,5 +1,4 @@
 import fs from 'fs/promises'
-import path from 'path'
 import { ContextSummarizer, ContextSummary, ContextWindowConfig } from './context-summarizer'
 import OpenAI from 'openai'
 
@@ -33,6 +32,16 @@ export interface UserPreferences {
   }
 }
 
+export interface SummarizationRecord {
+  timestamp: string
+  originalMessageCount: number
+  summarizedMessageCount: number
+  originalMessages: ConversationMessage[]
+  summary: ContextSummary
+  tokensSaved: number
+  triggerReason: string
+}
+
 export interface ContextData {
   recentQueries: string[]
   frequentlyAccessedStocks: Record<string, number>
@@ -44,6 +53,8 @@ export interface ContextData {
   }
   userGoals: string[]
   investmentProfile?: 'conservative' | 'moderate' | 'aggressive'
+  summarizationHistory?: SummarizationRecord[]
+  lastSummarization?: SummarizationRecord
 }
 
 export interface MemoryConfig {
@@ -71,8 +82,8 @@ export class MemoryManager {
       contextWindowConfig: {
         maxTokens: 8000,
         reservedTokens: 2000,
-        summarizationThreshold: 0.7,
-        minMessagesToSummarize: 10,
+        summarizationThreshold: 0.6,
+        minMessagesToSummarize: 6,
         summaryCompressionRatio: 0.3
       },
       ...config
@@ -222,7 +233,9 @@ export class MemoryManager {
   /**
    * Get conversation context for AI with intelligent summarization
    */
-  async getConversationContext(sessionId: string, maxMessages?: number, systemPrompt?: string): Promise<{
+  async getConversationContext(
+    sessionId: string, maxMessages?: number, systemPrompt?: string, persistSummarization = true
+  ): Promise<{
     messages: ConversationMessage[]
     summary?: ContextSummary
     wasSummarized: boolean
@@ -241,8 +254,50 @@ export class MemoryManager {
     // If no system prompt provided, use default
     const prompt = systemPrompt || this.getContextualSystemPrompt(sessionId)
 
+    // Calculate tokens before optimization
+    const tokensBefore = this.contextSummarizer.countTokens(messages, prompt)
+
     // Get optimized context with summarization
     const optimizedContext = await this.contextSummarizer.getOptimalContext(messages, prompt)
+
+    // If summarization occurred and persistSummarization is true, update the session history
+    if (optimizedContext.wasSummarized && persistSummarization) {
+      // Calculate tokens saved
+      const tokensAfter = optimizedContext.tokenCount
+      const tokensSaved = tokensBefore.totalTokens - tokensAfter.totalTokens
+
+      // Create summarization record
+      const summarizationRecord: SummarizationRecord = {
+        timestamp: new Date().toISOString(),
+        originalMessageCount: messages.length,
+        summarizedMessageCount: optimizedContext.messages.length,
+        originalMessages: messages, // Store original messages before summarization
+        summary: optimizedContext.summary!,
+        tokensSaved: tokensSaved,
+        triggerReason: `Token threshold exceeded: ${tokensBefore.totalTokens} > ` +
+          `${this.config.contextWindowConfig.maxTokens! * 
+            (this.config.contextWindowConfig.summarizationThreshold || 0.7)}`
+      }
+
+      // Initialize summarization history if needed
+      if (!session.contextData.summarizationHistory) {
+        session.contextData.summarizationHistory = []
+      }
+
+      // Add to history (keep last 10 summarizations)
+      session.contextData.summarizationHistory.push(summarizationRecord)
+      if (session.contextData.summarizationHistory.length > 10) {
+        session.contextData.summarizationHistory = session.contextData.summarizationHistory.slice(-10)
+      }
+
+      // Update last summarization
+      session.contextData.lastSummarization = summarizationRecord
+
+      // Update conversation history with summarized version
+      session.conversationHistory = optimizedContext.messages
+      
+      this.saveMemoryToFile()
+    }
 
     return {
       messages: optimizedContext.messages,
@@ -489,6 +544,66 @@ export class MemoryManager {
    */
   getContextWindowConfig(): ContextWindowConfig {
     return this.contextSummarizer.getConfig()
+  }
+
+  /**
+   * Get last summarization for a session
+   */
+  getLastSummarization(sessionId: string): SummarizationRecord | null {
+    const session = this.sessions.get(sessionId)
+    return session?.contextData.lastSummarization || null
+  }
+
+  /**
+   * Get summarization history for a session
+   */
+  getSummarizationHistory(sessionId: string, limit?: number): SummarizationRecord[] {
+    const session = this.sessions.get(sessionId)
+    if (!session || !session.contextData.summarizationHistory) {
+      return []
+    }
+
+    const history = session.contextData.summarizationHistory
+    return limit ? history.slice(-limit) : history
+  }
+
+  /**
+   * Get detailed summarization info (without original messages for lighter payload)
+   */
+  getSummarizationSummary(sessionId: string): {
+    totalSummarizations: number
+    totalTokensSaved: number
+    lastSummarization?: {
+      timestamp: string
+      messagesBefore: number
+      messagesAfter: number
+      tokensSaved: number
+      summary: string
+    }
+  } | null {
+    const session = this.sessions.get(sessionId)
+    if (!session) return null
+
+    const history = session.contextData.summarizationHistory || []
+    const totalTokensSaved = history.reduce((sum, record) => sum + record.tokensSaved, 0)
+
+    const result: any = {
+      totalSummarizations: history.length,
+      totalTokensSaved
+    }
+
+    if (session.contextData.lastSummarization) {
+      const last = session.contextData.lastSummarization
+      result.lastSummarization = {
+        timestamp: last.timestamp,
+        messagesBefore: last.originalMessageCount,
+        messagesAfter: last.summarizedMessageCount,
+        tokensSaved: last.tokensSaved,
+        summary: last.summary.summary
+      }
+    }
+
+    return result
   }
 }
 

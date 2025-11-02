@@ -1,4 +1,4 @@
-import type { NseIndia } from './index.js'
+import type { NseIndia } from '../index.js'
 
 // Common MCP tools configuration for NSE India servers
 export const mcpTools = [

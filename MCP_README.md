@@ -10,10 +10,11 @@ Model Context Protocol (MCP) is a standard for AI assistants to communicate with
 
 The MCP server is built with a modular architecture for maintainability and consistency:
 
-- **`src/mcp-tools.ts`**: Common tools configuration and handler functions shared across all server implementations
-- **`src/mcp-server.ts`**: Stdio-based MCP server for local AI assistant integration
-- **`src/mcp-server-tcp.ts`**: TCP-based MCP server for network-based communication
-- **`src/mcp-server-http.ts`**: HTTP-based MCP server with REST API endpoints for web integration
+- **`src/mcp/mcp-tools.ts`**: Common tools configuration and handler functions shared across all implementations
+- **`src/mcp/server/mcp-server.ts`**: Stdio-based MCP server for local AI assistant integration
+- **`src/mcp/server/mcp-server-tcp.ts`**: TCP-based MCP server for network-based communication
+- **`src/mcp/server/mcp-server-http.ts`**: HTTP-based MCP server with REST API endpoints for web integration
+- **`src/mcp/client/mcp-client.ts`**: OpenAI Functions-based MCP client for natural language queries
 
 All server implementations share the same tool definitions and business logic, ensuring consistency across different transport protocols and making maintenance easier.
 
@@ -208,11 +209,253 @@ MCP_PORT=3002 yarn start:mcp:http
 - **Error Handling**: Robust error handling with meaningful error messages
 - **Type Safety**: Full TypeScript support with proper type definitions
 - **Rate Limiting**: Built-in connection limiting to prevent API abuse
+- **Context Summarization**: Intelligent conversation history management with configurable thresholds
+
+## MCP Client with Context Summarization
+
+The MCP Client (`MCPClient`) provides an OpenAI Functions-based interface for natural language queries with intelligent context management.
+
+### Basic Usage
+
+```typescript
+import { MCPClient } from 'stock-nse-india'
+
+const client = new MCPClient({
+  enableMemory: true,
+  enableContextSummarization: true,
+  memoryConfig: {
+    contextWindowConfig: {
+      maxTokens: 8000,
+      reservedTokens: 2000,
+      summarizationThreshold: 0.9,  // Trigger at 90%
+      minMessagesToSummarize: 6
+    }
+  }
+})
+
+// Process a natural language query
+const result = await client.processQuery({
+  query: "What is the current price of TCS?",
+  sessionId: "user123",
+  maxIterations: 5
+})
+```
+
+### Context Summarization Configuration
+
+The context summarization system automatically manages conversation history to stay within token limits while preserving important information.
+
+#### Key Configuration Parameters
+
+##### `summarizationThreshold`
+
+Controls when summarization is triggered as a percentage of `maxTokens`.
+
+**Recommended Values:**
+
+| Threshold | Use Case | Behavior |
+|-----------|----------|----------|
+| **0.9 (90%)** | **Recommended** | Less frequent summarization, more context preserved |
+| 0.8 (80%) | Balanced | Moderate summarization frequency |
+| 0.7 (70%) | Conservative | More frequent summarization |
+| 0.6 (60%) | Aggressive | Very frequent summarization |
+
+##### `maxTokens`
+
+Maximum token limit for the context window.
+
+**Common Values:**
+- `8000` - Standard (GPT-4, GPT-3.5)
+- `16000` - Extended context models
+- `32000` - Large context models
+- `128000` - Very large context models (GPT-4 Turbo)
+
+##### `reservedTokens`
+
+Tokens reserved for system prompt and response generation.
+
+**Guidelines:**
+- Typical: `2000-3000` tokens
+- Includes system prompt (~500-1000 tokens)
+- Includes response buffer (~1000-2000 tokens)
+
+##### `minMessagesToSummarize`
+
+Minimum number of messages before summarization can occur.
+
+**Guidelines:**
+- Minimum: `4` (2 conversation pairs)
+- Recommended: `6-10` (3-5 pairs)
+- Prevents premature summarization
+
+#### Configuration Examples
+
+**Example 1: Recommended (Balanced)**
+
+```typescript
+const client = new MCPClient({
+  enableMemory: true,
+  enableContextSummarization: true,
+  memoryConfig: {
+    contextWindowConfig: {
+      maxTokens: 8000,
+      reservedTokens: 2000,
+      summarizationThreshold: 0.9,  // 90% - less frequent
+      minMessagesToSummarize: 6
+    }
+  }
+})
+```
+
+**Expected Behavior:**
+- Summarization triggers at ~7200 tokens (90%)
+- 2-3 summarizations per 20 queries
+- More context preserved per query
+- Lower API costs
+
+**Example 2: Conservative (Frequent Summarization)**
+
+```typescript
+const client = new MCPClient({
+  enableMemory: true,
+  enableContextSummarization: true,
+  memoryConfig: {
+    contextWindowConfig: {
+      maxTokens: 8000,
+      reservedTokens: 2000,
+      summarizationThreshold: 0.6,  // 60% - more frequent
+      minMessagesToSummarize: 6
+    }
+  }
+})
+```
+
+**Expected Behavior:**
+- Summarization triggers at ~4800 tokens (60%)
+- 4-6 summarizations per 20 queries
+- Less context per query
+- Higher API costs but safer
+
+**Example 3: Large Context Model**
+
+```typescript
+const client = new MCPClient({
+  enableMemory: true,
+  enableContextSummarization: true,
+  memoryConfig: {
+    contextWindowConfig: {
+      maxTokens: 128000,              // GPT-4 Turbo
+      reservedTokens: 4000,
+      summarizationThreshold: 0.95,   // 95% - very rare
+      minMessagesToSummarize: 20
+    }
+  }
+})
+```
+
+**Expected Behavior:**
+- Summarization triggers at ~121,600 tokens (95%)
+- Very rare summarization
+- Preserves entire conversation history
+- Higher token costs per query
+
+#### How It Works
+
+**1. Token Counting**
+
+The system estimates tokens for all messages:
+```
+totalTokens = systemPromptTokens + messageTokens + reservedTokens
+```
+
+**2. Threshold Check**
+
+Summarization triggers when:
+```
+totalTokens > (maxTokens × summarizationThreshold)
+AND
+messageCount >= minMessagesToSummarize
+```
+
+**3. Summarization Process**
+
+When triggered:
+1. Keeps recent messages (targets 40% of maxTokens)
+2. Summarizes older messages using AI
+3. Replaces old messages with summary
+4. Continues conversation with reduced context
+
+**4. Result**
+
+After summarization:
+- Token usage drops to ~40% of maxTokens
+- Recent messages preserved
+- Important information in summary
+- Ready for more conversation
+
+#### Monitoring
+
+Track these metrics to tune your configuration:
+
+```typescript
+// Get context statistics
+const stats = await client.memoryManager.getContextStats(sessionId)
+
+console.log('Message Count:', stats.messageCount)
+console.log('Token Count:', stats.tokenCount.totalTokens)
+console.log('Needs Summarization:', stats.needsSummarization)
+console.log('Context Usage:', stats.contextWindowUsage + '%')
+
+// Get summarization history
+const history = client.getSummarizationHistory(sessionId)
+console.log('Total Summarizations:', history.length)
+```
+
+#### Tuning Guidelines
+
+**Choose Higher Threshold (0.8-0.9) When:**
+- ✅ You want to preserve more context
+- ✅ Cost is not a primary concern
+- ✅ Conversations are complex and interconnected
+- ✅ You have a larger context window available
+
+**Choose Lower Threshold (0.6-0.7) When:**
+- ✅ You want to minimize token costs
+- ✅ Conversations are independent queries
+- ✅ You have a smaller context window
+- ✅ You want guaranteed headroom
+
+#### Best Practices
+
+1. **Start with 0.9 threshold** - Less intrusive, good for most use cases
+2. **Monitor token usage** - Adjust based on actual patterns
+3. **Consider your use case** - Independent queries vs. long conversations
+4. **Test with real data** - Use the demo to see behavior
+5. **Balance cost vs. context** - Higher threshold = more tokens but better context
+
+#### Troubleshooting
+
+**Too Many Summarizations**
+- **Increase** `summarizationThreshold` (0.6 → 0.9)
+- **Increase** `minMessagesToSummarize`
+
+**Token Overflow**
+- **Decrease** `summarizationThreshold` (0.9 → 0.7)
+- **Increase** `reservedTokens`
+
+**Context Loss**
+- **Increase** `summarizationThreshold`
+- **Increase** `maxTokens` (if model supports it)
+
+**High API Costs**
+- **Increase** `summarizationThreshold` (fewer summarizations)
+- Consider caching or simpler summarization
 
 ## Requirements
 
 - Node.js >= 18
 - TypeScript
+- OpenAI API key (for MCP Client with context summarization)
 - All dependencies listed in package.json
 
 ## License

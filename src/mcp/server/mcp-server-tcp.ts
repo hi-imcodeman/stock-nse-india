@@ -1,6 +1,6 @@
 import { createServer, Socket, Server as NetServer } from 'net'
-import { NseIndia } from './index.js'
-import { mcpTools, handleMCPToolCall } from './mcp-tools.js'
+import { NseIndia } from '../../index.js'
+import { mcpTools, handleMCPToolCall } from '../mcp-tools.js'
 
 // Initialize NSE India client
 const nseClient = new NseIndia()

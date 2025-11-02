@@ -9,7 +9,7 @@ import {
     showIndexOverview
 } from './api'
 import yargs from 'yargs'
-import { MCPServer } from '../mcp-server'
+import { MCPServer } from '../mcp/server/mcp-server.js'
 
 // MCP Server handler function
 function startMCPServer() {

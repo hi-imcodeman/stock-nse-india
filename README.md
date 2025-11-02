@@ -153,11 +153,11 @@ Model Context Protocol (MCP) is a standard for AI assistants to communicate with
 
 The MCP implementation is built with a modular architecture for maintainability and consistency:
 
-- **`src/mcp-tools.ts`**: Common tools configuration and handler functions shared across all implementations
-- **`src/mcp-server.ts`**: Stdio-based MCP server for local AI assistant integration
-- **`src/mcp-server-tcp.ts`**: TCP-based MCP server for network-based communication
-- **`src/mcp-server-http.ts`**: HTTP-based MCP server with REST API endpoints for web integration
-- **`src/mcp-client-openai-functions.ts`**: OpenAI Functions-based MCP client for natural language queries
+- **`src/mcp/mcp-tools.ts`**: Common tools configuration and handler functions shared across all implementations
+- **`src/mcp/server/mcp-server.ts`**: Stdio-based MCP server for local AI assistant integration
+- **`src/mcp/server/mcp-server-tcp.ts`**: TCP-based MCP server for network-based communication
+- **`src/mcp/server/mcp-server-http.ts`**: HTTP-based MCP server with REST API endpoints for web integration
+- **`src/mcp/client/mcp-client.ts`**: OpenAI Functions-based MCP client for natural language queries
 
 All implementations share the same tool definitions and business logic, ensuring consistency across different transport protocols and making maintenance easier.
 
@@ -196,16 +196,16 @@ The project includes an advanced MCP client that uses OpenAI's native function c
 
 #### Example Usage
 ```javascript
-import { mcpClientOpenAIFunctions } from './mcp-client-openai-functions'
+import { mcpClient } from './mcp/client/mcp-client'
 
 // Simple query
-const response = await mcpClientOpenAIFunctions.processQuery({
+const response = await mcpClient.processQuery({
   query: "What is the current price of TCS stock?",
   model: "gpt-4o-mini"
 })
 
 // Complex multi-step query
-const complexResponse = await mcpClientOpenAIFunctions.processQueryWithMultipleFunctions({
+const complexResponse = await mcpClient.processQueryWithMemory({
   query: "Compare the performance of Reliance and TCS over the last month and analyze their trends"
 })
 ```

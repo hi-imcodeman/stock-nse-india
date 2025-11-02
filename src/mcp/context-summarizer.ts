@@ -44,9 +44,12 @@ export class ContextSummarizer {
   /**
    * Estimate token count for a message (rough approximation)
    */
-  private estimateTokenCount(text: string): number {
+  private estimateTokenCount(text: string | null | undefined): number {
     // Rough estimation: 1 token ≈ 4 characters for English text
     // This is a simplified approach - in production, use tiktoken or similar
+    if (!text || typeof text !== 'string') {
+      return 0
+    }
     return Math.ceil(text.length / 4)
   }
 
@@ -56,13 +59,17 @@ export class ContextSummarizer {
   countTokens(messages: any[], systemPrompt: string): TokenCountResult {
     const systemPromptTokens = this.estimateTokenCount(systemPrompt)
     const messageTokens = messages.map(msg => {
-      if (msg.content) {
-        return this.estimateTokenCount(msg.content)
+      if (msg && msg.content) {
+        const tokens = this.estimateTokenCount(msg.content)
+        // Ensure we return a valid number
+        return isNaN(tokens) ? 0 : tokens
       }
       return 0
     })
     
-    const totalMessageTokens = messageTokens.reduce((sum, count) => sum + count, 0)
+    // Filter out any NaN or invalid values before reducing
+    const validTokens = messageTokens.filter(count => typeof count === 'number' && !isNaN(count))
+    const totalMessageTokens = validTokens.reduce((sum, count) => sum + count, 0)
     const totalTokens = systemPromptTokens + totalMessageTokens + this.config.reservedTokens
 
     return {
@@ -78,8 +85,9 @@ export class ContextSummarizer {
    */
   needsSummarization(messages: any[], systemPrompt: string): boolean {
     const tokenCount = this.countTokens(messages, systemPrompt)
-    const availableTokens = this.config.maxTokens - this.config.reservedTokens
-    const threshold = availableTokens * this.config.summarizationThreshold
+    // Calculate threshold based on maxTokens (not availableTokens)
+    // because tokenCount.totalTokens already includes reservedTokens
+    const threshold = this.config.maxTokens * this.config.summarizationThreshold
 
     return (
       messages.length >= this.config.minMessagesToSummarize &&
@@ -173,7 +181,7 @@ Format as JSON with these fields: summary, keyPoints, importantStocks, important
           {
             role: 'system',
             content: 'You are a helpful assistant that creates concise summaries of conversations. ' +
-              'Always respond with valid JSON.'
+              'Always respond with valid JSON only, without any markdown formatting or code blocks.'
           },
           {
             role: 'user',
@@ -184,8 +192,24 @@ Format as JSON with these fields: summary, keyPoints, importantStocks, important
         max_tokens: 500
       })
 
-      const summaryText = response.choices[0]?.message?.content || '{}'
-      const summaryData = JSON.parse(summaryText)
+      let summaryText = response.choices[0]?.message?.content || '{}'
+      
+      // Clean up the response - remove markdown code blocks if present
+      summaryText = summaryText.trim()
+      if (summaryText.startsWith('```json')) {
+        summaryText = summaryText.replace(/^```json\s*/, '').replace(/\s*```$/, '')
+      } else if (summaryText.startsWith('```')) {
+        summaryText = summaryText.replace(/^```\s*/, '').replace(/\s*```$/, '')
+      }
+      summaryText = summaryText.trim()
+      
+      let summaryData: any
+      try {
+        summaryData = JSON.parse(summaryText)
+      } catch (parseError) {
+        console.error('Failed to parse OpenAI summary response:', summaryText.substring(0, 200))
+        throw parseError
+      }
 
       return {
         summary: summaryData.summary || 'Conversation summary',
@@ -198,6 +222,8 @@ Format as JSON with these fields: summary, keyPoints, importantStocks, important
       }
     } catch (error) {
       // Fallback to simple extraction if AI summarization fails
+      console.warn('AI summarization failed, using fallback method:',
+        error instanceof Error ? error.message : String(error))
       return {
         summary: `Conversation with ${messages.length} messages about Indian stock market data`,
         keyPoints: keyInfo.queries.slice(0, 5), // First 5 queries as key points
@@ -298,9 +324,32 @@ Format as JSON with these fields: summary, keyPoints, importantStocks, important
     summary?: ContextSummary
     wasSummarized: boolean
   }> {
-    // Keep the most recent messages and summarize the rest
-    const recentMessages = messages.slice(-5) // Keep last 5 messages
-    const olderMessages = messages.slice(0, -5)
+    // Calculate how many recent messages to keep
+    // Target: keep enough to be around 40% of max tokens after summarization
+    // This gives room for more conversation before next summarization
+    const targetTokensAfterSummarization = maxTokens * 0.4
+    
+    // Start with keeping more messages and work backwards
+    let recentMessageCount = Math.min(10, messages.length - 1) // Keep at least 1 for summary
+    let recentMessages = messages.slice(-recentMessageCount)
+    
+    // Adjust to fit target token count
+    while (recentMessageCount > 2) {
+      const testTokens = this.countTokens(recentMessages, systemPrompt)
+      if (testTokens.totalTokens <= targetTokensAfterSummarization) {
+        break
+      }
+      recentMessageCount -= 2 // Remove one conversation pair at a time
+      recentMessages = messages.slice(-recentMessageCount)
+    }
+    
+    // Ensure we keep at least 2 messages (1 pair)
+    if (recentMessageCount < 2) {
+      recentMessageCount = Math.min(2, messages.length)
+      recentMessages = messages.slice(-recentMessageCount)
+    }
+
+    const olderMessages = messages.slice(0, -recentMessageCount)
 
     if (olderMessages.length === 0) {
       return {
@@ -350,8 +399,11 @@ Format as JSON with these fields: summary, keyPoints, importantStocks, important
     const targetTokens = maxTokens || this.config.maxTokens
     const tokenCount = this.countTokens(messages, systemPrompt)
 
-    // If we're within limits, return as is
-    if (tokenCount.totalTokens <= targetTokens) {
+    // Check if we should trigger summarization based on threshold
+    const thresholdTokens = targetTokens * this.config.summarizationThreshold
+
+    // If we're within limits and below threshold, return as is
+    if (tokenCount.totalTokens <= thresholdTokens) {
       return {
         messages,
         wasSummarized: false,
@@ -359,14 +411,24 @@ Format as JSON with these fields: summary, keyPoints, importantStocks, important
       }
     }
 
-    // Optimize context
-    const optimized = await this.optimizeContext(messages, systemPrompt, targetTokens)
+    // Check minimum message requirement
+    if (messages.length < this.config.minMessagesToSummarize) {
+      return {
+        messages,
+        wasSummarized: false,
+        tokenCount
+      }
+    }
+
+    // We've exceeded the threshold, so we should summarize
+    // Force summarization by calling createSummarizedContext directly
+    const summarized = await this.createSummarizedContext(messages, systemPrompt, targetTokens)
     
     return {
-      messages: optimized.selectedMessages,
-      summary: optimized.summary,
-      wasSummarized: optimized.wasSummarized,
-      tokenCount: this.countTokens(optimized.selectedMessages, systemPrompt)
+      messages: summarized.selectedMessages,
+      summary: summarized.summary,
+      wasSummarized: summarized.wasSummarized,
+      tokenCount: this.countTokens(summarized.selectedMessages, systemPrompt)
     }
   }
 

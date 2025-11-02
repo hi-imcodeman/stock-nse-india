@@ -2,14 +2,14 @@
   "mcpServers": {
     "nse-india-stdio": {
       "command": "node",
-      "args": ["build/mcp-server-start.js"],
+      "args": ["build/mcp/server/mcp-server-stdio.js"],
       "env": {
         "NODE_ENV": "production"
       }
     },
     "nse-india-tcp": {
       "command": "node",
-      "args": ["build/mcp-server-tcp.js"],
+      "args": ["build/mcp/server/mcp-server-tcp.js"],
       "env": {
         "NODE_ENV": "production",
         "MCP_PORT": "3001"
@@ -17,7 +17,7 @@
     },
     "nse-india-http": {
       "command": "node",
-      "args": ["build/mcp-server-http.js"],
+      "args": ["build/mcp/server/mcp-server-http.js"],
       "env": {
         "NODE_ENV": "production",
         "MCP_PORT": "3001"

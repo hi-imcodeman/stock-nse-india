@@ -5,7 +5,7 @@ import {
     getGainersAndLosersByIndex,
     getMostActiveEquities
 } from './helpers'
-import { mcpClient, MCPClientRequest } from './mcp-client'
+import { mcpClient, MCPClientRequest, MCPClient } from './mcp/client/mcp-client.js'
 
 const mainRouter:Router = Router()
 
@@ -1293,6 +1293,10 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *                 type: number
  *                 description: Maximum number of iterations for complex queries
  *                 default: 5
+ *               enableDebugLogging:
+ *                 type: boolean
+ *                 description: Enable debug logging for AI messages and tool calls
+ *                 default: false
  *     responses:
  *       200:
  *         description: Returns AI-generated response with NSE data
@@ -1374,7 +1378,7 @@ mainRouter.post('/api/mcp/query', async (req, res) => {
     try {
         const { 
             query, 
-            sessionId, 
+            sessionId: providedSessionId, 
             userId, 
             model, 
             temperature, 
@@ -1382,7 +1386,8 @@ mainRouter.post('/api/mcp/query', async (req, res) => {
             includeContext, 
             updatePreferences, 
             useMemory,
-            maxIterations
+            maxIterations,
+            enableDebugLogging
         } = req.body as MCPClientRequest
 
         if (!query || typeof query !== 'string') {
@@ -1391,26 +1396,45 @@ mainRouter.post('/api/mcp/query', async (req, res) => {
             })
         }
 
+        // Generate sessionId if not provided to enable memory features
+        const sessionId = providedSessionId || `auto_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
         if (!process.env.OPENAI_API_KEY) {
             return res.status(500).json({ 
                 error: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.' 
             })
         }
 
-        const result = await mcpClient.processQuery({
-            query,
-            sessionId,
-            userId,
-            model,
-            temperature,
-            max_tokens,
-            includeContext,
-            updatePreferences,
-            useMemory,
-            maxIterations
-        })
+        // Enable debug logging if requested, or check environment variable
+        const shouldEnableDebug = enableDebugLogging || process.env.MCP_DEBUG_LOGGING === 'true'
+        
+        // Store original debug state to restore later
+        const originalDebugState = mcpClient.isDebugLoggingEnabled()
+        
+        // Temporarily enable debug logging if requested
+        if (shouldEnableDebug) {
+            mcpClient.setDebugLogging(true)
+        }
 
-        res.json(result)
+        try {
+            const result = await mcpClient.processQuery({
+                query,
+                sessionId,
+                userId,
+                model,
+                temperature,
+                max_tokens,
+                includeContext,
+                updatePreferences,
+                useMemory,
+                maxIterations
+            })
+
+            res.json(result)
+        } finally {
+            // Restore original debug state
+            mcpClient.setDebugLogging(originalDebugState)
+        }
     } catch (error) {
         console.error('MCP Query Error:', error)
         res.status(500).json({ 
@@ -2087,6 +2111,225 @@ mainRouter.put('/api/mcp/session/:sessionId/context-window', async (req, res) =>
         })
     } catch (error) {
         console.error('Update Context Window Config Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+// ============================================================================
+// SUMMARIZATION HISTORY ENDPOINTS
+// ============================================================================
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/summarization/last:
+ *   get:
+ *     description: Get the last summarization details for a session
+ *     tags:
+ *       - MCP Memory
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Session identifier
+ *     responses:
+ *       200:
+ *         description: Returns last summarization details
+ *       404:
+ *         description: No summarization found
+ */
+mainRouter.get('/api/mcp/session/:sessionId/summarization/last', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        
+        if (!mcpClient.isMemoryEnabled()) {
+            return res.status(500).json({ error: 'Memory manager not enabled' })
+        }
+
+        const lastSummarization = mcpClient.getLastSummarization(sessionId)
+        
+        if (!lastSummarization) {
+            return res.status(404).json({ 
+                message: 'No summarization found for this session' 
+            })
+        }
+
+        res.json(lastSummarization)
+    } catch (error) {
+        console.error('Get Last Summarization Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/summarization/history:
+ *   get:
+ *     description: Get summarization history for a session
+ *     tags:
+ *       - MCP Memory
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Session identifier
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *         description: Limit number of records returned
+ *     responses:
+ *       200:
+ *         description: Returns summarization history
+ */
+mainRouter.get('/api/mcp/session/:sessionId/summarization/history', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined
+        
+        if (!mcpClient.isMemoryEnabled()) {
+            return res.status(500).json({ error: 'Memory manager not enabled' })
+        }
+
+        const history = mcpClient.getSummarizationHistory(sessionId, limit)
+        
+        res.json({
+            sessionId,
+            count: history.length,
+            history
+        })
+    } catch (error) {
+        console.error('Get Summarization History Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/summarization/summary:
+ *   get:
+ *     description: Get summarization summary (overview without full message history)
+ *     tags:
+ *       - MCP Memory
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Session identifier
+ *     responses:
+ *       200:
+ *         description: Returns summarization summary
+ */
+mainRouter.get('/api/mcp/session/:sessionId/summarization/summary', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        
+        if (!mcpClient.isMemoryEnabled()) {
+            return res.status(500).json({ error: 'Memory manager not enabled' })
+        }
+
+        const summary = mcpClient.getSummarizationSummary(sessionId)
+        
+        if (!summary) {
+            return res.status(404).json({ 
+                message: 'Session not found' 
+            })
+        }
+
+        res.json(summary)
+    } catch (error) {
+        console.error('Get Summarization Summary Error:', error)
+        res.status(500).json({ 
+            error: error instanceof Error ? error.message : 'Internal server error' 
+        })
+    }
+})
+
+/**
+ * @openapi
+ * /api/mcp/session/{sessionId}/openai-messages:
+ *   get:
+ *     description: Get the exact messages that would be sent to OpenAI (including system message)
+ *     tags:
+ *       - MCP Memory
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Session identifier
+ *     responses:
+ *       200:
+ *         description: Returns messages in OpenAI format
+ */
+mainRouter.get('/api/mcp/session/:sessionId/openai-messages', async (req, res) => {
+    try {
+        const { sessionId } = req.params
+        
+        if (!mcpClient.isMemoryEnabled()) {
+            return res.status(500).json({ error: 'Memory manager not enabled' })
+        }
+
+        const data = mcpClient.getOpenAIMessages(sessionId)
+        
+        if (!data) {
+            return res.status(404).json({ error: 'Session not found' })
+        }
+        
+        // Format messages as they would be sent to OpenAI
+        const openaiMessages = [
+            {
+                role: 'system',
+                content: data.systemPrompt,
+                metadata: {
+                    type: 'system_prompt',
+                    includes_user_context: true
+                }
+            },
+            ...data.conversationHistory.map(msg => ({
+                role: msg.role,
+                content: msg.content,
+                timestamp: msg.timestamp,
+                metadata: {
+                    ...msg.metadata,
+                    is_summary: msg.metadata?.isSummary || false,
+                    tools_used: msg.tools_used || []
+                }
+            }))
+        ]
+
+        // Calculate statistics
+        const summaryMessages = openaiMessages.filter(
+          m => m.metadata && 'is_summary' in m.metadata && m.metadata.is_summary
+        )
+        const stats = {
+            total_messages: openaiMessages.length,
+            system_messages: 1,
+            summary_messages: summaryMessages.length,
+            user_messages: openaiMessages.filter(m => m.role === 'user').length,
+            assistant_messages: openaiMessages.filter(m => m.role === 'assistant').length
+        }
+
+        res.json({
+            sessionId,
+            messages: openaiMessages,
+            statistics: stats,
+            note: 'This is exactly what OpenAI would receive for the next query'
+        })
+    } catch (error) {
+        console.error('Get OpenAI Messages Error:', error)
         res.status(500).json({ 
             error: error instanceof Error ? error.message : 'Internal server error' 
         })

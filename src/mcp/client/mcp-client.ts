@@ -1,7 +1,7 @@
 import OpenAI from 'openai'
-import { NseIndia } from './index.js'
-import { mcpTools, handleMCPToolCall } from './mcp-tools'
-import { MemoryManager, ConversationMessage, MemoryConfig } from './memory-manager'
+import { NseIndia } from '../../index.js'
+import { mcpTools, handleMCPToolCall } from '../mcp-tools.js'
+import { MemoryManager, ConversationMessage, MemoryConfig } from '../memory-manager.js'
 
 export interface MCPClientRequest {
   query: string
@@ -14,6 +14,7 @@ export interface MCPClientRequest {
   updatePreferences?: boolean
   useMemory?: boolean
   maxIterations?: number
+  enableDebugLogging?: boolean
 }
 
 export interface MCPClientResponse {
@@ -45,6 +46,7 @@ export interface MCPClientConfig {
   openaiApiKey?: string
   enableMemory?: boolean
   enableContextSummarization?: boolean
+  enableDebugLogging?: boolean
 }
 
 /**
@@ -69,6 +71,7 @@ export class MCPClient {
     this.config = {
       enableMemory: true,
       enableContextSummarization: true,
+      enableDebugLogging: false,
       ...config
     }
 
@@ -87,6 +90,34 @@ export class MCPClient {
     if (this.config.enableMemory) {
       this.memoryManager = new MemoryManager(config.memoryConfig)
     }
+  }
+
+  /**
+   * Debug logging method
+   */
+  private debugLog(message: string, data?: any): void {
+    if (this.config.enableDebugLogging) {
+      // eslint-disable-next-line no-console
+      console.log(`[MCP DEBUG] ${message}`)
+      if (data) {
+        // eslint-disable-next-line no-console
+        console.log(`[MCP DEBUG] Data:`, JSON.stringify(data, null, 2))
+      }
+    }
+  }
+
+  /**
+   * Enable or disable debug logging on this client instance
+   */
+  setDebugLogging(enabled: boolean): void {
+    this.config.enableDebugLogging = enabled
+  }
+
+  /**
+   * Get current debug logging status
+   */
+  isDebugLoggingEnabled(): boolean {
+    return this.config.enableDebugLogging === true
   }
 
   /**
@@ -171,7 +202,7 @@ export class MCPClient {
 
         // Get conversation history with context summarization
         if (includeContext) {
-          conversationContext = await this.memoryManager!.getConversationContext(sessionId!, 10)
+          conversationContext = await this.memoryManager!.getConversationContext(sessionId!)
         }
       }
 
@@ -235,7 +266,8 @@ export class MCPClient {
       // Main iteration loop
       while (currentIteration < maxIterations) {
         currentIteration++
-        // Iteration ${currentIteration}/${maxIterations}
+        this.debugLog(`Iteration ${currentIteration}/${maxIterations}`)
+        this.debugLog('Sending messages to OpenAI:', allMessages)
 
         const response = await this.openai.chat.completions.create({
           model,
@@ -244,6 +276,12 @@ export class MCPClient {
           tool_choice: 'auto',
           temperature,
           max_tokens
+        })
+
+        this.debugLog('OpenAI Response:', {
+          model: response.model,
+          usage: response.usage,
+          message: response.choices[0]?.message
         })
 
         const message = response.choices[0]?.message
@@ -261,22 +299,26 @@ export class MCPClient {
         // Check if tools were called
         if (message.tool_calls && message.tool_calls.length > 0) {
           const iterationTools = message.tool_calls.map(tc => tc.function.name)
-          // Iteration ${currentIteration}: Calling ${iterationTools.length} tools: ${iterationTools.join(', ')}
+          this.debugLog(
+            `Iteration ${currentIteration}: Calling ${iterationTools.length} tools: ${iterationTools.join(', ')}`
+          )
           
           // Log tool parameters for debugging
           message.tool_calls.forEach((toolCall, index) => {
-            // Tool ${index + 1}: ${toolCall.function.name}
+            this.debugLog(`Tool ${index + 1}: ${toolCall.function.name}`)
             try {
               const params = JSON.parse(toolCall.function.arguments)
-              // Parameters: ${JSON.stringify(params)}
+              this.debugLog(`Parameters:`, params)
             } catch (e) {
-              // Invalid JSON parameters: ${toolCall.function.arguments}
+              this.debugLog(`Invalid JSON parameters: ${toolCall.function.arguments}`)
             }
           })
           
           // Execute all function calls in parallel
           const functionCallPromises = message.tool_calls.map(async (toolCall) => {
+            this.debugLog(`Executing tool: ${toolCall.function.name}`)
             const functionResult = await this.executeFunctionCall(toolCall)
+            this.debugLog(`Tool ${toolCall.function.name} result:`, functionResult)
             return {
               toolCall,
               result: functionResult
@@ -284,6 +326,7 @@ export class MCPClient {
           })
 
           const functionCallResults = await Promise.all(functionCallPromises)
+          this.debugLog(`Completed ${functionCallResults.length} tool executions`)
           
           // Add unique tools to Set (automatically handles duplicates)
           iterationTools.forEach(tool => {
@@ -332,7 +375,7 @@ export class MCPClient {
             
             // Provide specific guidance based on the original query and current context
             if (query.toLowerCase().includes('technical indicators') &&
-                !this.allToolsUsed.includes('get_equity_technical_indicators')) {
+              !this.allToolsUsed.includes('get_equity_technical_indicators')) {
               nextInstruction += `IMPORTANT: The user specifically asked about technical indicators ` +
                 `for investment decisions. You MUST call get_equity_technical_indicators for several ` +
                 `promising stocks from the data you received. Do not provide investment recommendations ` +
@@ -863,6 +906,45 @@ export class MCPClient {
    */
   isContextSummarizationEnabled(): boolean {
     return this.config.enableContextSummarization === true && this.memoryManager !== undefined
+  }
+
+  /**
+   * Get last summarization for a session
+   */
+  getLastSummarization(sessionId: string): any {
+    if (!this.memoryManager) return null
+    return this.memoryManager.getLastSummarization(sessionId)
+  }
+
+  /**
+   * Get summarization history for a session
+   */
+  getSummarizationHistory(sessionId: string, limit?: number): any[] {
+    if (!this.memoryManager) return []
+    return this.memoryManager.getSummarizationHistory(sessionId, limit)
+  }
+
+  /**
+   * Get summarization summary for a session
+   */
+  getSummarizationSummary(sessionId: string): any {
+    if (!this.memoryManager) return null
+    return this.memoryManager.getSummarizationSummary(sessionId)
+  }
+
+  /**
+   * Get OpenAI messages for a session (including system message)
+   */
+  getOpenAIMessages(sessionId: string): any {
+    if (!this.memoryManager) return null
+    
+    const session = this.memoryManager.getOrCreateSession(sessionId)
+    const systemPrompt = this.memoryManager.getContextualSystemPrompt(sessionId)
+    
+    return {
+      systemPrompt,
+      conversationHistory: session.conversationHistory
+    }
   }
 }
 
