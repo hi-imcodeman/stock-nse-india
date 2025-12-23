@@ -24,8 +24,6 @@
     "prestart:dev": "yarn remove-build",
     "start:dev": "NODE_ENV=development tsc-watch --onCompilationComplete 'yarn copy-graphql' --onSuccess 'node build/server.js'",
     "start:mcp": "node build/mcp/server/mcp-server.js",
-    "start:mcp:tcp": "node build/mcp/server/mcp-server-tcp.js",
-    "start:mcp:http": "node build/mcp/server/mcp-server-http.js",
     "demo:mcp-client": "node demo/mcp-client-demo.js",
     "demo:memory": "node demo/memory-example.js",
     "docs": "typedoc",

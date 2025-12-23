@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import * as fs from 'fs'
 import { ContextSummarizer, ContextSummary, ContextWindowConfig } from './context-summarizer'
 import OpenAI from 'openai'
 
@@ -96,6 +96,7 @@ export class MemoryManager {
     })
     this.contextSummarizer = new ContextSummarizer(openai, this.config.contextWindowConfig)
     
+    // Load any previously saved memory data synchronously so it's available immediately
     this.loadMemoryFromFile()
   }
 
@@ -397,9 +398,9 @@ export class MemoryManager {
   }
 
   /**
-   * Save memory to file
+   * Save memory to file (synchronous to guarantee persistence before returning)
    */
-  private async saveMemoryToFile(): Promise<void> {
+  private saveMemoryToFile(): void {
     if (!this.config.persistToFile) return
 
     try {
@@ -409,28 +410,30 @@ export class MemoryManager {
         lastSaved: new Date().toISOString()
       }
       
-      await fs.writeFile(this.memoryFilePath, JSON.stringify(memoryData, null, 2))
+      fs.writeFileSync(this.memoryFilePath, JSON.stringify(memoryData, null, 2))
     } catch (error) {
       console.error('Failed to save memory to file:', error)
     }
   }
 
   /**
-   * Load memory from file
+   * Load memory from file (synchronous so sessions are ready after construction)
    */
-  private async loadMemoryFromFile(): Promise<void> {
+  private loadMemoryFromFile(): void {
     if (!this.config.persistToFile) return
 
     try {
-      const data = await fs.readFile(this.memoryFilePath, 'utf-8')
+      const data = fs.readFileSync(this.memoryFilePath, 'utf-8')
       const memoryData = JSON.parse(data)
       
       if (memoryData.sessions) {
         this.sessions = new Map(Object.entries(memoryData.sessions))
       }
-    } catch (error) {
-      // File doesn't exist or is corrupted, start fresh
-      // No existing memory file found, starting fresh
+    } catch (error: any) {
+      // If file doesn't exist, start fresh silently; otherwise log a warning
+      if (error?.code !== 'ENOENT') {
+        console.warn('Failed to load memory from file, starting with empty memory:', error)
+      }
     }
   }
 

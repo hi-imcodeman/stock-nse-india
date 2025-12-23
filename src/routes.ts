@@ -2289,7 +2289,7 @@ mainRouter.get('/api/mcp/session/:sessionId/openai-messages', async (req, res) =
         }
         
         // Format messages as they would be sent to OpenAI
-        const openaiMessages = [
+            const openaiMessages = [
             {
                 role: 'system',
                 content: data.systemPrompt,
@@ -2298,7 +2298,7 @@ mainRouter.get('/api/mcp/session/:sessionId/openai-messages', async (req, res) =
                     includes_user_context: true
                 }
             },
-            ...data.conversationHistory.map(msg => ({
+            ...data.conversationHistory.map((msg: any) => ({
                 role: msg.role,
                 content: msg.content,
                 timestamp: msg.timestamp,

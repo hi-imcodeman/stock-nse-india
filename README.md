@@ -155,11 +155,9 @@ The MCP implementation is built with a modular architecture for maintainability 
 
 - **`src/mcp/mcp-tools.ts`**: Common tools configuration and handler functions shared across all implementations
 - **`src/mcp/server/mcp-server.ts`**: Stdio-based MCP server for local AI assistant integration
-- **`src/mcp/server/mcp-server-tcp.ts`**: TCP-based MCP server for network-based communication
-- **`src/mcp/server/mcp-server-http.ts`**: HTTP-based MCP server with REST API endpoints for web integration
 - **`src/mcp/client/mcp-client.ts`**: OpenAI Functions-based MCP client for natural language queries
 
-All implementations share the same tool definitions and business logic, ensuring consistency across different transport protocols and making maintenance easier.
+All components share the same tool definitions and business logic, ensuring consistency and making maintenance easier.
 
 ### Benefits of Common Tools Configuration
 
@@ -253,41 +251,9 @@ MCP_PORT=3002 npm run start:mcp:http
   "mcpServers": {
     "nse-india-stdio": {
       "command": "node",
-      "args": ["build/mcp-server.js"],
+      "args": ["build/mcp/server/mcp-server-stdio.js"],
       "env": {
         "NODE_ENV": "production"
-      }
-    }
-  }
-}
-```
-
-#### For TCP server (network access):
-```json
-{
-  "mcpServers": {
-    "nse-india-tcp": {
-      "command": "node",
-      "args": ["build/mcp-server-tcp.js"],
-      "env": {
-        "NODE_ENV": "production",
-        "MCP_PORT": "3001"
-      }
-    }
-  }
-}
-```
-
-#### For HTTP server (web integration):
-```json
-{
-  "mcpServers": {
-    "nse-india-http": {
-      "command": "node",
-      "args": ["build/mcp-server-http.js"],
-      "env": {
-        "NODE_ENV": "production",
-        "MCP_PORT": "3001"
       }
     }
   }
@@ -470,11 +436,7 @@ npm run docs
 ### MCP Scripts
 
 - **`npm run start:mcp`** - Start stdio MCP server
-- **`npm run start:mcp:tcp`** - Start TCP MCP server
-- **`npm run start:mcp:http`** - Start HTTP MCP server
 - **`npm run test:mcp`** - Test stdio MCP server
-- **`npm run test:mcp:tcp`** - Test TCP MCP server
-- **`npm run test:mcp:http`** - Test HTTP MCP server
 
 ## 🧪 Testing
 

@@ -7,29 +7,6 @@
         "NODE_ENV": "production"
       }
     },
-    "nse-india-tcp": {
-      "command": "node",
-      "args": ["build/mcp/server/mcp-server-tcp.js"],
-      "env": {
-        "NODE_ENV": "production",
-        "MCP_PORT": "3001"
-      }
-    },
-    "nse-india-http": {
-      "command": "node",
-      "args": ["build/mcp/server/mcp-server-http.js"],
-      "env": {
-        "NODE_ENV": "production",
-        "MCP_PORT": "3001"
-      }
-    },
-    "nse-india-remote": {
-      "command": "npx",
-      "args": ["mcp-remote", "http://localhost:3001/mcp", "--allow-http"],
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
     "npx-stock-nse-india": {
       "command": "npx",
       "args": ["stock-nse-india","mcp"],

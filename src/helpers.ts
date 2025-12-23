@@ -135,7 +135,11 @@ export const getTechnicalIndicators = async (
         
         const rsi = indicators.rsi(closes, { period: config.rsiPeriod })
         
-        const macdResult = indicators.macd(closes)
+        const macdResult = indicators.macd(closes, {
+            fast: config.macdFast,
+            slow: config.macdSlow,
+            signal: config.macdSignal
+        })
         const macd = {
             macd: macdResult.macdLine,
             signal: macdResult.signalLine,

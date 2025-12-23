@@ -10,13 +10,11 @@ Model Context Protocol (MCP) is a standard for AI assistants to communicate with
 
 The MCP server is built with a modular architecture for maintainability and consistency:
 
-- **`src/mcp/mcp-tools.ts`**: Common tools configuration and handler functions shared across all implementations
+- **`src/mcp/mcp-tools.ts`**: Common tools configuration and handler functions
 - **`src/mcp/server/mcp-server.ts`**: Stdio-based MCP server for local AI assistant integration
-- **`src/mcp/server/mcp-server-tcp.ts`**: TCP-based MCP server for network-based communication
-- **`src/mcp/server/mcp-server-http.ts`**: HTTP-based MCP server with REST API endpoints for web integration
 - **`src/mcp/client/mcp-client.ts`**: OpenAI Functions-based MCP client for natural language queries
 
-All server implementations share the same tool definitions and business logic, ensuring consistency across different transport protocols and making maintenance easier.
+All components share the same tool definitions and business logic, ensuring consistency and making maintenance easier.
 
 ## Benefits of Common Tools Configuration
 
@@ -92,27 +90,6 @@ yarn start:mcp
 yarn test:mcp
 ```
 
-#### TCP Server (Recommended for production)
-```bash
-# Start the TCP MCP server on port 3001
-yarn start:mcp:tcp
-
-# Test the TCP MCP server
-yarn test:mcp:tcp
-
-# Custom port (set environment variable)
-MCP_PORT=3002 yarn start:mcp:tcp
-```
-
-#### HTTP Server (Best for web integration)
-```bash
-# Start the HTTP MCP server on port 3001
-yarn start:mcp:http
-
-# Custom port (set environment variable)
-MCP_PORT=3002 yarn start:mcp:http
-```
-
 ### Configuration
 
 #### For stdio server (AI assistant integration):
@@ -121,41 +98,9 @@ MCP_PORT=3002 yarn start:mcp:http
   "mcpServers": {
     "nse-india-stdio": {
       "command": "node",
-      "args": ["build/mcp-server.js"],
+      "args": ["build/mcp/server/mcp-server-stdio.js"],
       "env": {
         "NODE_ENV": "production"
-      }
-    }
-  }
-}
-```
-
-#### For TCP server (network access):
-```json
-{
-  "mcpServers": {
-    "nse-india-tcp": {
-      "command": "node",
-      "args": ["build/mcp-server-tcp.js"],
-      "env": {
-        "NODE_ENV": "production",
-        "MCP_PORT": "3001"
-      }
-    }
-  }
-}
-```
-
-#### For HTTP server (web integration):
-```json
-{
-  "mcpServers": {
-    "nse-india-http": {
-      "command": "node",
-      "args": ["build/mcp-server-http.js"],
-      "env": {
-        "NODE_ENV": "production",
-        "MCP_PORT": "3001"
       }
     }
   }

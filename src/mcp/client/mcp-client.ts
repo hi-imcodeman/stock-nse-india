@@ -399,25 +399,24 @@ export class MCPClient {
             })
             continue
           } else {
-            // Final synthesis iteration
-            if (currentIteration < maxIterations) {
-              allMessages.push({
-                role: 'system',
-                content: 'Based on all the data gathered from previous tool calls, provide your ' +
-                  'comprehensive final analysis and recommendations.'
-              })
-              
-              const finalResponse = await this.openai.chat.completions.create({
-                model,
-                messages: allMessages,
-                temperature,
-                max_tokens
-              })
-              
-              const finalMessage = finalResponse.choices[0]?.message?.content || 'Unable to generate final response'
-              
-              // Add final response to conversation history if memory is enabled
-              if (shouldUseMemory) {
+            // Final synthesis iteration: always perform a final completion and return
+            allMessages.push({
+              role: 'system',
+              content: 'Based on all the data gathered from previous tool calls, provide your ' +
+                'comprehensive final analysis and recommendations.'
+            })
+            
+            const finalResponse = await this.openai.chat.completions.create({
+              model,
+              messages: allMessages,
+              temperature,
+              max_tokens
+            })
+            
+            const finalMessage = finalResponse.choices[0]?.message?.content || 'Unable to generate final response'
+            
+            // Add final response to conversation history if memory is enabled
+            if (shouldUseMemory) {
               const assistantMessage: ConversationMessage = {
                 role: 'assistant',
                 content: finalMessage,
@@ -444,8 +443,6 @@ export class MCPClient {
               conversationContext,
               updatePreferences || false
             )
-            }
-            break
           }
         } else {
           // No tools called, this is the final response
