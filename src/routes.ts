@@ -500,13 +500,6 @@ mainRouter.get('/api/equity/options/:symbol', async (req, res) => {
  *         schema:
  *           type: string
  *           format: any
- *       - name: preOpen
- *         in: query
- *         description: Boolean to get preOpen data
- *         required: false
- *         schema:
- *           type: boolean
- *           default: false
  *     responses:
  *       200:
  *         description: Returns a intraday trade info of the NSE symbol
@@ -516,8 +509,7 @@ mainRouter.get('/api/equity/options/:symbol', async (req, res) => {
 mainRouter.get('/api/equity/intraday/:symbol', async (req, res) => {
     try {
         const { symbol } = req.params;
-        const { preOpen } = req.query;
-        const data = await nseIndia.getEquityIntradayData(symbol, preOpen === 'true');
+        const data = await nseIndia.getEquityIntradayData(symbol);
         res.json(data);
     } catch (error) {
         res.status(400).json(error);

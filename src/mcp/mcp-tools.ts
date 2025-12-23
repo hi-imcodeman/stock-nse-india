@@ -63,10 +63,6 @@ export const mcpTools = [
           type: 'string',
           description: 'Stock symbol (e.g., TCS, RELIANCE)',
         },
-        is_pre_open_data: {
-          type: 'boolean',
-          description: 'Whether to get pre-open data (default: false)',
-        },
       },
       required: ['symbol'],
     },
@@ -417,14 +413,7 @@ export async function handleMCPToolCall(
         if (!args?.symbol || typeof args.symbol !== 'string') {
           throw new Error('Symbol parameter is required and must be a string')
         }
-        const isPreOpenData = args.is_pre_open_data && 
-          typeof args.is_pre_open_data === 'boolean' 
-          ? args.is_pre_open_data 
-          : false
-        result = await nseClient.getEquityIntradayData(
-          args.symbol,
-          isPreOpenData
-        )
+        result = await nseClient.getEquityIntradayData(args.symbol)
         break
       }
 

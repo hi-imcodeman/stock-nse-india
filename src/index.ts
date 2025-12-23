@@ -161,15 +161,13 @@ export class NseIndia {
     /**
      * 
      * @param symbol 
-     * @param isPreOpenData 
      * @returns 
      */
-    async getEquityIntradayData(symbol: string, isPreOpenData = false): Promise<IntradayData> {
+    async getEquityIntradayData(symbol: string): Promise<IntradayData> {
         const details = await this.getEquityDetails(symbol.toUpperCase())
         const identifier = details.info.identifier
-        let url = `/api/chart-databyindex?index=${identifier}`
-        if (isPreOpenData)
-            url += '&preopen=true'
+        const url = `/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolChartData` +
+            `&symbol=${encodeURIComponent(identifier)}&days=1D`
         return this.getDataByEndpoint(url)
     }
     /**
@@ -186,9 +184,21 @@ export class NseIndia {
         }
         const dateRanges = getDateRangeChunks(range.start, range.end, 66)
         const promises = dateRanges.map(async (dateRange) => {
-            const url = `/api/historical/cm/equity?symbol=${encodeURIComponent(symbol.toUpperCase())}` +
-                `&series=[%22${activeSeries}%22]&from=${dateRange.start}&to=${dateRange.end}`
-            return this.getDataByEndpoint(url)
+            const url = `/api/NextApi/apiClient/GetQuoteApi?functionName=getHistoricalTradeData` +
+                `&symbol=${encodeURIComponent(symbol.toUpperCase())}` +
+                `&series=${encodeURIComponent(activeSeries)}` +
+                `&fromDate=${dateRange.start}&toDate=${dateRange.end}`
+            const response = await this.getDataByEndpoint(url)
+            // New API returns a direct array, wrap it in EquityHistoricalData structure for backward compatibility
+            return {
+                data: Array.isArray(response) ? response : [],
+                meta: {
+                    series: [activeSeries],
+                    fromDate: dateRange.start,
+                    toDate: dateRange.end,
+                    symbols: [symbol.toUpperCase()]
+                }
+            }
         })
         return Promise.all(promises)
     }
@@ -198,8 +208,10 @@ export class NseIndia {
      * @returns 
      */
     getEquitySeries(symbol: string): Promise<SeriesData> {
-        return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol
-            .toUpperCase())}`)
+        return this.getDataByEndpoint(
+            `/api/NextApi/apiClient/GetQuoteApi?functionName=histTradeDataSeries` +
+            `&symbol=${encodeURIComponent(symbol.toUpperCase())}`
+        )
     }
     /**
      * 
@@ -253,8 +265,10 @@ export class NseIndia {
      * @returns 
      */
     getEquityOptionChain(symbol: string): Promise<OptionChainData> {
-        return this.getDataByEndpoint(`/api/option-chain-equities?symbol=${encodeURIComponent(symbol
-            .toUpperCase())}`)
+        return this.getDataByEndpoint(
+            `/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData` +
+            `&symbol=${encodeURIComponent(symbol.toUpperCase())}`
+        )
     }
     
     /**

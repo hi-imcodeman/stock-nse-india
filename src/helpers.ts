@@ -89,14 +89,14 @@ export const getTechnicalIndicators = async (
 
         // Sort data by date (oldest first)
         const sortedData = historicalData.sort((a: EquityHistoricalInfo, b: EquityHistoricalInfo) => 
-            new Date(a.TIMESTAMP).getTime() - new Date(b.TIMESTAMP).getTime()
+            new Date(a.mtimestamp).getTime() - new Date(b.mtimestamp).getTime()
         )
 
         // Extract OHLCV data
-        const closes = sortedData.map((d: EquityHistoricalInfo) => d.CH_CLOSING_PRICE)
-        const highs = sortedData.map((d: EquityHistoricalInfo) => d.CH_TRADE_HIGH_PRICE)
-        const lows = sortedData.map((d: EquityHistoricalInfo) => d.CH_TRADE_LOW_PRICE)
-        const volumes = sortedData.map((d: EquityHistoricalInfo) => d.CH_TOT_TRADED_QTY)
+        const closes = sortedData.map((d: EquityHistoricalInfo) => d.chClosingPrice)
+        const highs = sortedData.map((d: EquityHistoricalInfo) => d.chTradeHighPrice)
+        const lows = sortedData.map((d: EquityHistoricalInfo) => d.chTradeLowPrice)
+        const volumes = sortedData.map((d: EquityHistoricalInfo) => d.chTotTradedQty)
 
         // Set default periods
         const smaPeriods = options.smaPeriods || [5, 10, 20, 50, 100, 200]

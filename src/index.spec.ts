@@ -44,17 +44,14 @@ describe('Class: NseIndia', () => {
         const intradayData = await nseIndia.getEquityIntradayData(symbol)
         // expect(getDataSchema(intradayData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(intradayData.name).toBe(symbol)
-    })
-    test('getEquityIntradayData:preOpen', async () => {
-        const intradayData = await nseIndia.getEquityIntradayData(symbol, true)
-        // expect(getDataSchema(intradayData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(intradayData.identifier).toBe(`Pre Open ${symbol}`)
+        expect(intradayData.grapthData).toBeDefined()
+        expect(Array.isArray(intradayData.grapthData)).toBe(true)
     })
     test('getEquityHistoricalData', async () => {
         const historicalData = await nseIndia.getEquityHistoricalData(symbol)
         // expect(getDataSchema(historicalData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(historicalData.length).toBeGreaterThan(1)
-        expect(historicalData[historicalData.length - 1].data[0].CH_SYMBOL).toBe(symbol)
+        expect(historicalData[historicalData.length - 1].data[0].chSymbol).toBe(symbol)
     })
     test('getEquityHistoricalData with Date range', async () => {
         const range = {
@@ -63,7 +60,7 @@ describe('Class: NseIndia', () => {
         }
         const historicalData = await nseIndia.getEquityHistoricalData(symbol, range)
         // expect(getDataSchema(historicalData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(historicalData[0].data[0].CH_SYMBOL).toBe(symbol)
+        expect(historicalData[0].data[0].chSymbol).toBe(symbol)
         expect(historicalData[0].meta.fromDate).toBe('10-03-2021')
         expect(historicalData[0].meta.toDate).toBe('20-03-2021')
     })
