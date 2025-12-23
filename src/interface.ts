@@ -24,6 +24,11 @@ export interface EquityInfo {
     isETFSec: boolean
     isDelisted: boolean
     isin: string
+    slb_isin: string
+    listingDate: string
+    isMunicipalBond: boolean
+    isHybridSymbol: boolean
+    segment: string
     isTop10: boolean
     identifier: string
 }
@@ -31,8 +36,8 @@ export interface EquityInfo {
 
 
 export interface OptionChainData {
-    records: Records;
-    filtered: Filtered;
+    records: Records | null;
+    filtered: Filtered | null;
 }
 
 export interface Records {
@@ -100,6 +105,7 @@ export interface EquityMetadata {
     pdSectorPe: number
     pdSymbolPe: number
     pdSectorInd: string
+    pdSectorIndAll: string[]
 }
 
 export interface EquitySecurityInfo {
@@ -110,9 +116,12 @@ export interface EquitySecurityInfo {
     slb: string
     classOfShare: string
     derivatives: string
-    surveillance: string
+    surveillance: {
+        surv: string | null
+        desc: string | null
+    }
     faceValue: number
-    issuedCap: number
+    issuedSize: number
 }
 
 export interface EquityPriceInfo {
@@ -123,6 +132,7 @@ export interface EquityPriceInfo {
     open: number
     close: number
     vwap: number
+    stockIndClosePrice: number
     lowerCP: string
     upperCP: string
     pPriceBand: string
@@ -139,11 +149,16 @@ export interface EquityPriceInfo {
         maxDate: string
         value: number
     }
+    iNavValue: number | null
+    checkINAV: boolean
+    tickSize: number
+    ieq: string
 }
 export interface PreOpenDetails {
     price: number
     buyQty: number
     sellQty: number
+    iep?: boolean
 }
 
 export interface EquityPreOpenMarket {
@@ -167,7 +182,18 @@ export interface EquityDetails {
     info: EquityInfo
     metadata: EquityMetadata
     securityInfo: EquitySecurityInfo
+    sddDetails: {
+        SDDAuditor: string
+        SDDStatus: string
+    }
+    currentMarketType: string
     priceInfo: EquityPriceInfo
+    industryInfo: {
+        macro: string
+        sector: string
+        industry: string
+        basicIndustry: string
+    }
     preOpenMarket: EquityPreOpenMarket
 }
 
@@ -177,6 +203,7 @@ export interface EquityTradeInfo {
     marketDeptOrderBook: {
         totalBuyQuantity: number
         totalSellQuantity: number
+        open: number
         bid: {
             price: number
             quantity: number
@@ -191,6 +218,10 @@ export interface EquityTradeInfo {
             totalMarketCap: number
             ffmc: number
             impactCost: number
+            cmDailyVolatility: string
+            cmAnnualVolatility: string
+            marketLot: string
+            activeSeries: string
         }
         valueAtRisk: {
             securityVar: number
@@ -238,23 +269,25 @@ export interface EquityCorporateInfo {
         }[]
     },
     "shareholdings_patterns": {
-        "data": any
+        "data": {
+            [date: string]: Array<{ [key: string]: string }>
+        }
     },
     "financial_results": {
         "data": {
-            "from_date": string
+            "from_date": string | null
             "to_date": string
-            "expenditure": string
+            "expenditure": string | null
             "income": string
             "audited": string
-            "cumulative": string
+            "cumulative": string | null
             "consolidated": string
             "reDilEPS": string
             "reProLossBefTax": string
             "proLossAftTax": string
             "re_broadcast_timestamp": string
             "xbrl_attachment": string
-            "na_attachment": string
+            "na_attachment": string | null
         }[]
     },
     "borad_meeting": {
@@ -318,6 +351,9 @@ export interface IndexHistoricalData {
 export interface SeriesData {
     data: string[]
 }
+
+// Note: The API actually returns a direct array, but we wrap it for consistency
+// The actual response type is: string[]
 export interface IndexEquityInfo {
     priority: number
     symbol: string

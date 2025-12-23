@@ -207,11 +207,15 @@ export class NseIndia {
      * @param symbol 
      * @returns 
      */
-    getEquitySeries(symbol: string): Promise<SeriesData> {
-        return this.getDataByEndpoint(
+    async getEquitySeries(symbol: string): Promise<SeriesData> {
+        const response = await this.getDataByEndpoint(
             `/api/NextApi/apiClient/GetQuoteApi?functionName=histTradeDataSeries` +
             `&symbol=${encodeURIComponent(symbol.toUpperCase())}`
         )
+        // New API returns a direct array, wrap it in SeriesData structure for backward compatibility
+        return {
+            data: Array.isArray(response) ? response : []
+        }
     }
     /**
      * 
