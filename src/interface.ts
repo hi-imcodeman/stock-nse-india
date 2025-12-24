@@ -333,27 +333,6 @@ export interface EquityHistoricalData {
     }
 }
 
-export interface IndexHistoricalData {
-    data: {
-        indexCloseOnlineRecords: {
-            EOD_CLOSE_INDEX_VAL: number
-            EOD_HIGH_INDEX_VAL: number
-            EOD_INDEX_NAME: string
-            EOD_LOW_INDEX_VAL: number
-            EOD_OPEN_INDEX_VAL: number
-            EOD_TIMESTAMP: string
-            TIMESTAMP: string
-        }[]
-        indexTurnoverRecords: {
-            HIT_INDEX_NAME_UPPER: string
-            HIT_TIMESTAMP: string
-            HIT_TRADED_QTY: number
-            HIT_TURN_OVER: number
-            TIMESTAMP: string
-        }[]
-    }
-}
-
 export interface SeriesData {
     data: string[]
 }
@@ -373,6 +352,7 @@ export interface IndexEquityInfo {
     change: number
     pChange: number
     totalTradedVolume: number
+    stockIndClosePrice: number
     totalTradedValue: number
     lastUpdateTime: string
     yearHigh: number
@@ -381,28 +361,13 @@ export interface IndexEquityInfo {
     nearWKH: number
     nearWKL: number
     perChange365d: number
-    date365dAgo: string
-    chart365dPath: string
-    date30dAgo: string
     perChange30d: number
-    chart30dPath: string
+    date365dAgo: string
+    date30dAgo: string
     chartTodayPath: string
-    meta: {
-        symbol: string
-        companyName: string
-        industry: string
-        activeSeries: string[]
-        debtSeries: any[]
-        tempSuspendedSeries: any[]
-        isFNOSec: boolean
-        isCASec: boolean
-        isSLBSec: boolean
-        isDebtSec: boolean
-        isSuspended: boolean
-        isETFSec: boolean
-        isDelisted: boolean
-        isin: string
-    }
+    chart30dPath: string
+    chart365dPath: string
+    meta?: EquityInfo
 }
 export interface IndexDetails {
     name: string,
@@ -421,6 +386,14 @@ export interface IndexDetails {
         timeVal: string,
         yearHigh: number
         yearLow: number
+        indicativeClose: number
+        perChange365d: number
+        perChange30d: number
+        date365dAgo: string
+        date30dAgo: string
+        chartTodayPath: string
+        chart30dPath: string
+        chart365dPath: string
         totalTradedVolume: number
         totalTradedValue: number
         ffmc_sum: number

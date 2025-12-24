@@ -384,9 +384,9 @@ CORS_CREDENTIALS=true
 ### Index Methods
 
 - **`getEquityStockIndices()`** - Get all market indices
-- **`getIndexHistoricalData(index, range)`** - Index historical data
 - **`getIndexIntradayData(index)`** - Index intraday data
 - **`getIndexOptionChain(index)`** - Index options data
+- **`getIndexOptionChainContractInfo(indexSymbol)`** - Get option chain contract information (expiry dates and strike prices)
 
 ### Commodity Methods
 
