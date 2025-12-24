@@ -9,8 +9,8 @@ import {
     EquityHistoricalData,
     SeriesData,
     IndexDetails,
-    IndexHistoricalData,
     OptionChainData,
+    OptionChainContractInfo,
     EquityCorporateInfo,
     Glossary,
     Holiday,
@@ -228,39 +228,100 @@ export class NseIndia {
     /**
      * 
      * @param index 
-     * @param isPreOpenData 
      * @returns 
      */
-    getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
-        let endpoint = `/api/chart-databyindex?index=${index.toUpperCase()}&indices=true`
-        if (isPreOpenData)
-            endpoint += '&preopen=true'
-        return this.getDataByEndpoint(endpoint)
+    async getIndexIntradayData(index: string): Promise<IntradayData> {
+        const response = await this.getDataByEndpoint(
+            `/api/NextApi/apiClient?functionName=getGraphChart` +
+            `&type=${encodeURIComponent(index.toUpperCase())}&flag=1D`
+        )
+        // The API response is wrapped in a 'data' object
+        return response.data || response
     }
     /**
+     * Get option chain contract information (expiry dates and strike prices) for an index
      * 
-     * @param index 
-     * @param range 
+     * @param indexSymbol 
      * @returns 
      */
-    async getIndexHistoricalData(index: string, range: DateRange): Promise<IndexHistoricalData[]> {
-        const dateRanges = getDateRangeChunks(range.start, range.end, 66)
-        const promises = dateRanges.map(async (dateRange) => {
-            const url = `/api/historical/indicesHistory?indexType=${encodeURIComponent(index.toUpperCase())}` +
-                `&from=${dateRange.start}&to=${dateRange.end}`
-            return this.getDataByEndpoint(url)
-        })
-        return Promise.all(promises)
+    getIndexOptionChainContractInfo(indexSymbol: string): Promise<OptionChainContractInfo> {
+        return this.getDataByEndpoint(
+            `/api/option-chain-contract-info?symbol=${encodeURIComponent(indexSymbol.toUpperCase())}`
+        ) as Promise<OptionChainContractInfo>
     }
 
     /**
      * 
      * @param indexSymbol 
+     * @param expiry Optional expiry date in DD-MMM-YYYY format (e.g., "23-Dec-2025").
+     *               If not provided, will fetch nearest upcoming expiry
      * @returns 
      */
-    getIndexOptionChain(indexSymbol: string): Promise<OptionChainData> {
-        return this.getDataByEndpoint(`/api/option-chain-indices?symbol=${encodeURIComponent(indexSymbol
-            .toUpperCase())}`)
+    async getIndexOptionChain(indexSymbol: string, expiry?: string): Promise<OptionChainData> {
+        // If expiry not provided, fetch the nearest upcoming expiry date from the API
+        if (!expiry) {
+            const contractInfo = await this.getIndexOptionChainContractInfo(indexSymbol)
+            if (contractInfo && contractInfo.expiryDates && Array.isArray(contractInfo.expiryDates)) {
+                const today = new Date()
+                today.setHours(0, 0, 0, 0) // Reset time to start of day for comparison
+                
+                // Find the nearest upcoming expiry date
+                let nearestExpiry: string | null = null
+                let nearestDate: Date | null = null
+                
+                for (const expiryDateStr of contractInfo.expiryDates) {
+                    // Parse date in DD-MMM-YYYY format
+                    const dateParts = expiryDateStr.split('-')
+                    if (dateParts.length === 3) {
+                        const day = parseInt(dateParts[0], 10)
+                        const monthNames = [
+                            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                        ]
+                        const month = monthNames.indexOf(dateParts[1])
+                        const year = parseInt(dateParts[2], 10)
+                        
+                        if (month !== -1) {
+                            const expiryDate = new Date(year, month, day)
+                            expiryDate.setHours(0, 0, 0, 0)
+                            
+                            // Check if this expiry is in the future or today
+                            if (expiryDate >= today) {
+                                if (!nearestDate || expiryDate < nearestDate) {
+                                    nearestDate = expiryDate
+                                    nearestExpiry = expiryDateStr
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (nearestExpiry) {
+                    expiry = nearestExpiry
+                } else {
+                    // Fallback: use the last expiry date if no upcoming date found
+                    expiry = contractInfo.expiryDates[contractInfo.expiryDates.length - 1]
+                }
+            } else {
+                // Fallback: use current date if API fails
+                const today = new Date()
+                const day = today.getDate().toString().padStart(2, '0')
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                const month = months[today.getMonth()]
+                const year = today.getFullYear()
+                expiry = `${day}-${month}-${year}`
+            }
+        }
+        // Ensure expiry is defined (should always be set by this point)
+        if (!expiry) {
+            throw new Error('Failed to determine expiry date')
+        }
+        
+        return this.getDataByEndpoint(
+            `/api/option-chain-v3?type=Indices` +
+            `&symbol=${encodeURIComponent(indexSymbol.toUpperCase())}` +
+            `&expiry=${encodeURIComponent(expiry)}`
+        )
     }
 
     /**

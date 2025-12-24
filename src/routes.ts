@@ -1025,6 +1025,34 @@ mainRouter.get('/api/index/options/:indexSymbol', async (req, res) => {
     }
 })
 
+/**
+ * @swagger
+ * /api/index/options/contract-info/{indexSymbol}:
+ *   get:
+ *     summary: Get option chain contract information for an index
+ *     tags: [Index]
+ *     parameters:
+ *       - in: path
+ *         name: indexSymbol
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Index symbol (e.g., NIFTY, BANKNIFTY)
+ *     responses:
+ *       200:
+ *         description: Returns option chain contract information (expiry dates and strike prices)
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+
+mainRouter.get('/api/index/options/contract-info/:indexSymbol', async (req, res) => {
+    try {
+        res.json(await nseIndia.getIndexOptionChainContractInfo(req.params.indexSymbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
 
 /**
  * @openapi
@@ -1075,13 +1103,6 @@ mainRouter.get('/api/commodity/options/:commoditySymbol', async (req, res) => {
  *         schema:
  *           type: string
  *           format: any
- *       - name: preOpen
- *         in: query
- *         description: Boolean to get preOpen data
- *         required: false
- *         schema:
- *           type: boolean
- *           default: false
  *     responses:
  *       200:
  *         description: Returns a intraday trade info of the NSE index symbol
@@ -1090,73 +1111,7 @@ mainRouter.get('/api/commodity/options/:commoditySymbol', async (req, res) => {
  */
 mainRouter.get('/api/index/intraday/:indexSymbol', async (req, res) => {
     try {
-        const isPreOpen = req.query.preOpen as string
-        if (isPreOpen === "true") {
-            res.json(await nseIndia.getIndexIntradayData(req.params.indexSymbol, true))
-        } else {
-            res.json(await nseIndia.getIndexIntradayData(req.params.indexSymbol))
-        }
-    } catch (error) {
-        res.status(400).json(error)
-    }
-})
-
-/**
- * @openapi
- * /api/index/historical/{indexSymbol}:
- *   get:
- *     description: To get the historical data for the NSE index symbol
- *     tags:
- *       - Index
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: indexSymbol
- *         in: path
- *         description: NSE Index Symbol of the Equity
- *         required: true
- *         schema:
- *           type: string
- *           format: any
- *       - name: dateStart
- *         in: query
- *         description: "Start date to pull historical data (format: YYYY-MM-DD)"
- *         required: true
- *         schema:
- *           type: string
- *           format: date
- *       - name: dateEnd
- *         in: query
- *         description: "End date to pull historical data (format: YYYY-MM-DD)"
- *         required: true
- *         schema:
- *           type: string
- *           format: date
- *     responses:
- *       200:
- *         description: Returns a historical data of the NSE index symbol
- *       400:
- *         description: Returns a JSON error object of API call
- */
-mainRouter.get('/api/index/historical/:indexSymbol', async (req, res) => {
-    try {
-        const dateStart = req.query.dateStart as string
-        const dateEnd = req.query.dateEnd as string
-        if (dateStart && dateEnd) {
-            const start = new Date(dateStart)
-            const end = new Date(dateEnd)
-            if (start.getTime() > 0 && end.getTime() > 0) {
-                const range = {
-                    start,
-                    end
-                }
-                res.json(await nseIndia.getIndexHistoricalData(req.params.indexSymbol, range))
-            } else {
-                res.status(400).json({ error: 'Invalid date format. Please use the format (YYYY-MM-DD)' })
-            }
-        } else {
-            res.status(400).json({ error: 'Missing arguments "dateStart" or "dateEnd". Please pass those argumets.' })
-        }
+        res.json(await nseIndia.getIndexIntradayData(req.params.indexSymbol))
     } catch (error) {
         res.status(400).json(error)
     }

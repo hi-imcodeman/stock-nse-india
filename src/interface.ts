@@ -1,7 +1,8 @@
 export interface IntradayData {
     identifier: string
     name: string
-    graphData: [number, number]
+    // Array of [timestamp, price, status] where status is "PO" (pre-open) or "NM" (normal market)
+    grapthData: [number, number, string][]
     closePrice: number
 }
 export interface DateRange {
@@ -34,6 +35,11 @@ export interface EquityInfo {
 }
 
 
+
+export interface OptionChainContractInfo {
+    expiryDates: string[]
+    strikePrice: string[]
+}
 
 export interface OptionChainData {
     records: Records | null;

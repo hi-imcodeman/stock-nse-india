@@ -127,32 +127,6 @@ export const mcpTools = [
           type: 'string',
           description: 'Index name (e.g., NIFTY, BANKNIFTY)',
         },
-        is_pre_open_data: {
-          type: 'boolean',
-          description: 'Whether to get pre-open data (default: false)',
-        },
-      },
-      required: ['index'],
-    },
-  },
-  {
-    name: 'get_index_historical_data',
-    description: 'Get historical data for a specific index',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        index: {
-          type: 'string',
-          description: 'Index name (e.g., NIFTY, BANKNIFTY)',
-        },
-        start_date: {
-          type: 'string',
-          description: 'Start date in YYYY-MM-DD format',
-        },
-        end_date: {
-          type: 'string',
-          description: 'End date in YYYY-MM-DD format',
-        },
       },
       required: ['index'],
     },
@@ -160,6 +134,20 @@ export const mcpTools = [
   {
     name: 'get_index_option_chain',
     description: 'Get option chain data for a specific index',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        index_symbol: {
+          type: 'string',
+          description: 'Index symbol (e.g., NIFTY, BANKNIFTY)',
+        },
+      },
+      required: ['index_symbol'],
+    },
+  },
+  {
+    name: 'get_index_option_chain_contract_info',
+    description: 'Get option chain contract information (expiry dates and strike prices) for a specific index',
     inputSchema: {
       type: 'object',
       properties: {
@@ -450,41 +438,23 @@ export async function handleMCPToolCall(
         if (!args?.index || typeof args.index !== 'string') {
           throw new Error('Index parameter is required and must be a string')
         }
-        const isIndexPreOpenData = args.is_pre_open_data && 
-          typeof args.is_pre_open_data === 'boolean' 
-          ? args.is_pre_open_data 
-          : false
-        result = await nseClient.getIndexIntradayData(
-          args.index,
-          isIndexPreOpenData
-        )
+        result = await nseClient.getIndexIntradayData(args.index)
         break
       }
 
-          case 'get_index_historical_data': {
-        if (!args?.index || typeof args.index !== 'string') {
-          throw new Error('Index parameter is required and must be a string')
-        }
-        if (!args.start_date || !args.end_date || 
-          typeof args.start_date !== 'string' || 
-          typeof args.end_date !== 'string') {
-          throw new Error(
-            'Start date and end date are required and must be strings'
-          )
-        }
-        const indexRange = { 
-          start: new Date(args.start_date), 
-          end: new Date(args.end_date) 
-        }
-        result = await nseClient.getIndexHistoricalData(args.index, indexRange)
-        break
-      }
-
-          case 'get_index_option_chain': {
+      case 'get_index_option_chain': {
         if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
           throw new Error('Index symbol parameter is required and must be a string')
         }
         result = await nseClient.getIndexOptionChain(args.index_symbol)
+        break
+      }
+
+      case 'get_index_option_chain_contract_info': {
+        if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
+          throw new Error('Index symbol parameter is required and must be a string')
+        }
+        result = await nseClient.getIndexOptionChainContractInfo(args.index_symbol)
         break
       }
 
