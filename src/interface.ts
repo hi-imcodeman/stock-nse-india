@@ -41,28 +41,41 @@ export interface OptionChainContractInfo {
     strikePrice: string[]
 }
 
-// OptionChainData can have different structures:
-// - For equity: { data: EquityOptionChainItem[], timestamp: string }
-// - For index/commodity: { records: Records | null, filtered: Filtered | null }
-export interface OptionChainData {
-    // For equity option chains
-    data?: EquityOptionChainItem[];
-    timestamp?: string;
-    // For index/commodity option chains
-    records?: Records | null;
-    filtered?: Filtered | null;
-    // Common fields
-    hasRecords?: boolean;
-    hasFiltered?: boolean;
-    sample?: any;
+// Equity option chain structure
+export interface EquityOptionChainData {
+    data: EquityOptionChainItem[];
+    timestamp: string;
 }
 
+// Index option chain structure
+export interface IndexOptionChainData {
+    records: IndexRecords | null;
+    filtered: Filtered | null;
+}
+
+// Commodity option chain structure (strikePrices are numbers, not strings)
+export interface CommodityOptionChainData {
+    records: CommodityRecords | null;
+    filtered: Filtered | null;
+}
+
+
+// Base Records interface
 export interface Records {
     expiryDates: string[];
     data: Datum[];
     timestamp: string;
     underlyingValue: number;
-    strikePrices: number[];
+}
+
+// Index Records (strikePrices are strings)
+export interface IndexRecords extends Records {
+    strikePrices: string[]; // API returns strings (e.g., "9000", "10000")
+}
+
+// Commodity Records (strikePrices are numbers)
+export interface CommodityRecords extends Records {
+    strikePrices: number[]; // API returns numbers
 }
 
 export interface Filtered {
@@ -104,16 +117,17 @@ export interface EquityOptionChainItem {
 
 export interface Datum {
     strikePrice: number;
-    expiryDate: string;
+    expiryDates: string; // For index options, this is a string (e.g., "30-Dec-2025")
+    expiryDate?: string; // Alternative field name
     PE?: OptionsDetails;
     CE?: OptionsDetails;
 }
 
 export interface OptionsDetails {
     strikePrice: number;
-    expiryDate: string;
-    underlying: Underlying;
-    identifier: string;
+    expiryDate: string | null;
+    underlying: Underlying | string | null;
+    identifier: string | null;
     openInterest: number;
     changeinOpenInterest: number;
     pchangeinOpenInterest: number;
@@ -121,14 +135,20 @@ export interface OptionsDetails {
     impliedVolatility: number;
     lastPrice: number;
     change: number;
-    pChange: number;
+    pChange?: number;
+    pchange?: number; // Some APIs use 'pchange' instead of 'pChange'
     totalBuyQuantity: number;
     totalSellQuantity: number;
-    bidQty: number;
-    bidprice: number;
-    askQty: number;
-    askPrice: number;
+    bidQty?: number;
+    bidprice?: number;
+    askQty?: number;
+    askPrice?: number;
+    buyPrice1?: number; // Index options use buyPrice1/sellPrice1
+    buyQuantity1?: number;
+    sellPrice1?: number;
+    sellQuantity1?: number;
     underlyingValue: number;
+    optionType: string | null;
 }
 
 

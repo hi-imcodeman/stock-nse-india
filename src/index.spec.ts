@@ -80,23 +80,13 @@ describe('Class: NseIndia', () => {
         const optionChain = await nseIndia.getEquityOptionChain('TCS')
         // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
         expect(optionChain).toBeDefined()
-        // Equity option chain may return different structure - check for both possible structures
-        if ('data' in optionChain && Array.isArray((optionChain as any).data)) {
-            // Direct data array structure
-            expect((optionChain as any).data.length).toBeGreaterThan(0)
-            const firstItem = (optionChain as any).data[0]
-            expect(firstItem.underlying).toBe('TCS')
-        } else if (optionChain.filtered && optionChain.filtered.data && optionChain.filtered.data.length > 0) {
-            // Standard OptionChainData structure with filtered
-            const firstItem = optionChain.filtered.data[0]
-            expect(firstItem.PE?.underlying || firstItem.CE?.underlying).toBe('TCS')
-        } else if (optionChain.records && optionChain.records.data && optionChain.records.data.length > 0) {
-            // Standard OptionChainData structure with records
-            expect(optionChain.records.data[0].PE?.underlying || optionChain.records.data[0].CE?.underlying).toBe('TCS')
-        } else {
-            // At least verify it's an object with some structure
-            expect(typeof optionChain).toBe('object')
-        }
+        expect(optionChain).toHaveProperty('data')
+        expect(optionChain).toHaveProperty('timestamp')
+        expect(Array.isArray(optionChain.data)).toBe(true)
+        expect(optionChain.data.length).toBeGreaterThan(0)
+        const firstItem = optionChain.data[0]
+        expect(firstItem).toHaveProperty('underlying')
+        expect(firstItem.underlying).toBe('TCS')
     })
     test('getEquityTradeInfo', async () => {
         const tradeInfo = await nseIndia.getEquityTradeInfo(symbol)

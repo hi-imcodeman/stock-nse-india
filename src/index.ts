@@ -9,7 +9,9 @@ import {
     EquityHistoricalData,
     SeriesData,
     IndexDetails,
-    OptionChainData,
+    EquityOptionChainData,
+    IndexOptionChainData,
+    CommodityOptionChainData,
     OptionChainContractInfo,
     EquityCorporateInfo,
     Glossary,
@@ -262,7 +264,7 @@ export class NseIndia {
      *               If not provided, will fetch nearest upcoming expiry
      * @returns 
      */
-    async getIndexOptionChain(indexSymbol: string, expiry?: string): Promise<OptionChainData> {
+    async getIndexOptionChain(indexSymbol: string, expiry?: string): Promise<IndexOptionChainData> {
         // If expiry not provided, fetch the nearest upcoming expiry date from the API
         if (!expiry) {
             /* istanbul ignore next */
@@ -365,7 +367,7 @@ export class NseIndia {
      * @param symbol 
      * @returns 
      */
-    getEquityOptionChain(symbol: string): Promise<OptionChainData> {
+    getEquityOptionChain(symbol: string): Promise<EquityOptionChainData> {
         return this.getDataByEndpoint(
             `/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData` +
             `&symbol=${encodeURIComponent(symbol.toUpperCase())}`
@@ -377,7 +379,7 @@ export class NseIndia {
          * @param symbol 
          * @returns 
          */
-    getCommodityOptionChain(symbol: string): Promise<OptionChainData> {
+    getCommodityOptionChain(symbol: string): Promise<CommodityOptionChainData> {
         return this.getDataByEndpoint(`/api/option-chain-com?symbol=${encodeURIComponent(symbol
             .toUpperCase())}`)
     }
