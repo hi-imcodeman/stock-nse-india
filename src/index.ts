@@ -25,7 +25,28 @@ import {
     EquityMaster,
     PreOpenMarketData,
     MergedDailyReportsData,
-    TechnicalIndicators
+    TechnicalIndicators,
+    // Nested interfaces
+    EquityInfo,
+    EquityMetadata,
+    EquitySecurityInfo,
+    EquityPriceInfo,
+    EquityPreOpenMarket,
+    EquityHistoricalInfo,
+    EquityOptionChainItem,
+    IndexEquityInfo,
+    IndexRecords,
+    CommodityRecords,
+    Filtered,
+    Holiday,
+    MarketState,
+    MarketCap,
+    IndicativeNifty50,
+    GiftNifty,
+    Datum,
+    PreOpenDetails,
+    OptionsData,
+    OptionsDetails
 } from './interface'
 
 export enum ApiList {
@@ -529,4 +550,53 @@ export class NseIndia {
         const { getTechnicalIndicators } = await import('./helpers')
         return getTechnicalIndicators(symbol, period, options)
     }
+}
+
+// Export all interfaces for TypeDoc documentation
+export type {
+    DateRange,
+    IntradayData,
+    EquityDetails,
+    EquityTradeInfo,
+    EquityHistoricalData,
+    SeriesData,
+    IndexDetails,
+    EquityOptionChainData,
+    IndexOptionChainData,
+    CommodityOptionChainData,
+    OptionChainContractInfo,
+    EquityCorporateInfo,
+    Glossary,
+    HolidaysBySegment,
+    MarketStatus,
+    MarketTurnover,
+    AllIndicesData,
+    IndexNamesData,
+    CircularsData,
+    LatestCircularData,
+    EquityMaster,
+    PreOpenMarketData,
+    MergedDailyReportsData,
+    TechnicalIndicators,
+    // Nested interfaces
+    EquityInfo,
+    EquityMetadata,
+    EquitySecurityInfo,
+    EquityPriceInfo,
+    EquityPreOpenMarket,
+    EquityHistoricalInfo,
+    EquityOptionChainItem,
+    IndexEquityInfo,
+    IndexRecords,
+    CommodityRecords,
+    Filtered,
+    Holiday,
+    MarketState,
+    MarketCap,
+    IndicativeNifty50,
+    GiftNifty,
+    Datum,
+    PreOpenDetails,
+    OptionsData,
+    OptionsDetails
 }

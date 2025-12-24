@@ -1,3 +1,6 @@
+/**
+ * Intraday data for equity or index
+ */
 export interface IntradayData {
     identifier: string
     name: string
@@ -5,11 +8,17 @@ export interface IntradayData {
     grapthData: [number, number, string][]
     closePrice: number
 }
+/**
+ * Date range for historical data queries
+ */
 export interface DateRange {
     start: Date
     end: Date
 }
 
+/**
+ * Equity information including company details and security metadata
+ */
 export interface EquityInfo {
     symbol: string
     companyName: string
@@ -36,24 +45,33 @@ export interface EquityInfo {
 
 
 
+/**
+ * Option chain contract information with expiry dates and strike prices
+ */
 export interface OptionChainContractInfo {
     expiryDates: string[]
     strikePrice: string[]
 }
 
-// Equity option chain structure
+/**
+ * Equity option chain data structure
+ */
 export interface EquityOptionChainData {
     data: EquityOptionChainItem[];
     timestamp: string;
 }
 
-// Index option chain structure
+/**
+ * Index option chain data structure
+ */
 export interface IndexOptionChainData {
     records: IndexRecords | null;
     filtered: Filtered | null;
 }
 
-// Commodity option chain structure (strikePrices are numbers, not strings)
+/**
+ * Commodity option chain data structure
+ */
 export interface CommodityOptionChainData {
     records: CommodityRecords | null;
     filtered: Filtered | null;
@@ -68,28 +86,40 @@ export interface Records {
     underlyingValue: number;
 }
 
-// Index Records (strikePrices are strings)
+/**
+ * Index option chain records with string strike prices
+ */
 export interface IndexRecords extends Records {
     strikePrices: string[]; // API returns strings (e.g., "9000", "10000")
 }
 
-// Commodity Records (strikePrices are numbers)
+/**
+ * Commodity option chain records with numeric strike prices
+ */
 export interface CommodityRecords extends Records {
     strikePrices: number[]; // API returns numbers
 }
 
+/**
+ * Filtered option chain data with call and put options
+ */
 export interface Filtered {
     data: Datum[];
     CE: OptionsData;
     PE: OptionsData;
 }
 
+/**
+ * Options data with total open interest and volume
+ */
 export interface OptionsData {
     totOI: number;
     totVol: number;
 }
 
-// Equity option chain item structure
+/**
+ * Individual equity option chain item with strike price and option details
+ */
 export interface EquityOptionChainItem {
     identifier: string;
     instrumentType: string;
@@ -115,6 +145,9 @@ export interface EquityOptionChainItem {
     pchange: number;
 }
 
+/**
+ * Option chain datum with strike price and option details
+ */
 export interface Datum {
     strikePrice: number;
     expiryDates: string; // For index options, this is a string (e.g., "30-Dec-2025")
@@ -123,6 +156,9 @@ export interface Datum {
     CE?: OptionsDetails;
 }
 
+/**
+ * Detailed options information including open interest, volume, and pricing
+ */
 export interface OptionsDetails {
     strikePrice: number;
     expiryDate: string | null;
@@ -157,6 +193,9 @@ export enum Underlying {
     Gold = "GOLD"
 }
 
+/**
+ * Equity metadata including series, ISIN, status, and listing information
+ */
 export interface EquityMetadata {
     series: string
     symbol: string
@@ -171,6 +210,9 @@ export interface EquityMetadata {
     pdSectorIndAll: string[]
 }
 
+/**
+ * Equity security information including trading status and surveillance details
+ */
 export interface EquitySecurityInfo {
     boardStatus: string
     tradingStatus: string
@@ -187,6 +229,9 @@ export interface EquitySecurityInfo {
     issuedSize: number
 }
 
+/**
+ * Equity price information including current price, change, and trading bands
+ */
 export interface EquityPriceInfo {
     lastPrice: number
     change: number
@@ -217,6 +262,9 @@ export interface EquityPriceInfo {
     tickSize: number
     ieq: string
 }
+/**
+ * Pre-open market details for individual price levels
+ */
 export interface PreOpenDetails {
     price: number
     buyQty: number
@@ -224,6 +272,9 @@ export interface PreOpenDetails {
     iep?: boolean
 }
 
+/**
+ * Pre-open market data for equity including indicative equilibrium price
+ */
 export interface EquityPreOpenMarket {
     preopen: PreOpenDetails[]
     ato: {
@@ -241,6 +292,9 @@ export interface EquityPreOpenMarket {
     atoSellQty: number
 }
 
+/**
+ * Detailed equity information including price, metadata, and market data
+ */
 export interface EquityDetails {
     info: EquityInfo
     metadata: EquityMetadata
@@ -260,6 +314,9 @@ export interface EquityDetails {
     preOpenMarket: EquityPreOpenMarket
 }
 
+/**
+ * Equity trade information including order book and trade statistics
+ */
 export interface EquityTradeInfo {
     noBlockDeals: boolean
     bulkBlockDeals: { name: string }[]
@@ -316,6 +373,9 @@ export interface DirectoryDetails {
     email: string
 }
 
+/**
+ * Corporate information including announcements, actions, and financial results
+ */
 export interface EquityCorporateInfo {
     "latest_announcements": {
         "data": {
@@ -362,6 +422,9 @@ export interface EquityCorporateInfo {
     }
 }
 
+/**
+ * Historical equity price and volume information for a single day
+ */
 export interface EquityHistoricalInfo {
     chSymbol: string
     chSeries: string
@@ -380,6 +443,9 @@ export interface EquityHistoricalInfo {
     mtimestamp: string
 }
 
+/**
+ * Historical equity data with price and volume information
+ */
 export interface EquityHistoricalData {
     data: EquityHistoricalInfo[]
     meta: {
@@ -390,12 +456,18 @@ export interface EquityHistoricalData {
     }
 }
 
+/**
+ * Series data for equity symbols
+ */
 export interface SeriesData {
     data: string[]
 }
 
 // Note: The API actually returns a direct array, but we wrap it for consistency
 // The actual response type is: string[]
+/**
+ * Index constituent equity information
+ */
 export interface IndexEquityInfo {
     priority: number
     symbol: string
@@ -426,6 +498,9 @@ export interface IndexEquityInfo {
     chart365dPath: string
     meta?: EquityInfo
 }
+/**
+ * Detailed index information including constituent stocks and metadata
+ */
 export interface IndexDetails {
     name: string,
     advance: { declines: string, advances: string, unchanged: string },
@@ -487,6 +562,9 @@ export interface HolidayData {
     }[]
 }
 
+/**
+ * Market status data
+ */
 export interface MarketStatusData {
     marketState: string
     marketStatus: string
@@ -498,6 +576,9 @@ export interface MarketStatusData {
     marketStatusMessage: string
 }
 
+/**
+ * Market turnover data
+ */
 export interface MarketTurnoverData {
     data: {
         date: string
@@ -507,6 +588,9 @@ export interface MarketTurnoverData {
     }[]
 }
 
+/**
+ * All indices data
+ */
 export interface AllIndicesData {
     data: {
         indexName: string
@@ -526,11 +610,17 @@ export interface AllIndicesData {
     }[]
 }
 
+/**
+ * Index names data organized by category
+ */
 export interface IndexNamesData {
     stn: string[][];
     nts: string[][];
 }
 
+/**
+ * Circulars data from NSE
+ */
 export interface CircularsData {
     data: {
         fileDept: string;
@@ -548,6 +638,9 @@ export interface CircularsData {
     toDate: string;
 }
 
+/**
+ * Latest circular data from NSE
+ */
 export interface LatestCircularData {
     data: {
         fileDept: string;
@@ -563,6 +656,9 @@ export interface LatestCircularData {
     }[];
 }
 
+/**
+ * Equity master data
+ */
 export interface EquityMasterData {
     data: {
         symbol: string
@@ -618,7 +714,9 @@ export interface MarketDataPreOpenData {
     }[]
 }
 
-// MergedDailyReports returns an array directly, not wrapped in data
+/**
+ * Merged daily reports data
+ */
 export interface MergedDailyReportsData {
     name: string;
     type: string;
@@ -627,6 +725,9 @@ export interface MergedDailyReportsData {
     link: string;
 }
 
+/**
+ * NSE glossary content
+ */
 export interface Glossary {
     content: {
         title?: string;
@@ -642,6 +743,9 @@ export interface Glossary {
     changed?: string;
 }
 
+/**
+ * Trading holiday information
+ */
 export interface Holiday {
     tradingDate: string;
     weekDay: string;
@@ -651,11 +755,16 @@ export interface Holiday {
     Sr_no: number;
 }
 
-// Trading/Clearing holidays are returned as an object with segment keys
+/**
+ * Trading and clearing holidays organized by segment
+ */
 export interface HolidaysBySegment {
     [segment: string]: Holiday[];
 }
 
+/**
+ * Market state information including status and trading details
+ */
 export interface MarketState {
     market: string;
     marketStatus: string;
@@ -672,6 +781,9 @@ export interface MarketState {
     slickclass?: string;
 }
 
+/**
+ * Market capitalization information
+ */
 export interface MarketCap {
     timeStamp: string;
     marketCapinTRDollars: number;
@@ -682,6 +794,9 @@ export interface MarketCap {
     underlying: string;
 }
 
+/**
+ * Indicative Nifty 50 index information
+ */
 export interface IndicativeNifty50 {
     dateTime: string;
     indicativeTime: string | null;
@@ -696,6 +811,9 @@ export interface IndicativeNifty50 {
     status: string;
 }
 
+/**
+ * Gift Nifty (formerly SGX Nifty) futures data
+ */
 export interface GiftNifty {
     INSTRUMENTTYPE: string;
     SYMBOL: string;
@@ -710,6 +828,9 @@ export interface GiftNifty {
     id: string;
 }
 
+/**
+ * Market status information
+ */
 export interface MarketStatus {
     marketState: MarketState[];
     marketcap: MarketCap;
@@ -717,6 +838,9 @@ export interface MarketStatus {
     giftnifty: GiftNifty;
 }
 
+/**
+ * Market turnover information
+ */
 export interface MarketTurnover {
     totalTradedValue: number
     totalTradedVolume: number
@@ -740,11 +864,16 @@ export interface IndexCategories {
     [category: string]: string[];
 }
 
-// EquityMaster returns an object with category keys directly
+/**
+ * Equity master data organized by category
+ */
 export interface EquityMaster {
     [categoryName: string]: string[];
 }
 
+/**
+ * Pre-open market data
+ */
 export interface PreOpenMarketData {
     data: Array<{
         metadata: {
@@ -798,6 +927,9 @@ export interface DailyReport {
     tradingDate: string
 }
 
+/**
+ * Technical indicators including SMA, EMA, RSI, MACD, Bollinger Bands, etc.
+ */
 export interface TechnicalIndicators {
     sma: { [key: string]: number[] } // Dynamic SMA indicators (e.g., sma5, sma10, sma20)
     ema: { [key: string]: number[] } // Dynamic EMA indicators (e.g., ema5, ema10, ema20)
