@@ -13,14 +13,16 @@ import {
     OptionChainContractInfo,
     EquityCorporateInfo,
     Glossary,
-    Holiday,
+    HolidaysBySegment,
     MarketStatus,
     MarketTurnover,
-    IndexName,
-    Circular,
+    AllIndicesData,
+    IndexNamesData,
+    CircularsData,
+    LatestCircularData,
     EquityMaster,
     PreOpenMarketData,
-    DailyReport,
+    MergedDailyReportsData,
     TechnicalIndicators
 } from './interface'
 
@@ -392,7 +394,7 @@ export class NseIndia {
      * Get trading holidays
      * @returns List of trading holidays
      */
-    getTradingHolidays(): Promise<Holiday[]> {
+    getTradingHolidays(): Promise<HolidaysBySegment> {
         return this.getDataByEndpoint(ApiList.HOLIDAY_TRADING)
     }
 
@@ -400,7 +402,7 @@ export class NseIndia {
      * Get clearing holidays
      * @returns List of clearing holidays
      */
-    getClearingHolidays(): Promise<Holiday[]> {
+    getClearingHolidays(): Promise<HolidaysBySegment> {
         return this.getDataByEndpoint(ApiList.HOLIDAY_CLEARING)
     }
 
@@ -424,7 +426,7 @@ export class NseIndia {
      * Get all indices
      * @returns List of all indices
      */
-    getAllIndices(): Promise<IndexDetails[]> {
+    getAllIndices(): Promise<AllIndicesData> {
         return this.getDataByEndpoint(ApiList.ALL_INDICES)
     }
 
@@ -432,7 +434,7 @@ export class NseIndia {
      * Get index names
      * @returns List of index names
      */
-    getIndexNames(): Promise<IndexName[]> {
+    getIndexNames(): Promise<IndexNamesData> {
         return this.getDataByEndpoint(ApiList.INDEX_NAMES)
     }
 
@@ -440,7 +442,7 @@ export class NseIndia {
      * Get circulars
      * @returns List of circulars
      */
-    getCirculars(): Promise<Circular[]> {
+    getCirculars(): Promise<CircularsData> {
         return this.getDataByEndpoint(ApiList.CIRCULARS)
     }
 
@@ -448,7 +450,7 @@ export class NseIndia {
      * Get latest circulars
      * @returns List of latest circulars
      */
-    getLatestCirculars(): Promise<Circular[]> {
+    getLatestCirculars(): Promise<LatestCircularData> {
         return this.getDataByEndpoint(ApiList.LATEST_CIRCULARS)
     }
 
@@ -464,7 +466,7 @@ export class NseIndia {
      * Get pre-open market data
      * @returns Pre-open market data
      */
-    getPreOpenMarketData(): Promise<PreOpenMarketData[]> {
+    getPreOpenMarketData(): Promise<PreOpenMarketData> {
         return this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
     }
 
@@ -472,7 +474,7 @@ export class NseIndia {
      * Get merged daily reports for capital market
      * @returns Daily reports for capital market
      */
-    getMergedDailyReportsCapital(): Promise<DailyReport[]> {
+    getMergedDailyReportsCapital(): Promise<MergedDailyReportsData[]> {
         return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_CAPITAL)
     }
 
@@ -480,7 +482,7 @@ export class NseIndia {
      * Get merged daily reports for derivatives
      * @returns Daily reports for derivatives
      */
-    getMergedDailyReportsDerivatives(): Promise<DailyReport[]> {
+    getMergedDailyReportsDerivatives(): Promise<MergedDailyReportsData[]> {
         return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DERIVATIVES)
     }
 
@@ -488,7 +490,7 @@ export class NseIndia {
      * Get merged daily reports for debt market
      * @returns Daily reports for debt market
      */
-    getMergedDailyReportsDebt(): Promise<DailyReport[]> {
+    getMergedDailyReportsDebt(): Promise<MergedDailyReportsData[]> {
         return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DEBT)
     }
 

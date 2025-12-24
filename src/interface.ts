@@ -41,9 +41,20 @@ export interface OptionChainContractInfo {
     strikePrice: string[]
 }
 
+// OptionChainData can have different structures:
+// - For equity: { data: EquityOptionChainItem[], timestamp: string }
+// - For index/commodity: { records: Records | null, filtered: Filtered | null }
 export interface OptionChainData {
-    records: Records | null;
-    filtered: Filtered | null;
+    // For equity option chains
+    data?: EquityOptionChainItem[];
+    timestamp?: string;
+    // For index/commodity option chains
+    records?: Records | null;
+    filtered?: Filtered | null;
+    // Common fields
+    hasRecords?: boolean;
+    hasFiltered?: boolean;
+    sample?: any;
 }
 
 export interface Records {
@@ -63,6 +74,32 @@ export interface Filtered {
 export interface OptionsData {
     totOI: number;
     totVol: number;
+}
+
+// Equity option chain item structure
+export interface EquityOptionChainItem {
+    identifier: string;
+    instrumentType: string;
+    underlying: string;
+    expiryDate: string;
+    optionType: string;
+    strikePrice: string;
+    openPrice: number;
+    highPrice: number;
+    lowPrice: number;
+    closePrice: number;
+    prevClose: number;
+    lastPrice: number;
+    change: number;
+    totalTradedVolume: number;
+    totalTurnover: number;
+    openInterest: number;
+    changeinOpenInterest: number;
+    pchangeinOpenInterest: number;
+    underlyingValue: number;
+    volumeFreezeQuantity: number;
+    ticksize: number;
+    pchange: number;
 }
 
 export interface Datum {
@@ -470,23 +507,40 @@ export interface AllIndicesData {
 }
 
 export interface IndexNamesData {
-    data: string[]
+    stn: string[][];
+    nts: string[][];
 }
 
 export interface CircularsData {
     data: {
-        date: string
-        subject: string
-        url: string
-    }[]
+        fileDept: string;
+        circNumber: string;
+        fileExt: string;
+        sub: string;
+        cirDate: string;
+        cirDisplayDate: string;
+        circFilename: string;
+        circFilelink: string;
+        circCompany: string;
+        circDisplayNo: string;
+    }[];
+    fromDate: string;
+    toDate: string;
 }
 
 export interface LatestCircularData {
     data: {
-        date: string
-        subject: string
-        url: string
-    }
+        fileDept: string;
+        circNumber: string;
+        fileExt: string;
+        sub: string;
+        cirDate: string;
+        cirDisplayDate: string;
+        circFilename: string;
+        circFilelink: string;
+        circCompany: string;
+        circDisplayNo: string;
+    }[];
 }
 
 export interface EquityMasterData {
@@ -544,36 +598,42 @@ export interface MarketDataPreOpenData {
     }[]
 }
 
+// MergedDailyReports returns an array directly, not wrapped in data
 export interface MergedDailyReportsData {
-    data: {
-        date: string
-        symbol: string
-        series: string
-        openPrice: number
-        highPrice: number
-        lowPrice: number
-        closePrice: number
-        lastPrice: number
-        prevClose: number
-        totalTradedQuantity: number
-        totalTradedValue: number
-        totalTrades: number
-        isin: string
-        deliveryQuantity: number
-        deliveryToTradedQuantity: number
-    }[]
+    name: string;
+    type: string;
+    category: string;
+    section: string;
+    link: string;
 }
 
 export interface Glossary {
-    content: string
-    title: string
-    url: string
+    content: {
+        title?: string;
+        body?: string;
+        field_glossary_items?: any;
+        field_labels?: any;
+        field_reference?: any;
+        field_unique_url?: string;
+        [key: string]: any; // Glossary content can have various structures
+    };
+    id: string;
+    type: string;
+    changed?: string;
 }
 
 export interface Holiday {
-    tradingDate: string
-    holiday: string
-    description: string
+    tradingDate: string;
+    weekDay: string;
+    description: string;
+    morning_session: string;
+    evening_session: string;
+    Sr_no: number;
+}
+
+// Trading/Clearing holidays are returned as an object with segment keys
+export interface HolidaysBySegment {
+    [segment: string]: Holiday[];
 }
 
 export interface MarketState {
@@ -633,7 +693,7 @@ export interface GiftNifty {
 export interface MarketStatus {
     marketState: MarketState[];
     marketcap: MarketCap;
-    indicativenifty50: IndicativeNifty50;
+    indicativenifty50?: IndicativeNifty50;
     giftnifty: GiftNifty;
 }
 
@@ -660,29 +720,44 @@ export interface IndexCategories {
     [category: string]: string[];
 }
 
+// EquityMaster returns an object with category keys directly
 export interface EquityMaster {
-    categories: IndexCategories;
+    [categoryName: string]: string[];
 }
 
 export interface PreOpenMarketData {
-    metadata: {
-        symbol: string
-        companyName: string
-        industry: string
-        isinCode: string
-    }
-    priceInfo: {
-        lastPrice: number
-        change: number
-        pChange: number
-        open: number
-        high: number
-        low: number
-        close: number
-        prevClose: number
-        totalTradedVolume: number
-        totalTradedValue: number
-    }
+    data: Array<{
+        metadata: {
+            symbol: string;
+            companyName: string;
+            industry: string;
+            isinCode: string;
+            series?: string;
+            status?: string;
+            listingDate?: string;
+            lastUpdateTime?: string;
+        };
+        detail?: any;
+        priceInfo?: {
+            lastPrice: number;
+            change: number;
+            pChange: number;
+            open: number;
+            high: number;
+            low: number;
+            close: number;
+            prevClose: number;
+            totalTradedVolume: number;
+            totalTradedValue: number;
+        };
+    }>;
+    timestamp: string;
+    advances: number;
+    declines: number;
+    unchanged: number;
+    totalTradedValue: number;
+    totalmarketcap: number;
+    totalTradedVolume: number;
 }
 
 export interface DailyReport {
