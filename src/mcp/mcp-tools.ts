@@ -1,4 +1,5 @@
 import type { NseIndia } from '../index.js'
+import { getGainersAndLosersByIndex, getMostActiveEquities } from '../helpers.js'
 
 // Common MCP tools configuration for NSE India servers
 export const mcpTools = [
@@ -355,6 +356,34 @@ export const mcpTools = [
         },
       },
       required: ['symbol'],
+    },
+  },
+  {
+    name: 'get_gainers_and_losers_by_index',
+    description: 'Get top gainers and losers for a specific index',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        index_symbol: {
+          type: 'string',
+          description: 'Index symbol (e.g., NIFTY 50, NIFTY BANK)',
+        },
+      },
+      required: ['index_symbol'],
+    },
+  },
+  {
+    name: 'get_most_active_equities',
+    description: 'Get most actively traded equities for a specific index, sorted by volume and value',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        index_symbol: {
+          type: 'string',
+          description: 'Index symbol (e.g., NIFTY 50, NIFTY BANK)',
+        },
+      },
+      required: ['index_symbol'],
     },
   },
 ]
@@ -765,6 +794,22 @@ export async function handleMCPToolCall(
           
           result = roundedIndicators
         }
+        break
+      }
+
+      case 'get_gainers_and_losers_by_index': {
+        if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
+          throw new Error('Index symbol parameter is required and must be a string')
+        }
+        result = await getGainersAndLosersByIndex(args.index_symbol)
+        break
+      }
+
+      case 'get_most_active_equities': {
+        if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
+          throw new Error('Index symbol parameter is required and must be a string')
+        }
+        result = await getMostActiveEquities(args.index_symbol)
         break
       }
 
