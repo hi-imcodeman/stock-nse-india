@@ -223,9 +223,11 @@ const client = new MCPClient({
   enableContextSummarization: true, // Enable auto-summarization
   enableDebugLogging: false,       // Debug logs
   memoryConfig: {
-    contextWindowSize: 8000,       // Token limit
-    summarizationThreshold: 0.8,   // Trigger at 80%
-    maxHistoryMessages: 50         // Max messages
+    maxConversationHistory: 50,    // Max messages in conversation history
+    contextWindowConfig: {
+      maxTokens: 8000,              // Token limit
+      summarizationThreshold: 0.8  // Trigger at 80%
+    }
   }
 });
 ```

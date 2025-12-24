@@ -37,9 +37,11 @@ async function runMemoryExample() {
     enableContextSummarization: true,
     enableDebugLogging: false,
     memoryConfig: {
-      contextWindowSize: 6000,  // Smaller window to demonstrate summarization
-      summarizationThreshold: 0.7,  // Trigger at 70% capacity
-      maxHistoryMessages: 30
+      maxConversationHistory: 30,
+      contextWindowConfig: {
+        maxTokens: 6000,  // Smaller window to demonstrate summarization
+        summarizationThreshold: 0.7  // Trigger at 70% capacity
+      }
     }
   });
 

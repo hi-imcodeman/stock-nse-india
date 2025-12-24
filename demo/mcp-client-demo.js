@@ -55,9 +55,11 @@ async function demo1_BasicQuery() {
     enableContextSummarization: true,
     enableDebugLogging: false,
     memoryConfig: {
-      contextWindowSize: 8000,
-      summarizationThreshold: 0.8,
-      maxHistoryMessages: 50
+      maxConversationHistory: 50,
+      contextWindowConfig: {
+        maxTokens: 8000,
+        summarizationThreshold: 0.8
+      }
     }
   });
 
@@ -360,8 +362,10 @@ async function demo6_ContextSummarization() {
     enableContextSummarization: true,
     enableDebugLogging: false,
     memoryConfig: {
-      contextWindowSize: 4000, // Small window to trigger summarization
-      summarizationThreshold: 0.7
+      contextWindowConfig: {
+        maxTokens: 4000, // Small window to trigger summarization
+        summarizationThreshold: 0.7
+      }
     }
   });
 
@@ -457,9 +461,10 @@ async function demo7_ToolsAndConfig() {
     logSubSection('Context Window Configuration:');
     const contextConfig = client.getContextWindowConfig();
     console.log({
-      window_size: contextConfig.contextWindowSize,
+      max_tokens: contextConfig.maxTokens,
       summarization_threshold: `${(contextConfig.summarizationThreshold * 100).toFixed(0)}%`,
-      max_history_messages: contextConfig.maxHistoryMessages
+      reserved_tokens: contextConfig.reservedTokens,
+      min_messages_to_summarize: contextConfig.minMessagesToSummarize
     });
   } catch (error) {
     log(`Error: ${error.message}`, colors.red);
