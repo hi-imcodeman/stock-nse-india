@@ -169,12 +169,13 @@ All components share the same tool definitions and business logic, ensuring cons
 
 ### Available Tools
 
-The MCP server provides **32 tools** covering:
-- **Equity Data** - Stock details, trade info, corporate info, intraday data, historical data
-- **Index Data** - Market indices, intraday data, historical data, option chains
+The MCP server provides **30 tools** covering:
+- **Equity Data** - Stock details, trade info, corporate info, intraday data, historical data, technical indicators
+- **Index Data** - Market indices, intraday data, option chains, contract information
 - **Market Data** - Market status, turnover, pre-open data, all indices
 - **Reports** - Circulars, daily reports for capital/derivatives/debt markets
 - **Commodity Data** - Option chain data for commodities
+- **Analysis Tools** - Top gainers/losers, most active equities
 
 ### OpenAI Functions MCP Client
 
@@ -185,7 +186,7 @@ The project includes an advanced MCP client that uses OpenAI's native function c
 - **🔧 Automatic Tool Selection**: AI intelligently chooses the right NSE API tools
 - **📊 Real-time Data**: Access live market data, historical information, and more
 - **🎯 Smart Parameter Extraction**: Automatically extracts symbols, dates, and other parameters
-- **📈 Comprehensive Coverage**: Access to all 32+ NSE India API endpoints
+- **📈 Comprehensive Coverage**: Access to all 30 NSE India API endpoints
 - **🔄 Multiple Query Types**: Support for both simple and complex multi-step queries
 
 #### Query Methods
@@ -219,33 +220,40 @@ npm run start:mcp
 npm run test:mcp
 ```
 
-#### TCP Server (Recommended for production)
-```bash
-# Start the TCP MCP server on port 3001
-npm run start:mcp:tcp
-
-# Test the TCP MCP server
-npm run test:mcp:tcp
-
-# Custom port (set environment variable)
-MCP_PORT=3002 npm run start:mcp:tcp
-```
-
-#### HTTP Server (Best for web integration)
-```bash
-# Start the HTTP MCP server on port 3001
-npm run start:mcp:http
-
-# Test the HTTP MCP server
-npm run test:mcp:http
-
-# Custom port (set environment variable)
-MCP_PORT=3002 npm run start:mcp:http
-```
-
 ### Configuration
 
-#### For stdio server (AI assistant integration):
+#### Option 1: Using npx (Recommended for users who have installed the package)
+
+**Installation Steps:**
+
+1. **Prerequisites**: Ensure Node.js 18+ is installed on your system
+   ```bash
+   node --version  # Should be v18.0.0 or higher
+   ```
+
+2. **Install the package** (optional but recommended for faster startup):
+   ```bash
+   npm install -g stock-nse-india
+   ```
+   
+   **Note**: If you don't install globally, `npx` will automatically download and cache the package on first use, which may take a few moments.
+
+**Configuration:**
+```json
+{
+  "mcpServers": {
+    "npx-stock-nse-india": {
+      "command": "npx",
+      "args": ["stock-nse-india", "mcp"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
+```
+
+#### Option 2: Using local build (For developers with source code)
 ```json
 {
   "mcpServers": {
@@ -259,6 +267,19 @@ MCP_PORT=3002 npm run start:mcp:http
   }
 }
 ```
+
+#### Configuring in Cursor IDE
+
+1. **Open Cursor Settings**: Press `Cmd+,` (Mac) or `Ctrl+,` (Windows/Linux) to open settings
+2. **Navigate to MCP Settings**: Go to Settings → Features → Model Context Protocol
+3. **Add Server Configuration**: Add either of the configurations above to your MCP settings
+4. **Restart Cursor**: Restart Cursor IDE to load the MCP server
+
+Alternatively, you can directly edit the Cursor configuration file:
+- **Mac/Linux**: `~/.cursor/mcp.json` or in your workspace settings
+- **Windows**: `%APPDATA%\Cursor\mcp.json`
+
+After configuration, the MCP server will be available in Cursor's AI assistant, allowing you to query NSE India stock market data directly from the chat interface.
 
 For detailed MCP documentation, see [MCP_README.md](./MCP_README.md).
 

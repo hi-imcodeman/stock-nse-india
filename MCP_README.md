@@ -37,12 +37,13 @@ The MCP server provides the following tools:
 - `get_equity_historical_data` - Get historical data for a specific equity symbol
 - `get_equity_series` - Get series data for a specific equity symbol
 - `get_equity_option_chain` - Get option chain data for a specific equity symbol
+- `get_equity_technical_indicators` - Get technical indicators (RSI, MACD, Bollinger Bands, etc.) for a specific equity symbol
 
 ### Index Data
 - `get_equity_stock_indices` - Get equity stock indices for a specific index
 - `get_index_intraday_data` - Get intraday data for a specific index
-- `get_index_historical_data` - Get historical data for a specific index
 - `get_index_option_chain` - Get option chain data for a specific index
+- `get_index_option_chain_contract_info` - Get option chain contract information (expiry dates and strike prices) for a specific index
 
 ### Market Data
 - `get_market_status` - Get current market status
@@ -64,6 +65,10 @@ The MCP server provides the following tools:
 
 ### Commodity Data
 - `get_commodity_option_chain` - Get option chain data for a specific commodity symbol
+
+### Analysis Tools
+- `get_gainers_and_losers_by_index` - Get top gainers and losers for a specific index
+- `get_most_active_equities` - Get most actively traded equities for a specific index, sorted by volume and value
 
 ## Installation
 
@@ -92,7 +97,43 @@ yarn test:mcp
 
 ### Configuration
 
-#### For stdio server (AI assistant integration):
+#### Option 1: Using npx (Recommended for users who have installed the package)
+
+This is the easiest way to use the MCP server without cloning the repository.
+
+**Installation Steps:**
+
+1. **Prerequisites**: Ensure Node.js 18+ is installed on your system
+   ```bash
+   node --version  # Should be v18.0.0 or higher
+   ```
+
+2. **Install the package** (optional but recommended for faster startup):
+   ```bash
+   npm install -g stock-nse-india
+   ```
+   
+   **Note**: If you don't install globally, `npx` will automatically download and cache the package on first use. The first run may take a few moments to download the package, but subsequent runs will be faster.
+
+**Configuration:**
+```json
+{
+  "mcpServers": {
+    "npx-stock-nse-india": {
+      "command": "npx",
+      "args": ["stock-nse-india", "mcp"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
+```
+
+#### Option 2: Using local build (For developers with source code)
+
+If you have cloned the repository and built the project locally:
+
 ```json
 {
   "mcpServers": {
@@ -106,6 +147,40 @@ yarn test:mcp
   }
 }
 ```
+
+**Prerequisites:**
+- Node.js 18+ installed
+- Repository cloned and dependencies installed (`npm install`)
+- Project built (`npm run build`)
+
+#### Configuring in Cursor IDE
+
+1. **Open Cursor Settings**: 
+   - Press `Cmd+,` (Mac) or `Ctrl+,` (Windows/Linux) to open settings
+   - Or go to `File → Preferences → Settings`
+
+2. **Navigate to MCP Settings**: 
+   - Search for "MCP" or "Model Context Protocol" in settings
+   - Go to `Settings → Features → Model Context Protocol`
+
+3. **Add Server Configuration**: 
+   - Click "Edit in settings.json" or find the MCP configuration section
+   - Add one of the configurations above (Option 1 is recommended for most users)
+   - Save the configuration file
+
+4. **Restart Cursor**: 
+   - Close and reopen Cursor IDE to load the MCP server
+   - The server should appear in the MCP status indicator
+
+**Configuration File Location:**
+- **Mac/Linux**: `~/.cursor/mcp.json` or workspace-specific settings
+- **Windows**: `%APPDATA%\Cursor\mcp.json` or workspace-specific settings
+
+**Verification:**
+After configuration and restart, you should see the MCP server active in Cursor's status bar. You can then use natural language queries in Cursor's chat to access NSE India stock market data, such as:
+- "What is the current price of TCS?"
+- "Show me the top gainers in NIFTY 50"
+- "Get technical indicators for RELIANCE"
 
 ### Example Tool Calls
 
@@ -135,6 +210,31 @@ yarn test:mcp
     "symbol": "RELIANCE",
     "start_date": "2024-01-01",
     "end_date": "2024-01-31"
+  }
+}
+```
+
+#### Get technical indicators for TCS
+```json
+{
+  "name": "get_equity_technical_indicators",
+  "arguments": {
+    "symbol": "TCS",
+    "period": 200,
+    "sma_periods": [5, 10, 20, 50],
+    "ema_periods": [5, 10, 20, 50],
+    "rsi_period": 14,
+    "show_only_latest": true
+  }
+}
+```
+
+#### Get gainers and losers for NIFTY 50
+```json
+{
+  "name": "get_gainers_and_losers_by_index",
+  "arguments": {
+    "index_symbol": "NIFTY 50"
   }
 }
 ```
