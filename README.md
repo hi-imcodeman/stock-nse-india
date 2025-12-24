@@ -14,6 +14,7 @@ A comprehensive package and API server for accessing equity/index details and hi
 - **📦 NPM Package** - Direct integration into your Node.js projects
 - **🔌 GraphQL API** - Modern GraphQL interface with Apollo Server
 - **🌐 REST API** - Comprehensive REST endpoints with Swagger documentation
+- **🤖 MCP Server** - Model Context Protocol server for AI assistants
 - **💻 CLI Tool** - Command-line interface for quick data access
 - **🐳 Docker Support** - Containerized deployment
 - **🔒 CORS Configuration** - Configurable cross-origin resource sharing
@@ -140,6 +141,148 @@ The API includes schemas for:
 - **Indices** - Market index data and performance
 - **Filters** - Flexible query filtering options
 
+## 🤖 MCP Server
+
+The project includes a Model Context Protocol (MCP) server that allows AI assistants to access NSE India stock market data:
+
+### What is MCP?
+
+Model Context Protocol (MCP) is a standard for AI assistants to communicate with external data sources and tools. This MCP server exposes all NSE India functions as tools that AI models can use.
+
+### Architecture
+
+The MCP implementation is built with a modular architecture for maintainability and consistency:
+
+- **`src/mcp/mcp-tools.ts`**: Common tools configuration and handler functions shared across all implementations
+- **`src/mcp/server/mcp-server.ts`**: Stdio-based MCP server for local AI assistant integration
+- **`src/mcp/client/mcp-client.ts`**: OpenAI Functions-based MCP client for natural language queries
+
+All components share the same tool definitions and business logic, ensuring consistency and making maintenance easier.
+
+### Benefits of Common Tools Configuration
+
+- **🔄 Consistency**: All server implementations use identical tool definitions and behavior
+- **🛠️ Maintainability**: Single source of truth for tool configurations and business logic
+- **📝 Easy Updates**: Add new tools or modify existing ones in one place
+- **🧪 Testing**: Unified testing approach across all server implementations
+- **📚 Documentation**: Centralized tool documentation and examples
+
+### Available Tools
+
+The MCP server provides **30 tools** covering:
+- **Equity Data** - Stock details, trade info, corporate info, intraday data, historical data, technical indicators
+- **Index Data** - Market indices, intraday data, option chains, contract information
+- **Market Data** - Market status, turnover, pre-open data, all indices
+- **Reports** - Circulars, daily reports for capital/derivatives/debt markets
+- **Commodity Data** - Option chain data for commodities
+- **Analysis Tools** - Top gainers/losers, most active equities
+
+### OpenAI Functions MCP Client
+
+The project includes an advanced MCP client that uses OpenAI's native function calling feature for intelligent query processing:
+
+#### Features
+- **🤖 Natural Language Processing**: Query data using plain English
+- **🔧 Automatic Tool Selection**: AI intelligently chooses the right NSE API tools
+- **📊 Real-time Data**: Access live market data, historical information, and more
+- **🎯 Smart Parameter Extraction**: Automatically extracts symbols, dates, and other parameters
+- **📈 Comprehensive Coverage**: Access to all 30 NSE India API endpoints
+- **🔄 Multiple Query Types**: Support for both simple and complex multi-step queries
+
+#### Query Methods
+- **`processQuery()`**: Single-round query processing for straightforward requests
+- **`processQueryWithMultipleFunctions()`**: Multi-step query processing for complex analysis
+
+#### Example Usage
+```javascript
+import { mcpClient } from './mcp/client/mcp-client'
+
+// Simple query
+const response = await mcpClient.processQuery({
+  query: "What is the current price of TCS stock?",
+  model: "gpt-4o-mini"
+})
+
+// Complex multi-step query
+const complexResponse = await mcpClient.processQueryWithMemory({
+  query: "Compare the performance of Reliance and TCS over the last month and analyze their trends"
+})
+```
+
+### Usage
+
+#### Standard I/O (stdio) Server
+```bash
+# Start the stdio MCP server
+npm run start:mcp
+
+# Test the stdio MCP server
+npm run test:mcp
+```
+
+### Configuration
+
+#### Option 1: Using npx (Recommended for users who have installed the package)
+
+**Installation Steps:**
+
+1. **Prerequisites**: Ensure Node.js 18+ is installed on your system
+   ```bash
+   node --version  # Should be v18.0.0 or higher
+   ```
+
+2. **Install the package** (optional but recommended for faster startup):
+   ```bash
+   npm install -g stock-nse-india
+   ```
+   
+   **Note**: If you don't install globally, `npx` will automatically download and cache the package on first use, which may take a few moments.
+
+**Configuration:**
+```json
+{
+  "mcpServers": {
+    "npx-stock-nse-india": {
+      "command": "npx",
+      "args": ["stock-nse-india", "mcp"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
+```
+
+#### Option 2: Using local build (For developers with source code)
+```json
+{
+  "mcpServers": {
+    "nse-india-stdio": {
+      "command": "node",
+      "args": ["build/mcp/server/mcp-server-stdio.js"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
+```
+
+#### Configuring in Cursor IDE
+
+1. **Open Cursor Settings**: Press `Cmd+,` (Mac) or `Ctrl+,` (Windows/Linux) to open settings
+2. **Navigate to MCP Settings**: Go to Settings → Features → Model Context Protocol
+3. **Add Server Configuration**: Add either of the configurations above to your MCP settings
+4. **Restart Cursor**: Restart Cursor IDE to load the MCP server
+
+Alternatively, you can directly edit the Cursor configuration file:
+- **Mac/Linux**: `~/.cursor/mcp.json` or in your workspace settings
+- **Windows**: `%APPDATA%\Cursor\mcp.json`
+
+After configuration, the MCP server will be available in Cursor's AI assistant, allowing you to query NSE India stock market data directly from the chat interface.
+
+For detailed MCP documentation, see [MCP_README.md](./MCP_README.md).
+
 ## 🌐 REST API
 
 Comprehensive REST endpoints with automatic Swagger documentation:
@@ -153,6 +296,11 @@ Comprehensive REST endpoints with automatic Swagger documentation:
 - `GET /api/equity/:symbol/historical` - Historical data
 - `GET /api/indices` - Market indices
 - `GET /api-docs` - Interactive API documentation
+
+### MCP Client Endpoints
+
+- `POST /api/mcp/query` - Natural language query using OpenAI Functions
+- `POST /api/mcp/query-multiple` - Multi-step natural language queries
 
 ### API Documentation
 
@@ -257,9 +405,9 @@ CORS_CREDENTIALS=true
 ### Index Methods
 
 - **`getEquityStockIndices()`** - Get all market indices
-- **`getIndexHistoricalData(index, range)`** - Index historical data
 - **`getIndexIntradayData(index)`** - Index intraday data
 - **`getIndexOptionChain(index)`** - Index options data
+- **`getIndexOptionChainContractInfo(indexSymbol)`** - Get option chain contract information (expiry dates and strike prices)
 
 ### Commodity Methods
 
@@ -305,6 +453,11 @@ npm run docs
 - **`npm test`** - Run test suite with coverage
 - **`npm run docs`** - Generate TypeDoc documentation
 - **`npm run lint`** - Run ESLint
+
+### MCP Scripts
+
+- **`npm run start:mcp`** - Start stdio MCP server
+- **`npm run test:mcp`** - Test stdio MCP server
 
 ## 🧪 Testing
 

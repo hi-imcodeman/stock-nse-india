@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "nse-india-stdio": {
+      "command": "node",
+      "args": ["build/mcp/server/mcp-server-stdio.js"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "npx-stock-nse-india": {
+      "command": "npx",
+      "args": ["stock-nse-india","mcp"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}

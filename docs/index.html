@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>stock-nse-india - v1.2.2</title><meta name="description" content="Documentation for stock-nse-india"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/search.js" id="tsd-search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>stock-nse-india - v1.3.0</title><meta name="description" content="Documentation for stock-nse-india"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/search.js" id="tsd-search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base=".">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -6,12 +6,12 @@
 <div id="tsd-toolbar-links"></div></div>
 <ul class="results">
 <li class="state loading">Preparing search index...</li>
-<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">stock-nse-india - v1.2.2</a></div>
+<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">stock-nse-india - v1.3.0</a></div>
 <div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
 <div class="container container-main">
 <div class="col-content">
 <div class="tsd-page-title">
-<h2>stock-nse-india - v1.2.2</h2></div>
+<h2>stock-nse-india - v1.3.0</h2></div>
 <div class="tsd-panel tsd-typography"><p><a href="https://nodei.co/npm/stock-nse-india/"><img src="https://nodei.co/npm/stock-nse-india.png" alt="NPM"></a></p>
 <a id="md:national-stock-exchange---india-unofficial" class="tsd-anchor"></a><h1><a href="#md:national-stock-exchange---india-unofficial">National Stock Exchange - India (Unofficial)</a></h1><p><img src="https://github.com/hi-imcodeman/stock-nse-india/workflows/CI/badge.svg" alt=""> <img src="https://img.shields.io/npm/dt/stock-nse-india" alt="npm"> <img src="https://img.shields.io/npm/l/stock-nse-india" alt="NPM"> <img src="https://img.shields.io/npm/v/stock-nse-india" alt="GitHub Release Date - Published_At"> <img src="https://img.shields.io/github/languages/top/hi-imcodeman/stock-nse-india" alt="GitHub top language"></p>
 <p>A comprehensive package and API server for accessing equity/index details and historical data from the National Stock Exchange of India. This project provides both an NPM package for direct integration and a full-featured GraphQL/REST API server.</p>
@@ -20,6 +20,7 @@
 <li><strong>📦 NPM Package</strong> - Direct integration into your Node.js projects</li>
 <li><strong>🔌 GraphQL API</strong> - Modern GraphQL interface with Apollo Server</li>
 <li><strong>🌐 REST API</strong> - Comprehensive REST endpoints with Swagger documentation</li>
+<li><strong>🤖 MCP Server</strong> - Model Context Protocol server for AI assistants</li>
 <li><strong>💻 CLI Tool</strong> - Command-line interface for quick data access</li>
 <li><strong>🐳 Docker Support</strong> - Containerized deployment</li>
 <li><strong>🔒 CORS Configuration</strong> - Configurable cross-origin resource sharing</li>
@@ -58,6 +59,78 @@
 <li><strong>Indices</strong> - Market index data and performance</li>
 <li><strong>Filters</strong> - Flexible query filtering options</li>
 </ul>
+<a id="md:🤖-mcp-server" class="tsd-anchor"></a><h2><a href="#md:🤖-mcp-server">🤖 MCP Server</a></h2><p>The project includes a Model Context Protocol (MCP) server that allows AI assistants to access NSE India stock market data:</p>
+<a id="md:what-is-mcp" class="tsd-anchor"></a><h3><a href="#md:what-is-mcp">What is MCP?</a></h3><p>Model Context Protocol (MCP) is a standard for AI assistants to communicate with external data sources and tools. This MCP server exposes all NSE India functions as tools that AI models can use.</p>
+<a id="md:architecture" class="tsd-anchor"></a><h3><a href="#md:architecture">Architecture</a></h3><p>The MCP implementation is built with a modular architecture for maintainability and consistency:</p>
+<ul>
+<li><strong><code>src/mcp/mcp-tools.ts</code></strong>: Common tools configuration and handler functions shared across all implementations</li>
+<li><strong><code>src/mcp/server/mcp-server.ts</code></strong>: Stdio-based MCP server for local AI assistant integration</li>
+<li><strong><code>src/mcp/client/mcp-client.ts</code></strong>: OpenAI Functions-based MCP client for natural language queries</li>
+</ul>
+<p>All components share the same tool definitions and business logic, ensuring consistency and making maintenance easier.</p>
+<a id="md:benefits-of-common-tools-configuration" class="tsd-anchor"></a><h3><a href="#md:benefits-of-common-tools-configuration">Benefits of Common Tools Configuration</a></h3><ul>
+<li><strong>🔄 Consistency</strong>: All server implementations use identical tool definitions and behavior</li>
+<li><strong>🛠️ Maintainability</strong>: Single source of truth for tool configurations and business logic</li>
+<li><strong>📝 Easy Updates</strong>: Add new tools or modify existing ones in one place</li>
+<li><strong>🧪 Testing</strong>: Unified testing approach across all server implementations</li>
+<li><strong>📚 Documentation</strong>: Centralized tool documentation and examples</li>
+</ul>
+<a id="md:available-tools" class="tsd-anchor"></a><h3><a href="#md:available-tools">Available Tools</a></h3><p>The MCP server provides <strong>30 tools</strong> covering:</p>
+<ul>
+<li><strong>Equity Data</strong> - Stock details, trade info, corporate info, intraday data, historical data, technical indicators</li>
+<li><strong>Index Data</strong> - Market indices, intraday data, option chains, contract information</li>
+<li><strong>Market Data</strong> - Market status, turnover, pre-open data, all indices</li>
+<li><strong>Reports</strong> - Circulars, daily reports for capital/derivatives/debt markets</li>
+<li><strong>Commodity Data</strong> - Option chain data for commodities</li>
+<li><strong>Analysis Tools</strong> - Top gainers/losers, most active equities</li>
+</ul>
+<a id="md:openai-functions-mcp-client" class="tsd-anchor"></a><h3><a href="#md:openai-functions-mcp-client">OpenAI Functions MCP Client</a></h3><p>The project includes an advanced MCP client that uses OpenAI&#39;s native function calling feature for intelligent query processing:</p>
+<a id="md:features" class="tsd-anchor"></a><h4><a href="#md:features">Features</a></h4><ul>
+<li><strong>🤖 Natural Language Processing</strong>: Query data using plain English</li>
+<li><strong>🔧 Automatic Tool Selection</strong>: AI intelligently chooses the right NSE API tools</li>
+<li><strong>📊 Real-time Data</strong>: Access live market data, historical information, and more</li>
+<li><strong>🎯 Smart Parameter Extraction</strong>: Automatically extracts symbols, dates, and other parameters</li>
+<li><strong>📈 Comprehensive Coverage</strong>: Access to all 30 NSE India API endpoints</li>
+<li><strong>🔄 Multiple Query Types</strong>: Support for both simple and complex multi-step queries</li>
+</ul>
+<a id="md:query-methods" class="tsd-anchor"></a><h4><a href="#md:query-methods">Query Methods</a></h4><ul>
+<li><strong><code>processQuery()</code></strong>: Single-round query processing for straightforward requests</li>
+<li><strong><code>processQueryWithMultipleFunctions()</code></strong>: Multi-step query processing for complex analysis</li>
+</ul>
+<a id="md:example-usage" class="tsd-anchor"></a><h4><a href="#md:example-usage">Example Usage</a></h4><pre><code class="language-javascript"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">mcpClient</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;./mcp/client/mcp-client&#39;</span><br/><br/><span class="hl-7">// Simple query</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">response</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">mcpClient</span><span class="hl-1">.</span><span class="hl-0">processQuery</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">query:</span><span class="hl-1"> </span><span class="hl-2">&quot;What is the current price of TCS stock?&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">model:</span><span class="hl-1"> </span><span class="hl-2">&quot;gpt-4o-mini&quot;</span><br/><span class="hl-1">})</span><br/><br/><span class="hl-7">// Complex multi-step query</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">complexResponse</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">mcpClient</span><span class="hl-1">.</span><span class="hl-0">processQueryWithMemory</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">query:</span><span class="hl-1"> </span><span class="hl-2">&quot;Compare the performance of Reliance and TCS over the last month and analyze their trends&quot;</span><br/><span class="hl-1">})</span>
+</code><button>Copy</button></pre>
+<a id="md:usage" class="tsd-anchor"></a><h3><a href="#md:usage">Usage</a></h3><a id="md:standard-io-stdio-server" class="tsd-anchor"></a><h4><a href="#md:standard-io-stdio-server">Standard I/O (stdio) Server</a></h4><pre><code class="language-bash"><span class="hl-7"># Start the stdio MCP server</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">start:mcp</span><br/><br/><span class="hl-7"># Test the stdio MCP server</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">test:mcp</span>
+</code><button>Copy</button></pre>
+<a id="md:configuration" class="tsd-anchor"></a><h3><a href="#md:configuration">Configuration</a></h3><a id="md:option-1-using-npx-recommended-for-users-who-have-installed-the-package" class="tsd-anchor"></a><h4><a href="#md:option-1-using-npx-recommended-for-users-who-have-installed-the-package">Option 1: Using npx (Recommended for users who have installed the package)</a></h4><p><strong>Installation Steps:</strong></p>
+<ol>
+<li><p><strong>Prerequisites</strong>: Ensure Node.js 18+ is installed on your system</p>
+<pre><code class="language-bash"><span class="hl-0">node</span><span class="hl-1"> </span><span class="hl-5">--version</span><span class="hl-1">  </span><span class="hl-7"># Should be v18.0.0 or higher</span>
+</code><button>Copy</button></pre>
+</li>
+<li><p><strong>Install the package</strong> (optional but recommended for faster startup):</p>
+<pre><code class="language-bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-5">-g</span><span class="hl-1"> </span><span class="hl-2">stock-nse-india</span>
+</code><button>Copy</button></pre>
+<p><strong>Note</strong>: If you don&#39;t install globally, <code>npx</code> will automatically download and cache the package on first use, which may take a few moments.</p>
+</li>
+</ol>
+<p><strong>Configuration:</strong></p>
+<pre><code class="language-json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-8">&quot;mcpServers&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">    </span><span class="hl-8">&quot;npx-stock-nse-india&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">      </span><span class="hl-8">&quot;command&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;npx&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">      </span><span class="hl-8">&quot;args&quot;</span><span class="hl-1">: [</span><span class="hl-2">&quot;stock-nse-india&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;mcp&quot;</span><span class="hl-1">],</span><br/><span class="hl-1">      </span><span class="hl-8">&quot;env&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">        </span><span class="hl-8">&quot;NODE_ENV&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;production&quot;</span><br/><span class="hl-1">      }</span><br/><span class="hl-1">    }</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
+</code><button>Copy</button></pre>
+<a id="md:option-2-using-local-build-for-developers-with-source-code" class="tsd-anchor"></a><h4><a href="#md:option-2-using-local-build-for-developers-with-source-code">Option 2: Using local build (For developers with source code)</a></h4><pre><code class="language-json"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-8">&quot;mcpServers&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">    </span><span class="hl-8">&quot;nse-india-stdio&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">      </span><span class="hl-8">&quot;command&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;node&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">      </span><span class="hl-8">&quot;args&quot;</span><span class="hl-1">: [</span><span class="hl-2">&quot;build/mcp/server/mcp-server-stdio.js&quot;</span><span class="hl-1">],</span><br/><span class="hl-1">      </span><span class="hl-8">&quot;env&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">        </span><span class="hl-8">&quot;NODE_ENV&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;production&quot;</span><br/><span class="hl-1">      }</span><br/><span class="hl-1">    }</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
+</code><button>Copy</button></pre>
+<a id="md:configuring-in-cursor-ide" class="tsd-anchor"></a><h4><a href="#md:configuring-in-cursor-ide">Configuring in Cursor IDE</a></h4><ol>
+<li><strong>Open Cursor Settings</strong>: Press <code>Cmd+,</code> (Mac) or <code>Ctrl+,</code> (Windows/Linux) to open settings</li>
+<li><strong>Navigate to MCP Settings</strong>: Go to Settings → Features → Model Context Protocol</li>
+<li><strong>Add Server Configuration</strong>: Add either of the configurations above to your MCP settings</li>
+<li><strong>Restart Cursor</strong>: Restart Cursor IDE to load the MCP server</li>
+</ol>
+<p>Alternatively, you can directly edit the Cursor configuration file:</p>
+<ul>
+<li><strong>Mac/Linux</strong>: <code>~/.cursor/mcp.json</code> or in your workspace settings</li>
+<li><strong>Windows</strong>: <code>%APPDATA%\Cursor\mcp.json</code></li>
+</ul>
+<p>After configuration, the MCP server will be available in Cursor&#39;s AI assistant, allowing you to query NSE India stock market data directly from the chat interface.</p>
+<p>For detailed MCP documentation, see <a href="./MCP_README.md">MCP_README.md</a>.</p>
 <a id="md:🌐-rest-api" class="tsd-anchor"></a><h2><a href="#md:🌐-rest-api">🌐 REST API</a></h2><p>Comprehensive REST endpoints with automatic Swagger documentation:</p>
 <a id="md:core-endpoints" class="tsd-anchor"></a><h3><a href="#md:core-endpoints">Core Endpoints</a></h3><ul>
 <li><code>GET /</code> - Market status</li>
@@ -68,6 +141,10 @@
 <li><code>GET /api/indices</code> - Market indices</li>
 <li><code>GET /api-docs</code> - Interactive API documentation</li>
 </ul>
+<a id="md:mcp-client-endpoints" class="tsd-anchor"></a><h3><a href="#md:mcp-client-endpoints">MCP Client Endpoints</a></h3><ul>
+<li><code>POST /api/mcp/query</code> - Natural language query using OpenAI Functions</li>
+<li><code>POST /api/mcp/query-multiple</code> - Multi-step natural language queries</li>
+</ul>
 <a id="md:api-documentation" class="tsd-anchor"></a><h3><a href="#md:api-documentation">API Documentation</a></h3><p>Visit <code>http://localhost:3000/api-docs</code> for complete interactive API documentation powered by Swagger UI.</p>
 <a id="md:💻-cli-usage" class="tsd-anchor"></a><h2><a href="#md:💻-cli-usage">💻 CLI Usage</a></h2><a id="md:basic-commands" class="tsd-anchor"></a><h3><a href="#md:basic-commands">Basic Commands</a></h3><pre><code class="language-bash"><span class="hl-7"># Get help</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-5">--help</span><br/><br/><span class="hl-7"># Get market status</span><br/><span class="hl-0">nseindia</span><br/><br/><span class="hl-7"># Get equity details</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-2">equity</span><span class="hl-1"> </span><span class="hl-2">IRCTC</span><br/><br/><span class="hl-7"># Get historical data</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-2">historical</span><span class="hl-1"> </span><span class="hl-2">IRCTC</span><br/><br/><span class="hl-7"># Get indices information</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-2">index</span><br/><br/><span class="hl-7"># Get specific index details</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-2">index</span><span class="hl-1"> </span><span class="hl-2">&quot;NIFTY AUTO&quot;</span>
 </code><button>Copy</button></pre>
@@ -77,7 +154,7 @@
 <li><strong>Index tracking</strong> - Market index performance</li>
 <li><strong>Interactive charts</strong> - ASCII-based data visualization</li>
 </ul>
-<a id="md:🐳-docker" class="tsd-anchor"></a><h2><a href="#md:🐳-docker">🐳 Docker</a></h2><a id="md:quick-start" class="tsd-anchor"></a><h3><a href="#md:quick-start">Quick Start</a></h3><pre><code class="language-bash"><span class="hl-7"># Pull and run from Docker Hub</span><br/><span class="hl-0">docker</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-5">--rm</span><span class="hl-1"> </span><span class="hl-5">-d</span><span class="hl-1"> </span><span class="hl-5">-p</span><span class="hl-1"> </span><span class="hl-8">3001</span><span class="hl-2">:3001</span><span class="hl-1"> </span><span class="hl-2">imcodeman/nseindia</span><br/><br/><span class="hl-7"># Or build locally</span><br/><span class="hl-0">docker</span><span class="hl-1"> </span><span class="hl-2">build</span><span class="hl-1"> </span><span class="hl-5">-t</span><span class="hl-1"> </span><span class="hl-2">nseindia</span><span class="hl-1"> </span><span class="hl-2">.</span><span class="hl-1"> &amp;&amp; </span><span class="hl-0">docker</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-5">--rm</span><span class="hl-1"> </span><span class="hl-5">-d</span><span class="hl-1"> </span><span class="hl-5">-p</span><span class="hl-1"> </span><span class="hl-8">3001</span><span class="hl-2">:3001</span><span class="hl-1"> </span><span class="hl-2">nseindia:latest</span>
+<a id="md:🐳-docker" class="tsd-anchor"></a><h2><a href="#md:🐳-docker">🐳 Docker</a></h2><a id="md:quick-start" class="tsd-anchor"></a><h3><a href="#md:quick-start">Quick Start</a></h3><pre><code class="language-bash"><span class="hl-7"># Pull and run from Docker Hub</span><br/><span class="hl-0">docker</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-5">--rm</span><span class="hl-1"> </span><span class="hl-5">-d</span><span class="hl-1"> </span><span class="hl-5">-p</span><span class="hl-1"> </span><span class="hl-9">3001</span><span class="hl-2">:3001</span><span class="hl-1"> </span><span class="hl-2">imcodeman/nseindia</span><br/><br/><span class="hl-7"># Or build locally</span><br/><span class="hl-0">docker</span><span class="hl-1"> </span><span class="hl-2">build</span><span class="hl-1"> </span><span class="hl-5">-t</span><span class="hl-1"> </span><span class="hl-2">nseindia</span><span class="hl-1"> </span><span class="hl-2">.</span><span class="hl-1"> &amp;&amp; </span><span class="hl-0">docker</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-5">--rm</span><span class="hl-1"> </span><span class="hl-5">-d</span><span class="hl-1"> </span><span class="hl-5">-p</span><span class="hl-1"> </span><span class="hl-9">3001</span><span class="hl-2">:3001</span><span class="hl-1"> </span><span class="hl-2">nseindia:latest</span>
 </code><button>Copy</button></pre>
 <a id="md:docker-hub" class="tsd-anchor"></a><h3><a href="#md:docker-hub">Docker Hub</a></h3><p><strong>Image:</strong> <code>imcodeman/nseindia</code><br><strong>Registry:</strong> <a href="https://hub.docker.com/r/imcodeman/nseindia">Docker Hub</a></p>
 <a id="md:container-urls" class="tsd-anchor"></a><h3><a href="#md:container-urls">Container URLs</a></h3><ul>
@@ -85,7 +162,7 @@
 <li><strong>GraphQL:</strong> <a href="http://localhost:3001/graphql">http://localhost:3001/graphql</a></li>
 <li><strong>API Docs:</strong> <a href="http://localhost:3001/api-docs">http://localhost:3001/api-docs</a></li>
 </ul>
-<a id="md:⚙️-configuration" class="tsd-anchor"></a><h2><a href="#md:⚙️-configuration">⚙️ Configuration</a></h2><a id="md:environment-variables" class="tsd-anchor"></a><h3><a href="#md:environment-variables">Environment Variables</a></h3><pre><code class="language-bash"><span class="hl-7"># Server Configuration</span><br/><span class="hl-4">PORT</span><span class="hl-1">=</span><span class="hl-8">3000</span><br/><span class="hl-4">HOST_URL</span><span class="hl-1">=</span><span class="hl-2">http://localhost:3000</span><br/><span class="hl-4">NODE_ENV</span><span class="hl-1">=</span><span class="hl-2">development</span><br/><br/><span class="hl-7"># CORS Configuration</span><br/><span class="hl-4">CORS_ORIGINS</span><span class="hl-1">=</span><span class="hl-2">https://myapp.com,https://admin.myapp.com</span><br/><span class="hl-4">CORS_METHODS</span><span class="hl-1">=</span><span class="hl-2">GET,POST,OPTIONS</span><br/><span class="hl-4">CORS_HEADERS</span><span class="hl-1">=</span><span class="hl-2">Content-Type,Authorization,X-Requested-With</span><br/><span class="hl-4">CORS_CREDENTIALS</span><span class="hl-1">=</span><span class="hl-5">true</span>
+<a id="md:⚙️-configuration" class="tsd-anchor"></a><h2><a href="#md:⚙️-configuration">⚙️ Configuration</a></h2><a id="md:environment-variables" class="tsd-anchor"></a><h3><a href="#md:environment-variables">Environment Variables</a></h3><pre><code class="language-bash"><span class="hl-7"># Server Configuration</span><br/><span class="hl-4">PORT</span><span class="hl-1">=</span><span class="hl-9">3000</span><br/><span class="hl-4">HOST_URL</span><span class="hl-1">=</span><span class="hl-2">http://localhost:3000</span><br/><span class="hl-4">NODE_ENV</span><span class="hl-1">=</span><span class="hl-2">development</span><br/><br/><span class="hl-7"># CORS Configuration</span><br/><span class="hl-4">CORS_ORIGINS</span><span class="hl-1">=</span><span class="hl-2">https://myapp.com,https://admin.myapp.com</span><br/><span class="hl-4">CORS_METHODS</span><span class="hl-1">=</span><span class="hl-2">GET,POST,OPTIONS</span><br/><span class="hl-4">CORS_HEADERS</span><span class="hl-1">=</span><span class="hl-2">Content-Type,Authorization,X-Requested-With</span><br/><span class="hl-4">CORS_CREDENTIALS</span><span class="hl-1">=</span><span class="hl-5">true</span>
 </code><button>Copy</button></pre>
 <a id="md:cors-settings" class="tsd-anchor"></a><h3><a href="#md:cors-settings">CORS Settings</a></h3><ul>
 <li><strong>Origins:</strong> Comma-separated list of allowed domains</li>
@@ -109,9 +186,9 @@
 </ul>
 <a id="md:index-methods" class="tsd-anchor"></a><h3><a href="#md:index-methods">Index Methods</a></h3><ul>
 <li><strong><code>getEquityStockIndices()</code></strong> - Get all market indices</li>
-<li><strong><code>getIndexHistoricalData(index, range)</code></strong> - Index historical data</li>
 <li><strong><code>getIndexIntradayData(index)</code></strong> - Index intraday data</li>
 <li><strong><code>getIndexOptionChain(index)</code></strong> - Index options data</li>
+<li><strong><code>getIndexOptionChainContractInfo(indexSymbol)</code></strong> - Get option chain contract information (expiry dates and strike prices)</li>
 </ul>
 <a id="md:commodity-methods" class="tsd-anchor"></a><h3><a href="#md:commodity-methods">Commodity Methods</a></h3><ul>
 <li><strong><code>getCommodityOptionChain(symbol)</code></strong> - Commodity options data</li>
@@ -130,6 +207,10 @@
 <li><strong><code>npm test</code></strong> - Run test suite with coverage</li>
 <li><strong><code>npm run docs</code></strong> - Generate TypeDoc documentation</li>
 <li><strong><code>npm run lint</code></strong> - Run ESLint</li>
+</ul>
+<a id="md:mcp-scripts" class="tsd-anchor"></a><h3><a href="#md:mcp-scripts">MCP Scripts</a></h3><ul>
+<li><strong><code>npm run start:mcp</code></strong> - Start stdio MCP server</li>
+<li><strong><code>npm run test:mcp</code></strong> - Test stdio MCP server</li>
 </ul>
 <a id="md:🧪-testing" class="tsd-anchor"></a><h2><a href="#md:🧪-testing">🧪 Testing</a></h2><pre><code class="language-bash"><span class="hl-7"># Run all tests</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">test</span><br/><br/><span class="hl-7"># Run tests with coverage</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">test</span><span class="hl-1"> </span><span class="hl-5">--</span><span class="hl-1"> </span><span class="hl-5">--coverage</span><br/><br/><span class="hl-7"># Run specific test file</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">test</span><span class="hl-1"> </span><span class="hl-5">--</span><span class="hl-1"> </span><span class="hl-2">utils.spec.ts</span>
 </code><button>Copy</button></pre>
@@ -203,10 +284,34 @@
 <ul>
 <li><a href="#md:example-queries"><span>Example <wbr/>Queries</span></a></li>
 <li><a href="#md:graphql-schema"><span>GraphQL <wbr/>Schema</span></a></li></ul></li>
+<li><a href="#md:🤖-mcp-server"><span>🤖 MCP <wbr/>Server</span></a></li>
+<li>
+<ul>
+<li><a href="#md:what-is-mcp"><span>What is MCP?</span></a></li>
+<li><a href="#md:architecture"><span>Architecture</span></a></li>
+<li><a href="#md:benefits-of-common-tools-configuration"><span>Benefits of <wbr/>Common <wbr/>Tools <wbr/>Configuration</span></a></li>
+<li><a href="#md:available-tools"><span>Available <wbr/>Tools</span></a></li>
+<li><a href="#md:openai-functions-mcp-client"><span>OpenAI <wbr/>Functions MCP <wbr/>Client</span></a></li>
+<li>
+<ul>
+<li><a href="#md:features"><span>Features</span></a></li>
+<li><a href="#md:query-methods"><span>Query <wbr/>Methods</span></a></li>
+<li><a href="#md:example-usage"><span>Example <wbr/>Usage</span></a></li></ul></li>
+<li><a href="#md:usage"><span>Usage</span></a></li>
+<li>
+<ul>
+<li><a href="#md:standard-io-stdio-server"><span>Standard <wbr/>I/<wbr/>O (stdio) <wbr/>Server</span></a></li></ul></li>
+<li><a href="#md:configuration"><span>Configuration</span></a></li>
+<li>
+<ul>
+<li><a href="#md:option-1-using-npx-recommended-for-users-who-have-installed-the-package"><span>Option 1: <wbr/>Using npx (<wbr/>Recommended for users who have installed the package)</span></a></li>
+<li><a href="#md:option-2-using-local-build-for-developers-with-source-code"><span>Option 2: <wbr/>Using local build (<wbr/>For developers with source code)</span></a></li>
+<li><a href="#md:configuring-in-cursor-ide"><span>Configuring in <wbr/>Cursor IDE</span></a></li></ul></li></ul></li>
 <li><a href="#md:🌐-rest-api"><span>🌐 REST API</span></a></li>
 <li>
 <ul>
 <li><a href="#md:core-endpoints"><span>Core <wbr/>Endpoints</span></a></li>
+<li><a href="#md:mcp-client-endpoints"><span>MCP <wbr/>Client <wbr/>Endpoints</span></a></li>
 <li><a href="#md:api-documentation"><span>API <wbr/>Documentation</span></a></li></ul></li>
 <li><a href="#md:💻-cli-usage"><span>💻 CLI <wbr/>Usage</span></a></li>
 <li>
@@ -236,7 +341,8 @@
 <li>
 <ul>
 <li><a href="#md:local-development"><span>Local <wbr/>Development</span></a></li>
-<li><a href="#md:development-scripts"><span>Development <wbr/>Scripts</span></a></li></ul></li>
+<li><a href="#md:development-scripts"><span>Development <wbr/>Scripts</span></a></li>
+<li><a href="#md:mcp-scripts"><span>MCP <wbr/>Scripts</span></a></li></ul></li>
 <li><a href="#md:🧪-testing"><span>🧪 <wbr/>Testing</span></a></li>
 <li><a href="#md:📚-documentation"><span>📚 <wbr/>Documentation</span></a></li>
 <li><a href="#md:🤝-contributing"><span>🤝 <wbr/>Contributing</span></a></li>
@@ -247,10 +353,54 @@
 <li><a href="#md:👥-contributors"><span>👥 <wbr/>Contributors</span></a></li>
 <li><a href="#md:🔗-links"><span>🔗 <wbr/>Links</span></a></li></ul></li></ul></li></ul></div></details></div>
 <div class="site-menu">
-<nav class="tsd-navigation"><a href="modules.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>stock-<wbr/>nse-<wbr/>india -<wbr/> v1.2.2</span></a>
+<nav class="tsd-navigation"><a href="modules.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>stock-<wbr/>nse-<wbr/>india -<wbr/> v1.3.0</span></a>
 <ul class="tsd-small-nested-navigation">
 <li><a href="enums/ApiList.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-8"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-enum)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.45 16V7.24H14.49V8.224H10.518V10.936H14.07V11.908H10.518V15.016H14.49V16H9.45Z" fill="var(--color-text)"></path></g></svg><span>Api<wbr/>List</span></a></li>
-<li><a href="classes/NseIndia.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-128"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)"></path></g></svg><span>Nse<wbr/>India</span></a></li></ul></nav></div></div></div>
+<li><a href="classes/NseIndia.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-128"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)"></path></g></svg><span>Nse<wbr/>India</span></a></li>
+<li><a href="interfaces/AllIndicesData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-256"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)"></path></g></svg><span>All<wbr/>Indices<wbr/>Data</span></a></li>
+<li><a href="interfaces/CircularsData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Circulars<wbr/>Data</span></a></li>
+<li><a href="interfaces/CommodityOptionChainData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Commodity<wbr/>Option<wbr/>Chain<wbr/>Data</span></a></li>
+<li><a href="interfaces/CommodityRecords.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Commodity<wbr/>Records</span></a></li>
+<li><a href="interfaces/DateRange.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Date<wbr/>Range</span></a></li>
+<li><a href="interfaces/Datum.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Datum</span></a></li>
+<li><a href="interfaces/EquityCorporateInfo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Corporate<wbr/>Info</span></a></li>
+<li><a href="interfaces/EquityDetails.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Details</span></a></li>
+<li><a href="interfaces/EquityHistoricalData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Historical<wbr/>Data</span></a></li>
+<li><a href="interfaces/EquityHistoricalInfo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Historical<wbr/>Info</span></a></li>
+<li><a href="interfaces/EquityInfo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Info</span></a></li>
+<li><a href="interfaces/EquityMaster.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Master</span></a></li>
+<li><a href="interfaces/EquityMetadata.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Metadata</span></a></li>
+<li><a href="interfaces/EquityOptionChainData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Option<wbr/>Chain<wbr/>Data</span></a></li>
+<li><a href="interfaces/EquityOptionChainItem.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Option<wbr/>Chain<wbr/>Item</span></a></li>
+<li><a href="interfaces/EquityPreOpenMarket.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Pre<wbr/>Open<wbr/>Market</span></a></li>
+<li><a href="interfaces/EquityPriceInfo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Price<wbr/>Info</span></a></li>
+<li><a href="interfaces/EquitySecurityInfo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Security<wbr/>Info</span></a></li>
+<li><a href="interfaces/EquityTradeInfo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Equity<wbr/>Trade<wbr/>Info</span></a></li>
+<li><a href="interfaces/Filtered.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Filtered</span></a></li>
+<li><a href="interfaces/GiftNifty.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Gift<wbr/>Nifty</span></a></li>
+<li><a href="interfaces/Glossary.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Glossary</span></a></li>
+<li><a href="interfaces/Holiday.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Holiday</span></a></li>
+<li><a href="interfaces/HolidaysBySegment.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Holidays<wbr/>By<wbr/>Segment</span></a></li>
+<li><a href="interfaces/IndexDetails.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Index<wbr/>Details</span></a></li>
+<li><a href="interfaces/IndexEquityInfo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Index<wbr/>Equity<wbr/>Info</span></a></li>
+<li><a href="interfaces/IndexNamesData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Index<wbr/>Names<wbr/>Data</span></a></li>
+<li><a href="interfaces/IndexOptionChainData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Index<wbr/>Option<wbr/>Chain<wbr/>Data</span></a></li>
+<li><a href="interfaces/IndexRecords.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Index<wbr/>Records</span></a></li>
+<li><a href="interfaces/IndicativeNifty50.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Indicative<wbr/>Nifty50</span></a></li>
+<li><a href="interfaces/IntradayData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Intraday<wbr/>Data</span></a></li>
+<li><a href="interfaces/LatestCircularData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Latest<wbr/>Circular<wbr/>Data</span></a></li>
+<li><a href="interfaces/MarketCap.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Market<wbr/>Cap</span></a></li>
+<li><a href="interfaces/MarketState.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Market<wbr/>State</span></a></li>
+<li><a href="interfaces/MarketStatus.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Market<wbr/>Status</span></a></li>
+<li><a href="interfaces/MarketTurnover.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Market<wbr/>Turnover</span></a></li>
+<li><a href="interfaces/MergedDailyReportsData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Merged<wbr/>Daily<wbr/>Reports<wbr/>Data</span></a></li>
+<li><a href="interfaces/OptionChainContractInfo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Option<wbr/>Chain<wbr/>Contract<wbr/>Info</span></a></li>
+<li><a href="interfaces/OptionsData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Options<wbr/>Data</span></a></li>
+<li><a href="interfaces/OptionsDetails.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Options<wbr/>Details</span></a></li>
+<li><a href="interfaces/PreOpenDetails.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Pre<wbr/>Open<wbr/>Details</span></a></li>
+<li><a href="interfaces/PreOpenMarketData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Pre<wbr/>Open<wbr/>Market<wbr/>Data</span></a></li>
+<li><a href="interfaces/SeriesData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Series<wbr/>Data</span></a></li>
+<li><a href="interfaces/TechnicalIndicators.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Technical<wbr/>Indicators</span></a></li></ul></nav></div></div></div>
 <div class="tsd-generator">
 <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>
 <div class="overlay"></div></body></html>

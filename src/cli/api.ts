@@ -174,12 +174,12 @@ export async function showHistorical(argv: any): Promise<void> {
     }) => {
         historicalData.forEach(info => {
             ohlcData.push([
-                info.CH_TIMESTAMP,
-                info.CH_OPENING_PRICE,
-                info.CH_TRADE_HIGH_PRICE,
-                info.CH_TRADE_LOW_PRICE,
-                info.CH_CLOSING_PRICE,
-                info.CH_TOT_TRADED_VAL
+                info.mtimestamp,
+                info.chOpeningPrice,
+                info.chTradeHighPrice,
+                info.chTradeLowPrice,
+                info.chClosingPrice,
+                info.chTotTradedVal
             ])
         })
     })

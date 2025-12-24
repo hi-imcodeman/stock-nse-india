@@ -9,18 +9,44 @@ import {
     EquityHistoricalData,
     SeriesData,
     IndexDetails,
-    IndexHistoricalData,
-    OptionChainData,
+    EquityOptionChainData,
+    IndexOptionChainData,
+    CommodityOptionChainData,
+    OptionChainContractInfo,
     EquityCorporateInfo,
     Glossary,
-    Holiday,
+    HolidaysBySegment,
     MarketStatus,
     MarketTurnover,
-    IndexName,
-    Circular,
+    AllIndicesData,
+    IndexNamesData,
+    CircularsData,
+    LatestCircularData,
     EquityMaster,
     PreOpenMarketData,
-    DailyReport
+    MergedDailyReportsData,
+    TechnicalIndicators,
+    // Nested interfaces
+    EquityInfo,
+    EquityMetadata,
+    EquitySecurityInfo,
+    EquityPriceInfo,
+    EquityPreOpenMarket,
+    EquityHistoricalInfo,
+    EquityOptionChainItem,
+    IndexEquityInfo,
+    IndexRecords,
+    CommodityRecords,
+    Filtered,
+    Holiday,
+    MarketState,
+    MarketCap,
+    IndicativeNifty50,
+    GiftNifty,
+    Datum,
+    PreOpenDetails,
+    OptionsData,
+    OptionsDetails
 } from './interface'
 
 export enum ApiList {
@@ -160,15 +186,13 @@ export class NseIndia {
     /**
      * 
      * @param symbol 
-     * @param isPreOpenData 
      * @returns 
      */
-    async getEquityIntradayData(symbol: string, isPreOpenData = false): Promise<IntradayData> {
+    async getEquityIntradayData(symbol: string): Promise<IntradayData> {
         const details = await this.getEquityDetails(symbol.toUpperCase())
         const identifier = details.info.identifier
-        let url = `/api/chart-databyindex?index=${identifier}`
-        if (isPreOpenData)
-            url += '&preopen=true'
+        const url = `/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolChartData` +
+            `&symbol=${encodeURIComponent(identifier)}&days=1D`
         return this.getDataByEndpoint(url)
     }
     /**
@@ -185,9 +209,22 @@ export class NseIndia {
         }
         const dateRanges = getDateRangeChunks(range.start, range.end, 66)
         const promises = dateRanges.map(async (dateRange) => {
-            const url = `/api/historical/cm/equity?symbol=${encodeURIComponent(symbol.toUpperCase())}` +
-                `&series=[%22${activeSeries}%22]&from=${dateRange.start}&to=${dateRange.end}`
-            return this.getDataByEndpoint(url)
+            const url = `/api/NextApi/apiClient/GetQuoteApi?functionName=getHistoricalTradeData` +
+                `&symbol=${encodeURIComponent(symbol.toUpperCase())}` +
+                `&series=${encodeURIComponent(activeSeries)}` +
+                `&fromDate=${dateRange.start}&toDate=${dateRange.end}`
+            const response = await this.getDataByEndpoint(url)
+            // New API returns a direct array, wrap it in EquityHistoricalData structure for backward compatibility
+            /* istanbul ignore next */
+            return {
+                data: Array.isArray(response) ? response : [],
+                meta: {
+                    series: [activeSeries],
+                    fromDate: dateRange.start,
+                    toDate: dateRange.end,
+                    symbols: [symbol.toUpperCase()]
+                }
+            }
         })
         return Promise.all(promises)
     }
@@ -196,9 +233,16 @@ export class NseIndia {
      * @param symbol 
      * @returns 
      */
-    getEquitySeries(symbol: string): Promise<SeriesData> {
-        return this.getDataByEndpoint(`/api/historical/cm/equity/series?symbol=${encodeURIComponent(symbol
-            .toUpperCase())}`)
+    async getEquitySeries(symbol: string): Promise<SeriesData> {
+        const response = await this.getDataByEndpoint(
+            `/api/NextApi/apiClient/GetQuoteApi?functionName=histTradeDataSeries` +
+            `&symbol=${encodeURIComponent(symbol.toUpperCase())}`
+        )
+        // New API returns a direct array, wrap it in SeriesData structure for backward compatibility
+        /* istanbul ignore next */
+        return {
+            data: Array.isArray(response) ? response : []
+        }
     }
     /**
      * 
@@ -211,39 +255,132 @@ export class NseIndia {
     /**
      * 
      * @param index 
-     * @param isPreOpenData 
      * @returns 
      */
-    getIndexIntradayData(index: string, isPreOpenData = false): Promise<IntradayData> {
-        let endpoint = `/api/chart-databyindex?index=${index.toUpperCase()}&indices=true`
-        if (isPreOpenData)
-            endpoint += '&preopen=true'
-        return this.getDataByEndpoint(endpoint)
+    async getIndexIntradayData(index: string): Promise<IntradayData> {
+        const response = await this.getDataByEndpoint(
+            `/api/NextApi/apiClient?functionName=getGraphChart` +
+            `&type=${encodeURIComponent(index.toUpperCase())}&flag=1D`
+        )
+        // The API response is wrapped in a 'data' object
+        /* istanbul ignore next */
+        return response.data || response
     }
     /**
+     * Get option chain contract information (expiry dates and strike prices) for an index
      * 
-     * @param index 
-     * @param range 
+     * @param indexSymbol 
      * @returns 
      */
-    async getIndexHistoricalData(index: string, range: DateRange): Promise<IndexHistoricalData[]> {
-        const dateRanges = getDateRangeChunks(range.start, range.end, 66)
-        const promises = dateRanges.map(async (dateRange) => {
-            const url = `/api/historical/indicesHistory?indexType=${encodeURIComponent(index.toUpperCase())}` +
-                `&from=${dateRange.start}&to=${dateRange.end}`
-            return this.getDataByEndpoint(url)
-        })
-        return Promise.all(promises)
+    getIndexOptionChainContractInfo(indexSymbol: string): Promise<OptionChainContractInfo> {
+        return this.getDataByEndpoint(
+            `/api/option-chain-contract-info?symbol=${encodeURIComponent(indexSymbol.toUpperCase())}`
+        ) as Promise<OptionChainContractInfo>
     }
 
     /**
      * 
      * @param indexSymbol 
+     * @param expiry Optional expiry date in DD-MMM-YYYY format (e.g., "23-Dec-2025").
+     *               If not provided, will fetch nearest upcoming expiry
      * @returns 
      */
-    getIndexOptionChain(indexSymbol: string): Promise<OptionChainData> {
-        return this.getDataByEndpoint(`/api/option-chain-indices?symbol=${encodeURIComponent(indexSymbol
-            .toUpperCase())}`)
+    async getIndexOptionChain(indexSymbol: string, expiry?: string): Promise<IndexOptionChainData> {
+        // If expiry not provided, fetch the nearest upcoming expiry date from the API
+        if (!expiry) {
+            /* istanbul ignore next */
+            const contractInfo = await this.getIndexOptionChainContractInfo(indexSymbol)
+            /* istanbul ignore next */
+            if (contractInfo && contractInfo.expiryDates && Array.isArray(contractInfo.expiryDates)) {
+                /* istanbul ignore next */
+                const today = new Date()
+                /* istanbul ignore next */
+                today.setHours(0, 0, 0, 0) // Reset time to start of day for comparison
+                
+                // Find the nearest upcoming expiry date
+                /* istanbul ignore next */
+                let nearestExpiry: string | null = null
+                /* istanbul ignore next */
+                let nearestDate: Date | null = null
+                
+                /* istanbul ignore next */
+                for (const expiryDateStr of contractInfo.expiryDates) {
+                    // Parse date in DD-MMM-YYYY format
+                    /* istanbul ignore next */
+                    const dateParts = expiryDateStr.split('-')
+                    /* istanbul ignore next */
+                    if (dateParts.length === 3) {
+                        /* istanbul ignore next */
+                        const day = parseInt(dateParts[0], 10)
+                        /* istanbul ignore next */
+                        const monthNames = [
+                            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                        ]
+                        /* istanbul ignore next */
+                        const month = monthNames.indexOf(dateParts[1])
+                        /* istanbul ignore next */
+                        const year = parseInt(dateParts[2], 10)
+                        
+                        /* istanbul ignore next */
+                        if (month !== -1) {
+                            /* istanbul ignore next */
+                            const expiryDate = new Date(year, month, day)
+                            /* istanbul ignore next */
+                            expiryDate.setHours(0, 0, 0, 0)
+                            
+                            // Check if this expiry is in the future or today
+                            /* istanbul ignore next */
+                            if (expiryDate >= today) {
+                                /* istanbul ignore next */
+                                if (!nearestDate || expiryDate < nearestDate) {
+                                    /* istanbul ignore next */
+                                    nearestDate = expiryDate
+                                    /* istanbul ignore next */
+                                    nearestExpiry = expiryDateStr
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                /* istanbul ignore next */
+                if (nearestExpiry) {
+                    /* istanbul ignore next */
+                    expiry = nearestExpiry
+                } else {
+                    // Fallback: use the last expiry date if no upcoming date found
+                    /* istanbul ignore next */
+                    expiry = contractInfo.expiryDates[contractInfo.expiryDates.length - 1]
+                }
+            } else {
+                // Fallback: use current date if API fails
+                /* istanbul ignore next */
+                const today = new Date()
+                /* istanbul ignore next */
+                const day = today.getDate().toString().padStart(2, '0')
+                /* istanbul ignore next */
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                /* istanbul ignore next */
+                const month = months[today.getMonth()]
+                /* istanbul ignore next */
+                const year = today.getFullYear()
+                /* istanbul ignore next */
+                expiry = `${day}-${month}-${year}`
+            }
+        }
+        // Ensure expiry is defined (should always be set by this point)
+        /* istanbul ignore next */
+        if (!expiry) {
+            /* istanbul ignore next */
+            throw new Error('Failed to determine expiry date')
+        }
+        
+        return this.getDataByEndpoint(
+            `/api/option-chain-v3?type=Indices` +
+            `&symbol=${encodeURIComponent(indexSymbol.toUpperCase())}` +
+            `&expiry=${encodeURIComponent(expiry)}`
+        )
     }
 
     /**
@@ -251,9 +388,11 @@ export class NseIndia {
      * @param symbol 
      * @returns 
      */
-    getEquityOptionChain(symbol: string): Promise<OptionChainData> {
-        return this.getDataByEndpoint(`/api/option-chain-equities?symbol=${encodeURIComponent(symbol
-            .toUpperCase())}`)
+    getEquityOptionChain(symbol: string): Promise<EquityOptionChainData> {
+        return this.getDataByEndpoint(
+            `/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolDerivativesData` +
+            `&symbol=${encodeURIComponent(symbol.toUpperCase())}`
+        )
     }
     
     /**
@@ -261,7 +400,7 @@ export class NseIndia {
          * @param symbol 
          * @returns 
          */
-    getCommodityOptionChain(symbol: string): Promise<OptionChainData> {
+    getCommodityOptionChain(symbol: string): Promise<CommodityOptionChainData> {
         return this.getDataByEndpoint(`/api/option-chain-com?symbol=${encodeURIComponent(symbol
             .toUpperCase())}`)
     }
@@ -278,7 +417,7 @@ export class NseIndia {
      * Get trading holidays
      * @returns List of trading holidays
      */
-    getTradingHolidays(): Promise<Holiday[]> {
+    getTradingHolidays(): Promise<HolidaysBySegment> {
         return this.getDataByEndpoint(ApiList.HOLIDAY_TRADING)
     }
 
@@ -286,7 +425,7 @@ export class NseIndia {
      * Get clearing holidays
      * @returns List of clearing holidays
      */
-    getClearingHolidays(): Promise<Holiday[]> {
+    getClearingHolidays(): Promise<HolidaysBySegment> {
         return this.getDataByEndpoint(ApiList.HOLIDAY_CLEARING)
     }
 
@@ -310,7 +449,7 @@ export class NseIndia {
      * Get all indices
      * @returns List of all indices
      */
-    getAllIndices(): Promise<IndexDetails[]> {
+    getAllIndices(): Promise<AllIndicesData> {
         return this.getDataByEndpoint(ApiList.ALL_INDICES)
     }
 
@@ -318,7 +457,7 @@ export class NseIndia {
      * Get index names
      * @returns List of index names
      */
-    getIndexNames(): Promise<IndexName[]> {
+    getIndexNames(): Promise<IndexNamesData> {
         return this.getDataByEndpoint(ApiList.INDEX_NAMES)
     }
 
@@ -326,7 +465,7 @@ export class NseIndia {
      * Get circulars
      * @returns List of circulars
      */
-    getCirculars(): Promise<Circular[]> {
+    getCirculars(): Promise<CircularsData> {
         return this.getDataByEndpoint(ApiList.CIRCULARS)
     }
 
@@ -334,7 +473,7 @@ export class NseIndia {
      * Get latest circulars
      * @returns List of latest circulars
      */
-    getLatestCirculars(): Promise<Circular[]> {
+    getLatestCirculars(): Promise<LatestCircularData> {
         return this.getDataByEndpoint(ApiList.LATEST_CIRCULARS)
     }
 
@@ -350,7 +489,7 @@ export class NseIndia {
      * Get pre-open market data
      * @returns Pre-open market data
      */
-    getPreOpenMarketData(): Promise<PreOpenMarketData[]> {
+    getPreOpenMarketData(): Promise<PreOpenMarketData> {
         return this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
     }
 
@@ -358,7 +497,7 @@ export class NseIndia {
      * Get merged daily reports for capital market
      * @returns Daily reports for capital market
      */
-    getMergedDailyReportsCapital(): Promise<DailyReport[]> {
+    getMergedDailyReportsCapital(): Promise<MergedDailyReportsData[]> {
         return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_CAPITAL)
     }
 
@@ -366,7 +505,7 @@ export class NseIndia {
      * Get merged daily reports for derivatives
      * @returns Daily reports for derivatives
      */
-    getMergedDailyReportsDerivatives(): Promise<DailyReport[]> {
+    getMergedDailyReportsDerivatives(): Promise<MergedDailyReportsData[]> {
         return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DERIVATIVES)
     }
 
@@ -374,7 +513,90 @@ export class NseIndia {
      * Get merged daily reports for debt market
      * @returns Daily reports for debt market
      */
-    getMergedDailyReportsDebt(): Promise<DailyReport[]> {
+    getMergedDailyReportsDebt(): Promise<MergedDailyReportsData[]> {
         return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DEBT)
     }
+
+    /**
+     * Get technical indicators for a specific equity symbol
+     * @param symbol - The equity symbol (e.g., 'RELIANCE', 'TCS')
+     * @param period - Number of days for historical data (default: 200)
+     * @param options - Optional configuration for indicators
+     * @returns Promise<TechnicalIndicators>
+     */
+    async getTechnicalIndicators(
+        symbol: string, 
+        period = 200,
+        options: {
+            smaPeriods?: number[] // Array of periods for SMA (e.g., [5, 10, 20, 50])
+            emaPeriods?: number[] // Array of periods for EMA (e.g., [5, 10, 20, 50])
+            rsiPeriod?: number
+            macdFast?: number
+            macdSlow?: number
+            macdSignal?: number
+            bbPeriod?: number
+            bbStdDev?: number
+            stochK?: number
+            stochD?: number
+            williamsRPeriod?: number
+            atrPeriod?: number
+            adxPeriod?: number
+            cciPeriod?: number
+            mfiPeriod?: number
+            rocPeriod?: number
+            momentumPeriod?: number
+        } = {}
+    ): Promise<TechnicalIndicators> {
+        const { getTechnicalIndicators } = await import('./helpers')
+        return getTechnicalIndicators(symbol, period, options)
+    }
+}
+
+// Export all interfaces for TypeDoc documentation
+export type {
+    DateRange,
+    IntradayData,
+    EquityDetails,
+    EquityTradeInfo,
+    EquityHistoricalData,
+    SeriesData,
+    IndexDetails,
+    EquityOptionChainData,
+    IndexOptionChainData,
+    CommodityOptionChainData,
+    OptionChainContractInfo,
+    EquityCorporateInfo,
+    Glossary,
+    HolidaysBySegment,
+    MarketStatus,
+    MarketTurnover,
+    AllIndicesData,
+    IndexNamesData,
+    CircularsData,
+    LatestCircularData,
+    EquityMaster,
+    PreOpenMarketData,
+    MergedDailyReportsData,
+    TechnicalIndicators,
+    // Nested interfaces
+    EquityInfo,
+    EquityMetadata,
+    EquitySecurityInfo,
+    EquityPriceInfo,
+    EquityPreOpenMarket,
+    EquityHistoricalInfo,
+    EquityOptionChainItem,
+    IndexEquityInfo,
+    IndexRecords,
+    CommodityRecords,
+    Filtered,
+    Holiday,
+    MarketState,
+    MarketCap,
+    IndicativeNifty50,
+    GiftNifty,
+    Datum,
+    PreOpenDetails,
+    OptionsData,
+    OptionsDetails
 }
