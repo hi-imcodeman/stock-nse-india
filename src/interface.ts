@@ -9,6 +9,40 @@ export interface IntradayData {
     closePrice: number
 }
 /**
+ * Symbol information returned by the charting.nseindia.com symbolsDynamic API.
+ * The `scripCode` field is what the historical chart API refers to as `token`.
+ */
+export interface ChartingSymbolInfo {
+    symbol: string
+    scripCode: string   // This is the "token" required by the historical chart API
+    companyName: string
+    isin: string
+    segment: string
+    series: string
+    status: string
+}
+
+/**
+ * Individual candle data point from charting API
+ */
+export interface ChartingOHLCItem {
+    volume: number
+    high: number
+    low: number
+    time: number     // Unix timestamp in milliseconds
+    close: number
+    open: number
+}
+
+/**
+ * Response structure for historical chart OHLC data
+ */
+export interface ChartingOHLCResponse {
+    status: boolean
+    data: ChartingOHLCItem[]
+}
+
+/**
  * Date range for historical data queries
  */
 export interface DateRange {

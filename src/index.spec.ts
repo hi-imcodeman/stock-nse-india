@@ -266,7 +266,7 @@ describe('Class: NseIndia', () => {
         expect(indicators).toHaveProperty('momentum')
         expect(indicators).toHaveProperty('ad')
         expect(indicators).toHaveProperty('vwap')
-        
+
         // Verify structure of key indicators
         expect(Array.isArray(indicators.rsi)).toBe(true)
         expect(indicators.rsi.length).toBeGreaterThan(0)
@@ -300,6 +300,54 @@ describe('Class: NseIndia', () => {
         expect(indicators.ema).toHaveProperty('ema5')
         expect(indicators.ema).toHaveProperty('ema10')
     })
+
+    test('getEquityChartHistoricalData', async () => {
+        // Test charting API with real parameters
+        const chartData = await nseIndia.getEquityChartHistoricalData(
+            'ONGC-EQ',
+            '1775834999',
+            '1775999513',
+            '2475',
+            'Equity',
+            'I',
+            '5'
+        )
+        // Verify response structure
+        expect(chartData).toBeDefined()
+        expect(chartData).toHaveProperty('status')
+        expect(chartData).toHaveProperty('data')
+        expect(Array.isArray(chartData.data)).toBe(true)
+        if (chartData.data.length > 0) {
+            // Verify each candle has necessary fields
+            const candle = chartData.data[0]
+            expect(candle).toBeDefined()
+        }
+    })
+
+    test('getEquitySymbolInfo', async () => {
+        const info = await nseIndia.getEquitySymbolInfo('ONGC-EQ')
+        expect(info).toBeDefined()
+        expect(info).toHaveProperty('symbol')
+        expect(info).toHaveProperty('scripCode')
+        // scripCode is the token required by the chart API — must be a non-empty string
+        expect(typeof info.scripCode).toBe('string')
+        expect(info.scripCode.length).toBeGreaterThan(0)
+    })
+
+    test('getEquityChartHistoricalData without token (auto-lookup)', async () => {
+        // Token omitted — the method should call getEquitySymbolInfo internally
+        const chartData = await nseIndia.getEquityChartHistoricalData(
+            'ONGC-EQ',
+            '1775834999',
+            '1775999513'
+            // no token — should auto-fetch via symbolsDynamic
+        )
+        expect(chartData).toBeDefined()
+        expect(chartData).toHaveProperty('status')
+        expect(chartData).toHaveProperty('data')
+        expect(Array.isArray(chartData.data)).toBe(true)
+    })
+
 
     describe('ApiList', () => {
         Object.entries(ApiList).forEach(entry => {
