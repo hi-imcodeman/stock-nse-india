@@ -406,7 +406,8 @@ export const mcpTools = [
         },
         token: {
           type: 'string',
-          description: 'NSE script code (token / scripCode) for the symbol. If omitted, it is looked up automatically via get_equity_chart_symbol_info.',
+          description: 'NSE script code (token / scripCode) for the symbol. ' +
+                       'If omitted, it is looked up automatically via get_equity_chart_symbol_info.',
         },
         symbol_type: {
           type: 'string',

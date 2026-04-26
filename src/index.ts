@@ -122,7 +122,11 @@ export class NseIndia {
      * @returns Charting domain cookies
      */
     private async getChartingCookies() {
-        if (this.chartingCookies === '' || this.chartingCookieUsedCount > 10 || this.chartingCookieExpiry <= new Date().getTime()) {
+        if (
+            this.chartingCookies === '' ||
+            this.chartingCookieUsedCount > 10 ||
+            this.chartingCookieExpiry <= new Date().getTime()
+        ) {
             const userAgent = new UserAgent().toString()
             const response = await axios.get(`${this.chartingBaseUrl}/`, {
                 headers: {
@@ -254,8 +258,8 @@ export class NseIndia {
         fromDate: string | number,
         toDate: string | number,
         token?: string | number,
-        symbolType: string = 'Equity',
-        chartType: string = 'I',
+        symbolType = 'Equity',
+        chartType = 'I',
         timeInterval: string | number = '5'
     ): Promise<ChartingOHLCResponse> {
         // Auto-fetch token (scripCode) when not supplied by the caller
@@ -287,24 +291,29 @@ export class NseIndia {
      */
     async getEquitySymbolInfo(
         symbol: string,
-        segment: string = ''
+        segment = ''
     ): Promise<ChartingSymbolInfo> {
         const url = `${this.chartingBaseUrl}/v1/exchanges/symbolsDynamic` +
             `?symbol=${encodeURIComponent(symbol)}&segment=${encodeURIComponent(segment)}`
 
         const response = await this.getData(url, 'charting')
 
+        let symbolList = response
+        if (!Array.isArray(response) && response && typeof response === 'object' && Array.isArray(response.data)) {
+            symbolList = response.data
+        }
+
         // The API returns an array; pick the best match: prefer exact symbol match
-        if (!Array.isArray(response) || response.length === 0) {
+        if (!Array.isArray(symbolList) || symbolList.length === 0) {
             throw new Error(`No symbol info found for: ${symbol}`)
         }
 
         // Try exact match first (symbol === input), fall back to first result
         const upperSymbol = symbol.toUpperCase()
-        const exact = response.find((s: any) =>
+        const exact = symbolList.find((s: any) =>
             s.symbol?.toUpperCase() === upperSymbol
         )
-        return exact ?? response[0]
+        return exact ?? symbolList[0]
     }
 
     /**
