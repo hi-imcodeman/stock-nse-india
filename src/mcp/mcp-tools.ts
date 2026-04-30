@@ -386,6 +386,169 @@ export const mcpTools = [
       required: ['index_symbol'],
     },
   },
+  // ─── NEW API TOOLS ──────────────────────────────────────────────────────────
+  {
+    name: 'get_bulk_deals',
+    description: 'Get bulk deals data (transactions exceeding 0.5% of total equity shares)',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_block_deals',
+    description: 'Get block deals data (single transactions ≥500,000 shares or ≥₹5 crore)',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_short_selling_data',
+    description: 'Get short selling data from NSE',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_fii_dii_data',
+    description: 'Get FII/DII (Foreign/Domestic Institutional Investor) trading activity',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_corporate_actions',
+    description: 'Get corporate actions (dividends, splits, bonuses, rights) for an index or symbol',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        symbol: { type: 'string', description: 'Stock symbol (e.g., TCS, RELIANCE). Optional.' },
+        index: { type: 'string', description: 'Market segment (default: equities)' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'get_financial_results',
+    description: 'Get financial results for an index or symbol',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        symbol: { type: 'string', description: 'Stock symbol (e.g., TCS, RELIANCE). Optional.' },
+        index: { type: 'string', description: 'Market segment (default: equities)' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'get_board_meetings',
+    description: 'Get board meetings for an index or symbol',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        symbol: { type: 'string', description: 'Stock symbol (e.g., TCS, RELIANCE). Optional.' },
+        index: { type: 'string', description: 'Market segment (default: equities)' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'get_announcements',
+    description: 'Get corporate announcements for an index or symbol',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        symbol: { type: 'string', description: 'Stock symbol (e.g., TCS, RELIANCE). Optional.' },
+        index: { type: 'string', description: 'Market segment (default: equities)' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'get_shareholding_pattern',
+    description: 'Get shareholding pattern for a specific stock symbol',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        symbol: { type: 'string', description: 'Stock symbol (e.g., TCS, RELIANCE)' },
+      },
+      required: ['symbol'],
+    },
+  },
+  {
+    name: 'get_etf_list',
+    description: 'Get list of all ETFs (Exchange Traded Funds) on NSE',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_sme_list',
+    description: 'Get list of SME (Small and Medium Enterprise) stocks on NSE',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_sovereign_gold_bonds',
+    description: 'Get list of Sovereign Gold Bonds (SGB) listed on NSE',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_fno_lot_size',
+    description: 'Get F&O lot sizes (minimum contract quantities) for all derivatives-eligible stocks',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_current_ipo',
+    description: 'Get currently open IPOs on NSE',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_upcoming_ipo',
+    description: 'Get upcoming/forthcoming IPOs on NSE',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_past_ipo',
+    description: 'Get past/closed IPOs on NSE',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        from_date: { type: 'string', description: 'Start date in DD-MM-YYYY format. Optional.' },
+        to_date: { type: 'string', description: 'End date in DD-MM-YYYY format. Optional.' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'get_advance_decline',
+    description: 'Get advance/decline data showing market breadth across indices',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_event_calendar',
+    description: 'Get NSE event calendar (board meetings, dividends, AGM, EGM, etc.)',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_oi_spurts',
+    description: 'Get Open Interest (OI) spurts for underlying securities',
+    inputSchema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_historical_index_data',
+    description: 'Get historical price data for an index (e.g., NIFTY 50, NIFTY BANK)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        index: { type: 'string', description: 'Index name (e.g., NIFTY 50, NIFTY BANK)' },
+        start_date: { type: 'string', description: 'Start date in YYYY-MM-DD format. Optional.' },
+        end_date: { type: 'string', description: 'End date in YYYY-MM-DD format. Optional.' },
+      },
+      required: ['index'],
+    },
+  },
+  {
+    name: 'get_historical_vix',
+    description: 'Get historical India VIX (Volatility Index) data',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        start_date: { type: 'string', description: 'Start date in YYYY-MM-DD format. Optional.' },
+        end_date: { type: 'string', description: 'End date in YYYY-MM-DD format. Optional.' },
+      },
+      required: [],
+    },
+  },
+  // ─── END NEW API TOOLS ──────────────────────────────────────────────────────
 ]
 
 // Common tool call handler function
@@ -812,6 +975,139 @@ export async function handleMCPToolCall(
         result = await getMostActiveEquities(args.index_symbol)
         break
       }
+
+      // ─── NEW API HANDLERS ────────────────────────────────────────────────────
+      case 'get_bulk_deals': {
+        result = await nseClient.getBulkDeals()
+        break
+      }
+
+      case 'get_block_deals': {
+        result = await nseClient.getBlockDeals()
+        break
+      }
+
+      case 'get_short_selling_data': {
+        result = await nseClient.getShortSellingData()
+        break
+      }
+
+      case 'get_fii_dii_data': {
+        result = await nseClient.getFiiDiiData()
+        break
+      }
+
+      case 'get_corporate_actions': {
+        const symbol = args?.symbol && typeof args.symbol === 'string' ? args.symbol : undefined
+        const index = args?.index && typeof args.index === 'string' ? args.index : undefined
+        result = await nseClient.getCorporateActions(symbol, index)
+        break
+      }
+
+      case 'get_financial_results': {
+        const symbol = args?.symbol && typeof args.symbol === 'string' ? args.symbol : undefined
+        const index = args?.index && typeof args.index === 'string' ? args.index : undefined
+        result = await nseClient.getFinancialResults(symbol, index)
+        break
+      }
+
+      case 'get_board_meetings': {
+        const symbol = args?.symbol && typeof args.symbol === 'string' ? args.symbol : undefined
+        const index = args?.index && typeof args.index === 'string' ? args.index : undefined
+        result = await nseClient.getBoardMeetings(symbol, index)
+        break
+      }
+
+      case 'get_announcements': {
+        const symbol = args?.symbol && typeof args.symbol === 'string' ? args.symbol : undefined
+        const index = args?.index && typeof args.index === 'string' ? args.index : undefined
+        result = await nseClient.getAnnouncements(symbol, index)
+        break
+      }
+
+      case 'get_shareholding_pattern': {
+        if (!args?.symbol || typeof args.symbol !== 'string') {
+          throw new Error('Symbol parameter is required and must be a string')
+        }
+        result = await nseClient.getShareholdingPattern(args.symbol)
+        break
+      }
+
+      case 'get_etf_list': {
+        result = await nseClient.getEtfList()
+        break
+      }
+
+      case 'get_sme_list': {
+        result = await nseClient.getSmeList()
+        break
+      }
+
+      case 'get_sovereign_gold_bonds': {
+        result = await nseClient.getSovereignGoldBonds()
+        break
+      }
+
+      case 'get_fno_lot_size': {
+        result = await nseClient.getFnoLotSize()
+        break
+      }
+
+      case 'get_current_ipo': {
+        result = await nseClient.getCurrentIPO()
+        break
+      }
+
+      case 'get_upcoming_ipo': {
+        result = await nseClient.getUpcomingIPO()
+        break
+      }
+
+      case 'get_past_ipo': {
+        const fromDate = args?.from_date && typeof args.from_date === 'string' ? args.from_date : undefined
+        const toDate = args?.to_date && typeof args.to_date === 'string' ? args.to_date : undefined
+        result = await nseClient.getPastIPO(fromDate, toDate)
+        break
+      }
+
+      case 'get_advance_decline': {
+        result = await nseClient.getAdvanceDecline()
+        break
+      }
+
+      case 'get_event_calendar': {
+        result = await nseClient.getEventCalendar()
+        break
+      }
+
+      case 'get_oi_spurts': {
+        result = await nseClient.getOiSpurts()
+        break
+      }
+
+      case 'get_historical_index_data': {
+        if (!args?.index || typeof args.index !== 'string') {
+          throw new Error('Index parameter is required and must be a string')
+        }
+        const range = args.start_date && args.end_date &&
+          typeof args.start_date === 'string' &&
+          typeof args.end_date === 'string'
+          ? { start: new Date(args.start_date), end: new Date(args.end_date) }
+          : undefined
+        result = await nseClient.getHistoricalIndexData(args.index, range)
+        break
+      }
+
+      case 'get_historical_vix': {
+        const range = args.start_date && args.end_date &&
+          typeof args.start_date === 'string' &&
+          typeof args.end_date === 'string'
+          ? { start: new Date(args.start_date), end: new Date(args.end_date) }
+          : undefined
+        result = await nseClient.getHistoricalVix(range)
+        break
+      }
+      // ─── END NEW API HANDLERS ────────────────────────────────────────────────
 
     default:
       throw new Error(`Unknown tool: ${name}`)

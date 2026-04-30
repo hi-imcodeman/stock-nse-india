@@ -26,6 +26,26 @@ import {
     PreOpenMarketData,
     MergedDailyReportsData,
     TechnicalIndicators,
+    // New API interfaces
+    BulkDealData,
+    BlockDealData,
+    ShortSellingData,
+    FiiDiiData,
+    CorporateActionsData,
+    FinancialResultsData,
+    BoardMeetingsData,
+    AnnouncementsData,
+    ShareholdingPatternData,
+    EtfData,
+    SmeData,
+    SovereignGoldBondData,
+    FnoLotSizeData,
+    IpoData,
+    AdvanceDeclineData,
+    EventCalendarData,
+    OiSpurtsData,
+    HistoricalIndexData,
+    HistoricalVixData,
     // Nested interfaces
     EquityInfo,
     EquityMetadata,
@@ -63,7 +83,21 @@ export enum ApiList {
     MARKET_DATA_PRE_OPEN = '/api/market-data-pre-open?key=ALL',
     MERGED_DAILY_REPORTS_CAPITAL = '/api/merged-daily-reports?key=favCapital',
     MERGED_DAILY_REPORTS_DERIVATIVES = '/api/merged-daily-reports?key=favDerivatives',
-    MERGED_DAILY_REPORTS_DEBT = '/api/merged-daily-reports?key=favDebt'
+    MERGED_DAILY_REPORTS_DEBT = '/api/merged-daily-reports?key=favDebt',
+    // New API endpoints
+    BULK_DEALS = '/api/snapshot-capital-market-largedeal?bandtype=bulk_deals&view=mode',
+    BLOCK_DEALS = '/api/snapshot-capital-market-largedeal?bandtype=block_deals&view=mode',
+    SHORT_SELLING = '/api/snapshot-capital-market-largedeal?bandtype=short_selling&view=mode',
+    FII_DII_DATA = '/api/fiidiiTradeReact',
+    ETF_LIST = '/api/etf',
+    SOVEREIGN_GOLD_BONDS = '/api/sovereign-gold-bond',
+    FNO_LOT_SIZE = '/api/master-quote',
+    CURRENT_IPO = '/api/ipo-current-issue',
+    UPCOMING_IPO = '/api/ipo-forthcoming-issue',
+    PAST_IPO = '/api/ipo-past-issue',
+    ADVANCE_DECLINE = '/api/advance-decline',
+    EVENT_CALENDAR = '/api/event-calendar',
+    OI_SPURTS = '/api/live-analysis-oi-spurts-underlyings'
 }
 
 export class NseIndia {
@@ -118,6 +152,7 @@ export class NseIndia {
         let hasError = false
         do {
             while (this.noOfConnections >= 5) {
+                /* istanbul ignore next */
                 await sleep(500)
             }
             this.noOfConnections++
@@ -517,6 +552,251 @@ export class NseIndia {
         return this.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_DEBT)
     }
 
+    // ─── NEW APIs ─────────────────────────────────────────────────────────────
+
+    /**
+     * Get bulk deals (transactions exceeding 0.5% of total equity shares)
+     * @returns Bulk deals data
+     */
+    getBulkDeals(): Promise<BulkDealData> {
+        return this.getDataByEndpoint(ApiList.BULK_DEALS)
+    }
+
+    /**
+     * Get block deals (single transactions ≥500,000 shares or ≥₹5 crore)
+     * @returns Block deals data
+     */
+    getBlockDeals(): Promise<BlockDealData> {
+        return this.getDataByEndpoint(ApiList.BLOCK_DEALS)
+    }
+
+    /**
+     * Get short selling data
+     * @returns Short selling data
+     */
+    getShortSellingData(): Promise<ShortSellingData> {
+        return this.getDataByEndpoint(ApiList.SHORT_SELLING)
+    }
+
+    /**
+     * Get FII/DII (Foreign/Domestic Institutional Investor) trading activity
+     * @returns FII/DII trading data
+     */
+    getFiiDiiData(): Promise<FiiDiiData> {
+        return this.getDataByEndpoint(ApiList.FII_DII_DATA)
+    }
+
+    /**
+     * Get corporate actions (dividends, splits, bonuses, rights) for an index or symbol
+     * @param symbol Optional stock symbol (e.g., 'TCS', 'RELIANCE')
+     * @param index Market segment (default: 'equities')
+     * @returns Corporate actions data
+     */
+    getCorporateActions(symbol?: string, index = 'equities'): Promise<CorporateActionsData> {
+        const params = symbol
+            ? `index=${encodeURIComponent(index)}&symbol=${encodeURIComponent(symbol.toUpperCase())}`
+            : `index=${encodeURIComponent(index)}`
+        return this.getDataByEndpoint(`/api/corporates-corporateActions?${params}`)
+    }
+
+    /**
+     * Get financial results for an index or symbol
+     * @param symbol Optional stock symbol (e.g., 'TCS', 'RELIANCE')
+     * @param index Market segment (default: 'equities')
+     * @returns Financial results data
+     */
+    getFinancialResults(symbol?: string, index = 'equities'): Promise<FinancialResultsData> {
+        const params = symbol
+            ? `index=${encodeURIComponent(index)}&symbol=${encodeURIComponent(symbol.toUpperCase())}`
+            : `index=${encodeURIComponent(index)}`
+        return this.getDataByEndpoint(`/api/corporates-financial-results?${params}`)
+    }
+
+    /**
+     * Get board meetings for an index or symbol
+     * @param symbol Optional stock symbol (e.g., 'TCS', 'RELIANCE')
+     * @param index Market segment (default: 'equities')
+     * @returns Board meetings data
+     */
+    getBoardMeetings(symbol?: string, index = 'equities'): Promise<BoardMeetingsData> {
+        const params = symbol
+            ? `index=${encodeURIComponent(index)}&symbol=${encodeURIComponent(symbol.toUpperCase())}`
+            : `index=${encodeURIComponent(index)}`
+        return this.getDataByEndpoint(`/api/corporates-board-meetings?${params}`)
+    }
+
+    /**
+     * Get corporate announcements for an index or symbol
+     * @param symbol Optional stock symbol (e.g., 'TCS', 'RELIANCE')
+     * @param index Market segment (default: 'equities')
+     * @returns Announcements data
+     */
+    getAnnouncements(symbol?: string, index = 'equities'): Promise<AnnouncementsData> {
+        const params = symbol
+            ? `index=${encodeURIComponent(index)}&symbol=${encodeURIComponent(symbol.toUpperCase())}`
+            : `index=${encodeURIComponent(index)}`
+        return this.getDataByEndpoint(`/api/corporate-announcements?${params}`)
+    }
+
+    /**
+     * Get shareholding pattern for a specific stock symbol
+     * @param symbol Stock symbol (e.g., 'TCS', 'RELIANCE')
+     * @returns Shareholding pattern data
+     */
+    getShareholdingPattern(symbol: string): Promise<ShareholdingPatternData> {
+        return this.getDataByEndpoint(
+            `/api/corporates-shareholding-patterns?symbol=${encodeURIComponent(symbol.toUpperCase())}`
+        )
+    }
+
+    /**
+     * Get list of all ETFs (Exchange Traded Funds) on NSE
+     * @returns ETF list data
+     */
+    getEtfList(): Promise<EtfData> {
+        return this.getDataByEndpoint(ApiList.ETF_LIST)
+    }
+
+    /**
+     * Get list of SME (Small and Medium Enterprise) stocks
+     * @returns SME stocks data
+     */
+    getSmeList(): Promise<SmeData> {
+        return this.getDataByEndpoint('/api/live-analysis-data?index=smeboard')
+    }
+
+    /**
+     * Get list of Sovereign Gold Bonds (SGB) listed on NSE
+     * @returns Sovereign Gold Bonds data
+     */
+    getSovereignGoldBonds(): Promise<SovereignGoldBondData> {
+        return this.getDataByEndpoint(ApiList.SOVEREIGN_GOLD_BONDS)
+    }
+
+    /**
+     * Get F&O lot sizes for all derivatives-eligible stocks
+     * @returns F&O lot size data
+     */
+    getFnoLotSize(): Promise<FnoLotSizeData> {
+        return this.getDataByEndpoint(ApiList.FNO_LOT_SIZE)
+    }
+
+    /**
+     * Get currently open IPOs
+     * @returns Current IPO data
+     */
+    getCurrentIPO(): Promise<IpoData> {
+        return this.getDataByEndpoint(ApiList.CURRENT_IPO)
+    }
+
+    /**
+     * Get upcoming/forthcoming IPOs
+     * @returns Upcoming IPO data
+     */
+    getUpcomingIPO(): Promise<IpoData> {
+        return this.getDataByEndpoint(ApiList.UPCOMING_IPO)
+    }
+
+    /**
+     * Get past/closed IPOs
+     * @param fromDate Optional start date in DD-MM-YYYY format
+     * @param toDate Optional end date in DD-MM-YYYY format
+     * @returns Past IPO data
+     */
+    getPastIPO(fromDate?: string, toDate?: string): Promise<IpoData> {
+        const params = fromDate && toDate
+            ? `?fromDate=${encodeURIComponent(fromDate)}&toDate=${encodeURIComponent(toDate)}`
+            : ''
+        return this.getDataByEndpoint(`${ApiList.PAST_IPO}${params}`)
+    }
+
+    /**
+     * Get advance/decline data showing market breadth across indices
+     * @returns Advance/Decline data
+     */
+    getAdvanceDecline(): Promise<AdvanceDeclineData> {
+        return this.getDataByEndpoint(ApiList.ADVANCE_DECLINE)
+    }
+
+    /**
+     * Get NSE event calendar (board meetings, dividends, AGM, EGM, etc.)
+     * @returns Event calendar data
+     */
+    getEventCalendar(): Promise<EventCalendarData> {
+        return this.getDataByEndpoint(ApiList.EVENT_CALENDAR)
+    }
+
+    /**
+     * Get Open Interest (OI) spurts for underlying securities
+     * @returns OI spurts data
+     */
+    getOiSpurts(): Promise<OiSpurtsData> {
+        return this.getDataByEndpoint(ApiList.OI_SPURTS)
+    }
+
+    /**
+     * Get historical price data for an index
+     * @param index Index name (e.g., 'NIFTY 50', 'NIFTY BANK')
+     * @param range Optional date range with start and end dates
+     * @returns Historical index data
+     */
+    async getHistoricalIndexData(index: string, range?: DateRange): Promise<HistoricalIndexData[]> {
+        if (!range) {
+            const end = new Date()
+            const start = new Date()
+            start.setFullYear(start.getFullYear() - 1)
+            range = { start, end }
+        }
+        const dateRanges = getDateRangeChunks(range.start, range.end, 66)
+        const promises = dateRanges.map(async (dateRange) => {
+            const url = `/api/NextApi/apiClient/GetQuoteApi?functionName=getHistoricalIndexData` +
+                `&symbol=${encodeURIComponent(index.toUpperCase())}` +
+                `&fromDate=${dateRange.start}&toDate=${dateRange.end}`
+            const response = await this.getDataByEndpoint(url)
+            /* istanbul ignore next */
+            return {
+                data: Array.isArray(response) ? response : (response?.data || []),
+                meta: {
+                    indexName: index.toUpperCase(),
+                    fromDate: dateRange.start,
+                    toDate: dateRange.end
+                }
+            }
+        })
+        return Promise.all(promises)
+    }
+
+    /**
+     * Get historical India VIX (Volatility Index) data
+     * @param range Optional date range with start and end dates
+     * @returns Historical VIX data
+     */
+    async getHistoricalVix(range?: DateRange): Promise<HistoricalVixData[]> {
+        if (!range) {
+            const end = new Date()
+            const start = new Date()
+            start.setFullYear(start.getFullYear() - 1)
+            range = { start, end }
+        }
+        const dateRanges = getDateRangeChunks(range.start, range.end, 66)
+        const promises = dateRanges.map(async (dateRange) => {
+            const url = `/api/NextApi/apiClient/GetQuoteApi?functionName=getHistoricalVix` +
+                `&fromDate=${dateRange.start}&toDate=${dateRange.end}`
+            const response = await this.getDataByEndpoint(url)
+            /* istanbul ignore next */
+            return {
+                data: Array.isArray(response) ? response : (response?.data || []),
+                meta: {
+                    fromDate: dateRange.start,
+                    toDate: dateRange.end
+                }
+            }
+        })
+        return Promise.all(promises)
+    }
+
+    // ─── END NEW APIs ──────────────────────────────────────────────────────────
+
     /**
      * Get technical indicators for a specific equity symbol
      * @param symbol - The equity symbol (e.g., 'RELIANCE', 'TCS')
@@ -578,6 +858,26 @@ export type {
     PreOpenMarketData,
     MergedDailyReportsData,
     TechnicalIndicators,
+    // New API interfaces
+    BulkDealData,
+    BlockDealData,
+    ShortSellingData,
+    FiiDiiData,
+    CorporateActionsData,
+    FinancialResultsData,
+    BoardMeetingsData,
+    AnnouncementsData,
+    ShareholdingPatternData,
+    EtfData,
+    SmeData,
+    SovereignGoldBondData,
+    FnoLotSizeData,
+    IpoData,
+    AdvanceDeclineData,
+    EventCalendarData,
+    OiSpurtsData,
+    HistoricalIndexData,
+    HistoricalVixData,
     // Nested interfaces
     EquityInfo,
     EquityMetadata,

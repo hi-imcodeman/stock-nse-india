@@ -927,6 +927,364 @@ export interface DailyReport {
     tradingDate: string
 }
 
+// ─── NEW API INTERFACES ───────────────────────────────────────────────────────
+
+/**
+ * Individual bulk/block/short-selling deal record
+ */
+export interface LargeDealRecord {
+    date: string
+    symbol: string
+    name: string
+    clientName: string
+    buySell: string
+    qty: number
+    wATP: number
+    remarks: string
+    [key: string]: any
+}
+
+/**
+ * Bulk deals data (transactions exceeding 0.5% of total equity shares)
+ */
+export interface BulkDealData {
+    data: LargeDealRecord[]
+    [key: string]: any
+}
+
+/**
+ * Block deals data (single transactions ≥500,000 shares or ≥₹5 crore)
+ */
+export interface BlockDealData {
+    data: LargeDealRecord[]
+    [key: string]: any
+}
+
+/**
+ * Short selling data
+ */
+export interface ShortSellingData {
+    data: LargeDealRecord[]
+    [key: string]: any
+}
+
+/**
+ * FII/DII (Foreign/Domestic Institutional Investor) trading activity
+ */
+export interface FiiDiiData {
+    [key: string]: any
+}
+
+/**
+ * Corporate action record (dividends, splits, bonuses, rights)
+ */
+export interface CorporateActionRecord {
+    symbol: string
+    series: string
+    faceVal: number
+    subject: string
+    exDate: string
+    recDate: string
+    bcStartDate: string | null
+    bcEndDate: string | null
+    ndStartDate: string | null
+    ndEndDate: string | null
+    purpose: string
+    [key: string]: any
+}
+
+/**
+ * Corporate actions response
+ */
+export interface CorporateActionsData {
+    data: CorporateActionRecord[]
+    [key: string]: any
+}
+
+/**
+ * Financial result record for a company
+ */
+export interface FinancialResultRecord {
+    symbol: string
+    series: string
+    broadcastdate: string
+    xbrl: string
+    na: string
+    seqNumber: string
+    fromDate: string | null
+    toDate: string
+    expenditure: string | null
+    income: string
+    audited: string
+    cumulative: string | null
+    consolidated: string
+    reDilEPS: string
+    reProLossBefTax: string
+    proLossAftTax: string
+    [key: string]: any
+}
+
+/**
+ * Financial results response
+ */
+export interface FinancialResultsData {
+    data: FinancialResultRecord[]
+    [key: string]: any
+}
+
+/**
+ * Board meeting record
+ */
+export interface BoardMeetingRecord {
+    symbol: string
+    series: string
+    company: string
+    bm_date: string
+    bm_purpose: string
+    bm_desc: string
+    xDividend_date: string
+    [key: string]: any
+}
+
+/**
+ * Board meetings response
+ */
+export interface BoardMeetingsData {
+    data: BoardMeetingRecord[]
+    [key: string]: any
+}
+
+/**
+ * Corporate announcement record
+ */
+export interface AnnouncementRecord {
+    symbol: string
+    desc: string
+    sub_type: string | null
+    attachmentName: string
+    exDate: string
+    broadCastDate: string
+    olderAnnouncements?: any
+    [key: string]: any
+}
+
+/**
+ * Corporate announcements response
+ */
+export interface AnnouncementsData {
+    data: AnnouncementRecord[]
+    [key: string]: any
+}
+
+/**
+ * Shareholding pattern data for a company
+ */
+export interface ShareholdingPatternData {
+    [key: string]: any
+}
+
+/**
+ * ETF (Exchange Traded Fund) record
+ */
+export interface EtfRecord {
+    symbol: string
+    companyName: string
+    industry: string
+    series: string
+    isinCode: string
+    [key: string]: any
+}
+
+/**
+ * ETF list response
+ */
+export interface EtfData {
+    data: EtfRecord[]
+    [key: string]: any
+}
+
+/**
+ * SME (Small and Medium Enterprise) stock record
+ */
+export interface SmeRecord {
+    symbol: string
+    identifier: string
+    series: string
+    open: number
+    dayHigh: number
+    dayLow: number
+    lastPrice: number
+    previousClose: number
+    change: number
+    pChange: number
+    totalTradedVolume: number
+    totalTradedValue: number
+    lastUpdateTime: string
+    [key: string]: any
+}
+
+/**
+ * SME market data response
+ */
+export interface SmeData {
+    data: SmeRecord[]
+    [key: string]: any
+}
+
+/**
+ * Sovereign Gold Bond (SGB) record
+ */
+export interface SovereignGoldBondRecord {
+    symbol: string
+    companyName: string
+    series: string
+    isinCode: string
+    [key: string]: any
+}
+
+/**
+ * Sovereign Gold Bonds response
+ */
+export interface SovereignGoldBondData {
+    data: SovereignGoldBondRecord[]
+    [key: string]: any
+}
+
+/**
+ * F&O lot size data (minimum contract quantities for derivatives)
+ */
+export interface FnoLotSizeData {
+    [symbol: string]: any
+}
+
+/**
+ * IPO record
+ */
+export interface IpoRecord {
+    symbol: string
+    companyName: string
+    series: string
+    issuePrice: string
+    subIssueType: string
+    issueCapital: string
+    openDate: string
+    closeDate: string
+    listingDate: string
+    [key: string]: any
+}
+
+/**
+ * IPO data response
+ */
+export interface IpoData {
+    data: IpoRecord[]
+    [key: string]: any
+}
+
+/**
+ * Advance/Decline data showing market breadth
+ */
+export interface AdvanceDeclineData {
+    data: {
+        indice: string
+        advances: number
+        declines: number
+        unchanged: number
+        total: number
+        [key: string]: any
+    }[]
+    [key: string]: any
+}
+
+/**
+ * Event calendar record (dividends, AGM, EGM, board meetings, etc.)
+ */
+export interface EventCalendarRecord {
+    symbol: string
+    company: string
+    purpose: string
+    bm_date: string
+    [key: string]: any
+}
+
+/**
+ * Event calendar response
+ */
+export interface EventCalendarData {
+    data: EventCalendarRecord[]
+    [key: string]: any
+}
+
+/**
+ * OI (Open Interest) spurts data for underlying securities
+ */
+export interface OiSpurtsData {
+    data: {
+        symbol: string
+        openInterest: number
+        noOfContracts: number
+        tradedVolume: number
+        underlying: string
+        [key: string]: any
+    }[]
+    [key: string]: any
+}
+
+/**
+ * Historical index data point
+ */
+export interface HistoricalIndexRecord {
+    indexName: string
+    timeStamp: string
+    open: number
+    high: number
+    low: number
+    close: number
+    sharesTraded: number
+    turnover: number
+    [key: string]: any
+}
+
+/**
+ * Historical index data response
+ */
+export interface HistoricalIndexData {
+    data: HistoricalIndexRecord[]
+    meta?: {
+        indexName: string
+        fromDate: string
+        toDate: string
+    }
+}
+
+/**
+ * Historical India VIX data point
+ */
+export interface HistoricalVixRecord {
+    EOD_TIMESTAMP: string
+    EOD_OPEN_INDEX_VAL: number
+    EOD_HIGH_INDEX_VAL: number
+    EOD_LOW_INDEX_VAL: number
+    EOD_CLOSING_INDEX_VAL: number
+    EOD_PREV_CLOSE: number
+    EOD_CHANGE: number
+    EOD_PERC_CHG: number
+    [key: string]: any
+}
+
+/**
+ * Historical India VIX data response
+ */
+export interface HistoricalVixData {
+    data: HistoricalVixRecord[]
+    meta?: {
+        fromDate: string
+        toDate: string
+    }
+}
+
+// ─── END NEW API INTERFACES ───────────────────────────────────────────────────
+
 /**
  * Technical indicators including SMA, EMA, RSI, MACD, Bollinger Bands, etc.
  */

@@ -2283,4 +2283,625 @@ mainRouter.get('/api/mcp/session/:sessionId/openai-messages', async (req, res) =
     }
 })
 
+// ─── NEW API ROUTES ────────────────────────────────────────────────────────────
+
+/**
+ * @openapi
+ * /api/bulkDeals:
+ *   get:
+ *     description: Get bulk deals (transactions exceeding 0.5% of total equity shares)
+ *     tags:
+ *       - Market Analysis
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns bulk deals data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/bulkDeals', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getBulkDeals())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/blockDeals:
+ *   get:
+ *     description: Get block deals (single transactions ≥500,000 shares or ≥₹5 crore)
+ *     tags:
+ *       - Market Analysis
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns block deals data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/blockDeals', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getBlockDeals())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/shortSelling:
+ *   get:
+ *     description: Get short selling data
+ *     tags:
+ *       - Market Analysis
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns short selling data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/shortSelling', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getShortSellingData())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/fiiDiiData:
+ *   get:
+ *     description: Get FII/DII (Foreign/Domestic Institutional Investor) trading activity
+ *     tags:
+ *       - Market Analysis
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns FII/DII trading data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/fiiDiiData', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getFiiDiiData())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/corporateActions:
+ *   get:
+ *     description: Get corporate actions (dividends, splits, bonuses, rights)
+ *     tags:
+ *       - Corporate Filings
+ *     parameters:
+ *       - name: symbol
+ *         in: query
+ *         description: Stock symbol (e.g., TCS, RELIANCE)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: index
+ *         in: query
+ *         description: Market segment (default: equities)
+ *         required: false
+ *         schema:
+ *           type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns corporate actions data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/corporateActions', async (req, res) => {
+    try {
+        const { symbol, index } = req.query
+        res.json(await nseIndia.getCorporateActions(
+            symbol as string | undefined,
+            index as string | undefined
+        ))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/financialResults:
+ *   get:
+ *     description: Get financial results for an index or symbol
+ *     tags:
+ *       - Corporate Filings
+ *     parameters:
+ *       - name: symbol
+ *         in: query
+ *         description: Stock symbol (e.g., TCS, RELIANCE)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: index
+ *         in: query
+ *         description: Market segment (default: equities)
+ *         required: false
+ *         schema:
+ *           type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns financial results data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/financialResults', async (req, res) => {
+    try {
+        const { symbol, index } = req.query
+        res.json(await nseIndia.getFinancialResults(
+            symbol as string | undefined,
+            index as string | undefined
+        ))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/boardMeetings:
+ *   get:
+ *     description: Get board meetings for an index or symbol
+ *     tags:
+ *       - Corporate Filings
+ *     parameters:
+ *       - name: symbol
+ *         in: query
+ *         description: Stock symbol (e.g., TCS, RELIANCE)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: index
+ *         in: query
+ *         description: Market segment (default: equities)
+ *         required: false
+ *         schema:
+ *           type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns board meetings data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/boardMeetings', async (req, res) => {
+    try {
+        const { symbol, index } = req.query
+        res.json(await nseIndia.getBoardMeetings(
+            symbol as string | undefined,
+            index as string | undefined
+        ))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/announcements:
+ *   get:
+ *     description: Get corporate announcements for an index or symbol
+ *     tags:
+ *       - Corporate Filings
+ *     parameters:
+ *       - name: symbol
+ *         in: query
+ *         description: Stock symbol (e.g., TCS, RELIANCE)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: index
+ *         in: query
+ *         description: Market segment (default: equities)
+ *         required: false
+ *         schema:
+ *           type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns announcements data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/announcements', async (req, res) => {
+    try {
+        const { symbol, index } = req.query
+        res.json(await nseIndia.getAnnouncements(
+            symbol as string | undefined,
+            index as string | undefined
+        ))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/shareholdingPattern/{symbol}:
+ *   get:
+ *     description: Get shareholding pattern for a specific stock symbol
+ *     tags:
+ *       - Corporate Filings
+ *     parameters:
+ *       - name: symbol
+ *         in: path
+ *         description: Stock symbol (e.g., TCS, RELIANCE)
+ *         required: true
+ *         schema:
+ *           type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns shareholding pattern data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/shareholdingPattern/:symbol', async (req, res) => {
+    try {
+        const { symbol } = req.params
+        res.json(await nseIndia.getShareholdingPattern(symbol))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/etf:
+ *   get:
+ *     description: Get list of all ETFs (Exchange Traded Funds) on NSE
+ *     tags:
+ *       - Market Listings
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns ETF list data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/etf', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getEtfList())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/sme:
+ *   get:
+ *     description: Get list of SME (Small and Medium Enterprise) stocks
+ *     tags:
+ *       - Market Listings
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns SME stocks data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/sme', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getSmeList())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/sgb:
+ *   get:
+ *     description: Get list of Sovereign Gold Bonds (SGB) listed on NSE
+ *     tags:
+ *       - Market Listings
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns Sovereign Gold Bonds data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/sgb', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getSovereignGoldBonds())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/fnoLotSize:
+ *   get:
+ *     description: Get F&O lot sizes for all derivatives-eligible stocks
+ *     tags:
+ *       - Market Listings
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns F&O lot size data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/fnoLotSize', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getFnoLotSize())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/ipo/current:
+ *   get:
+ *     description: Get currently open IPOs
+ *     tags:
+ *       - IPO
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns current IPO data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/ipo/current', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getCurrentIPO())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/ipo/upcoming:
+ *   get:
+ *     description: Get upcoming/forthcoming IPOs
+ *     tags:
+ *       - IPO
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns upcoming IPO data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/ipo/upcoming', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getUpcomingIPO())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/ipo/past:
+ *   get:
+ *     description: Get past/closed IPOs
+ *     tags:
+ *       - IPO
+ *     parameters:
+ *       - name: fromDate
+ *         in: query
+ *         description: Start date in DD-MM-YYYY format
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: toDate
+ *         in: query
+ *         description: End date in DD-MM-YYYY format
+ *         required: false
+ *         schema:
+ *           type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns past IPO data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/ipo/past', async (req, res) => {
+    try {
+        const { fromDate, toDate } = req.query
+        res.json(await nseIndia.getPastIPO(
+            fromDate as string | undefined,
+            toDate as string | undefined
+        ))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/advanceDecline:
+ *   get:
+ *     description: Get advance/decline data showing market breadth across indices
+ *     tags:
+ *       - Market Analysis
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns advance/decline data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/advanceDecline', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getAdvanceDecline())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/eventCalendar:
+ *   get:
+ *     description: Get NSE event calendar (board meetings, dividends, AGM, EGM, etc.)
+ *     tags:
+ *       - Market Analysis
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns event calendar data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/eventCalendar', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getEventCalendar())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/oiSpurts:
+ *   get:
+ *     description: Get Open Interest (OI) spurts for underlying securities
+ *     tags:
+ *       - Market Analysis
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns OI spurts data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/oiSpurts', async (_req, res) => {
+    try {
+        res.json(await nseIndia.getOiSpurts())
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/index/historical/{indexSymbol}:
+ *   get:
+ *     description: Get historical price data for an index
+ *     tags:
+ *       - Index
+ *     parameters:
+ *       - name: indexSymbol
+ *         in: path
+ *         description: Index name (e.g., NIFTY 50, NIFTY BANK)
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: startDate
+ *         in: query
+ *         description: Start date (YYYY-MM-DD)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: endDate
+ *         in: query
+ *         description: End date (YYYY-MM-DD)
+ *         required: false
+ *         schema:
+ *           type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns historical index data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/index/historical/:indexSymbol', async (req, res) => {
+    try {
+        const { indexSymbol } = req.params
+        const { startDate, endDate } = req.query
+        const range = startDate && endDate
+            ? { start: new Date(startDate as string), end: new Date(endDate as string) }
+            : undefined
+        res.json(await nseIndia.getHistoricalIndexData(indexSymbol, range))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+/**
+ * @openapi
+ * /api/vix/historical:
+ *   get:
+ *     description: Get historical India VIX (Volatility Index) data
+ *     tags:
+ *       - Market Analysis
+ *     parameters:
+ *       - name: startDate
+ *         in: query
+ *         description: Start date (YYYY-MM-DD)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: endDate
+ *         in: query
+ *         description: End date (YYYY-MM-DD)
+ *         required: false
+ *         schema:
+ *           type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns historical VIX data
+ *       400:
+ *         description: Returns a JSON error object
+ */
+mainRouter.get('/api/vix/historical', async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query
+        const range = startDate && endDate
+            ? { start: new Date(startDate as string), end: new Date(endDate as string) }
+            : undefined
+        res.json(await nseIndia.getHistoricalVix(range))
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+// ─── END NEW API ROUTES ────────────────────────────────────────────────────────
+
 export { mainRouter }

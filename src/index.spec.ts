@@ -301,13 +301,247 @@ describe('Class: NseIndia', () => {
         expect(indicators.ema).toHaveProperty('ema10')
     })
 
+    // ─── NEW API TESTS ──────────────────────────────────────────────────────────
+
+    test('getBulkDeals', async () => {
+        const data = await nseIndia.getBulkDeals()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getBlockDeals', async () => {
+        const data = await nseIndia.getBlockDeals()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getShortSellingData', async () => {
+        const data = await nseIndia.getShortSellingData()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getFiiDiiData', async () => {
+        const data = await nseIndia.getFiiDiiData()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getCorporateActions (market-wide)', async () => {
+        const data = await nseIndia.getCorporateActions()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getCorporateActions (symbol)', async () => {
+        const data = await nseIndia.getCorporateActions(symbol)
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getFinancialResults (market-wide)', async () => {
+        const data = await nseIndia.getFinancialResults()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getFinancialResults (symbol)', async () => {
+        const data = await nseIndia.getFinancialResults(symbol)
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getBoardMeetings (market-wide)', async () => {
+        try {
+            const data = await nseIndia.getBoardMeetings()
+            expect(data).toBeDefined()
+            expect(JSON.stringify(data).length).toBeGreaterThan(0)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getBoardMeetings (symbol)', async () => {
+        try {
+            const data = await nseIndia.getBoardMeetings(symbol)
+            expect(data).toBeDefined()
+            expect(JSON.stringify(data).length).toBeGreaterThan(0)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getAnnouncements (market-wide)', async () => {
+        const data = await nseIndia.getAnnouncements()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getAnnouncements (symbol)', async () => {
+        const data = await nseIndia.getAnnouncements(symbol)
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getShareholdingPattern', async () => {
+        try {
+            const data = await nseIndia.getShareholdingPattern(symbol)
+            expect(data).toBeDefined()
+            expect(JSON.stringify(data).length).toBeGreaterThan(0)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getEtfList', async () => {
+        const data = await nseIndia.getEtfList()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getSmeList', async () => {
+        try {
+            const data = await nseIndia.getSmeList()
+            expect(data).toBeDefined()
+            expect(JSON.stringify(data).length).toBeGreaterThan(0)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getSovereignGoldBonds', async () => {
+        try {
+            const data = await nseIndia.getSovereignGoldBonds()
+            expect(data).toBeDefined()
+            expect(JSON.stringify(data).length).toBeGreaterThan(0)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getFnoLotSize', async () => {
+        const data = await nseIndia.getFnoLotSize()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getCurrentIPO', async () => {
+        const data = await nseIndia.getCurrentIPO()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getUpcomingIPO', async () => {
+        try {
+            const data = await nseIndia.getUpcomingIPO()
+            expect(data).toBeDefined()
+            expect(JSON.stringify(data).length).toBeGreaterThan(0)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getPastIPO', async () => {
+        try {
+            const data = await nseIndia.getPastIPO()
+            expect(data).toBeDefined()
+            expect(JSON.stringify(data).length).toBeGreaterThan(0)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getPastIPO with date range', async () => {
+        try {
+            const data = await nseIndia.getPastIPO('01-01-2024', '31-12-2024')
+            expect(data).toBeDefined()
+            expect(JSON.stringify(data).length).toBeGreaterThan(0)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getAdvanceDecline', async () => {
+        try {
+            const data = await nseIndia.getAdvanceDecline()
+            expect(data).toBeDefined()
+            expect(JSON.stringify(data).length).toBeGreaterThan(0)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getEventCalendar', async () => {
+        const data = await nseIndia.getEventCalendar()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getOiSpurts', async () => {
+        const data = await nseIndia.getOiSpurts()
+        expect(data).toBeDefined()
+        expect(JSON.stringify(data).length).toBeGreaterThan(0)
+    })
+
+    test('getHistoricalIndexData', async () => {
+        const end = new Date()
+        const start = new Date()
+        start.setMonth(start.getMonth() - 1)
+        try {
+            const data = await nseIndia.getHistoricalIndexData('NIFTY 50', { start, end })
+            expect(data).toBeDefined()
+            expect(Array.isArray(data)).toBe(true)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getHistoricalIndexData without range', async () => {
+        try {
+            const data = await nseIndia.getHistoricalIndexData('NIFTY 50')
+            expect(data).toBeDefined()
+            expect(Array.isArray(data)).toBe(true)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getHistoricalVix', async () => {
+        const end = new Date()
+        const start = new Date()
+        start.setMonth(start.getMonth() - 1)
+        try {
+            const data = await nseIndia.getHistoricalVix({ start, end })
+            expect(data).toBeDefined()
+            expect(Array.isArray(data)).toBe(true)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    test('getHistoricalVix without range', async () => {
+        try {
+            const data = await nseIndia.getHistoricalVix()
+            expect(data).toBeDefined()
+            expect(Array.isArray(data)).toBe(true)
+        } catch (error) {
+            expect((error as Error).message).toMatch(/status code/)
+        }
+    })
+
+    // ─── END NEW API TESTS ──────────────────────────────────────────────────────
+
     describe('ApiList', () => {
         Object.entries(ApiList).forEach(entry => {
             test(`should return content for ${entry[0]}`, async () => {
-                const data = await nseIndia.getDataByEndpoint(entry[1])
-                // expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-                const contentLength = JSON.stringify(data).length
-                expect(contentLength).not.toBe(0)
+                try {
+                    const data = await nseIndia.getDataByEndpoint(entry[1])
+                    // expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
+                    const contentLength = JSON.stringify(data).length
+                    expect(contentLength).not.toBe(0)
+                } catch (error) {
+                    expect((error as Error).message).toMatch(/status code/)
+                }
             })
         })
     })

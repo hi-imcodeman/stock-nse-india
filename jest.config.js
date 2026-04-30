@@ -2,6 +2,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
+  forceExit: true,
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
