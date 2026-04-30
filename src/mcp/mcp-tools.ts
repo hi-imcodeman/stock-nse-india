@@ -394,7 +394,7 @@ export const mcpTools = [
       properties: {
         symbol: {
           type: 'string',
-          description: 'Equity symbol with series code (e.g., ONGC-EQ, TCS-EQ)',
+          description: 'Equity symbol with series code (e.g., ONGC, TCS)',
         },
         from_date: {
           type: 'string',
@@ -435,7 +435,7 @@ export const mcpTools = [
       properties: {
         symbol: {
           type: 'string',
-          description: 'Equity symbol with or without series code (e.g., ONGC-EQ or ONGC)',
+          description: 'Equity symbol with or without series code (e.g., ONGC or ONGC)',
         },
         segment: {
           type: 'string',

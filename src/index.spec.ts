@@ -304,7 +304,7 @@ describe('Class: NseIndia', () => {
     test('getEquityChartHistoricalData', async () => {
         // Test charting API with real parameters
         const chartData = await nseIndia.getEquityChartHistoricalData(
-            'ONGC-EQ',
+            'ONGC',
             {
                 start: new Date(1775834999 * 1000),
                 end: new Date(1775999513 * 1000)
@@ -327,7 +327,7 @@ describe('Class: NseIndia', () => {
     })
 
     test('getEquitySymbolInfo', async () => {
-        const info = await nseIndia.getEquitySymbolInfo('ONGC-EQ')
+        const info = await nseIndia.getEquitySymbolInfo('ONGC')
         expect(info).toBeDefined()
         expect(info).toHaveProperty('symbol')
         expect(info).toHaveProperty('scripcode')
@@ -339,7 +339,7 @@ describe('Class: NseIndia', () => {
     test('getEquityChartHistoricalData without token (auto-lookup)', async () => {
         // Token omitted — the method should call getEquitySymbolInfo internally
         const chartData = await nseIndia.getEquityChartHistoricalData(
-            'ONGC-EQ',
+            'ONGC',
             {
                 start: new Date(1775834999 * 1000),
                 end: new Date(1775999513 * 1000)

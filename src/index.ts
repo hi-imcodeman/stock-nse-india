@@ -243,7 +243,7 @@ export class NseIndia {
 
     /**
      * Get historical chart data from charting.nseindia.com
-     * @param symbol Equity symbol with series (e.g., 'ONGC-EQ')
+     * @param symbol Equity symbol with series (e.g., 'ONGC')
      * @param range Optional date range for chart data query
      * @param token NSE script code (token) for the symbol. If not provided, it is
      *              automatically fetched via {@link getEquitySymbolInfo}.
@@ -288,7 +288,7 @@ export class NseIndia {
      * Look up the NSE script code (token) for an equity symbol using the charting domain.
      * The `scripCode` in the returned object is the value that must be passed as `token`
      * to {@link getEquityChartHistoricalData}.
-     * @param symbol Equity symbol with series code (e.g., 'ONGC-EQ') OR plain symbol (e.g., 'ONGC')
+     * @param symbol Equity symbol with series code (e.g., 'ONGC') OR plain symbol (e.g., 'ONGC')
      * @param segment Optional market segment filter (default: empty string, returns all segments)
      * @returns Symbol information including scripCode / token
      */

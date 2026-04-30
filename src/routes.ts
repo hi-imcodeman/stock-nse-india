@@ -1181,7 +1181,7 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/v1/charts/equity-historical-data:
+ * /api/charts/equity-historical-data:
  *   get:
  *     description: Get historical chart data from charting.nseindia.com for equity symbols
  *     tags:
@@ -1191,11 +1191,11 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *     parameters:
  *       - name: symbol
  *         in: query
- *         description: Equity symbol with series code (e.g., 'ONGC-EQ')
+ *         description: Equity symbol with series code (e.g., 'ONGC')
  *         required: true
  *         schema:
  *           type: string
- *           example: ONGC-EQ
+ *           example: ONGC
  *       - name: fromDate
  *         in: query
  *         description: "Start date to pull chart data (format: YYYY-MM-DD)"
@@ -1283,7 +1283,7 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *       400:
  *         description: Returns error object if API call fails or parameters are invalid
  */
-mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
+mainRouter.get('/api/charts/equity-historical-data', async (req, res) => {
     try {
         const {
             symbol,
@@ -1332,12 +1332,12 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
 
 /**
  * @openapi
- * /api/v1/charts/symbol-info:
+ * /api/charts/symbol-info:
  *   get:
  *     description: >
  *       Look up NSE charting symbol information (including scripCode / token) for a
  *       given equity symbol. The returned `scripCode` is the value that must be passed
- *       as `token` to the `/api/v1/charts/equity-historical-data` endpoint.
+ *       as `token` to the `/api/charts/equity-historical-data` endpoint.
  *     tags:
  *       - Charting
  *     produces:
@@ -1345,11 +1345,11 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
  *     parameters:
  *       - name: symbol
  *         in: query
- *         description: Equity symbol with or without series code (e.g., 'ONGC-EQ' or 'ONGC')
+ *         description: Equity symbol with or without series code (e.g., 'ONGC' or 'ONGC')
  *         required: true
  *         schema:
  *           type: string
- *           example: ONGC-EQ
+ *           example: ONGC
  *       - name: segment
  *         in: query
  *         description: Optional market segment filter (leave empty to search all segments)
@@ -1367,7 +1367,7 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
  *               properties:
  *                 symbol:
  *                   type: string
- *                   example: ONGC-EQ
+ *                   example: ONGC
  *                 scripCode:
  *                   type: string
  *                   description: The token value required by the historical chart API
@@ -1385,7 +1385,7 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
  *       400:
  *         description: Returns error if symbol is missing or lookup fails
  */
-mainRouter.get('/api/v1/charts/symbol-info', async (req, res) => {
+mainRouter.get('/api/charts/symbol-info', async (req, res) => {
     try {
         const { symbol, segment = '' } = req.query
 
