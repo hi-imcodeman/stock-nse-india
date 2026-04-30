@@ -354,6 +354,19 @@ docker build -t nseindia . && docker run --rm -d -p 3001:3001 nseindia:latest
 **Image:** `imcodeman/nseindia`  
 **Registry:** [Docker Hub](https://hub.docker.com/r/imcodeman/nseindia)
 
+### Automated Docker Publishing
+
+Docker images are published automatically via GitHub Actions:
+
+- **`latest`** is updated on every merge/push to `master`
+- **Version tags** are published when a GitHub Release is **published**
+  - Example release tag `v1.2.3` publishes Docker tags such as `1.2.3`, `1.2`, and `v1.2.3`
+
+Required repository secrets:
+
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN` (Docker Hub access token)
+
 ### Container URLs
 
 - **Main App:** http://localhost:3001
