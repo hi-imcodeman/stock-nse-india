@@ -304,9 +304,11 @@ describe('Class: NseIndia', () => {
     test('getEquityChartHistoricalData', async () => {
         // Test charting API with real parameters
         const chartData = await nseIndia.getEquityChartHistoricalData(
-            'ONGC-EQ',
-            '1775834999',
-            '1775999513',
+            'ONGC',
+            {
+                start: new Date(1775834999 * 1000),
+                end: new Date(1775999513 * 1000)
+            },
             '2475',
             'Equity',
             'I',
@@ -325,21 +327,23 @@ describe('Class: NseIndia', () => {
     })
 
     test('getEquitySymbolInfo', async () => {
-        const info = await nseIndia.getEquitySymbolInfo('ONGC-EQ')
+        const info = await nseIndia.getEquitySymbolInfo('ONGC')
         expect(info).toBeDefined()
         expect(info).toHaveProperty('symbol')
-        expect(info).toHaveProperty('scripCode')
-        // scripCode is the token required by the chart API — must be a non-empty string
-        expect(typeof info.scripCode).toBe('string')
-        expect(info.scripCode.length).toBeGreaterThan(0)
+        expect(info).toHaveProperty('scripcode')
+        // scripcode is the token required by the chart API — must be a non-empty string
+        expect(typeof info.scripcode).toBe('string')
+        expect(info.scripcode.length).toBeGreaterThan(0)
     })
 
     test('getEquityChartHistoricalData without token (auto-lookup)', async () => {
         // Token omitted — the method should call getEquitySymbolInfo internally
         const chartData = await nseIndia.getEquityChartHistoricalData(
-            'ONGC-EQ',
-            '1775834999',
-            '1775999513'
+            'ONGC',
+            {
+                start: new Date(1775834999 * 1000),
+                end: new Date(1775999513 * 1000)
+            }
             // no token — should auto-fetch via symbolsDynamic
         )
         expect(chartData).toBeDefined()

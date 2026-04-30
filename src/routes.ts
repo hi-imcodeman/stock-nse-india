@@ -1181,7 +1181,7 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
 
 /**
  * @openapi
- * /api/v1/charts/equity-historical-data:
+ * /api/charts/equity-historical-data:
  *   get:
  *     description: Get historical chart data from charting.nseindia.com for equity symbols
  *     tags:
@@ -1191,29 +1191,33 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *     parameters:
  *       - name: symbol
  *         in: query
- *         description: Equity symbol with series code (e.g., 'ONGC-EQ')
+ *         description: Equity symbol with series code (e.g., 'ONGC')
  *         required: true
  *         schema:
  *           type: string
- *           example: ONGC-EQ
- *       - name: fromDate
+ *           example: ONGC
+ *       - name: start
  *         in: query
- *         description: Unix timestamp for start date
- *         required: true
+ *         description: >
+ *           Start date/time. Supports YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, unix timestamp
+ *           (seconds or milliseconds)
+ *         required: false
  *         schema:
- *           type: number
- *           example: 1775834999
- *       - name: toDate
+ *           type: string
+ *           example: "2026-04-10 09:15:00"
+ *       - name: end
  *         in: query
- *         description: Unix timestamp for end date
- *         required: true
+ *         description: >
+ *           End date/time. Supports YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, unix timestamp
+ *           (seconds or milliseconds)
+ *         required: false
  *         schema:
- *           type: number
- *           example: 1775999513
+ *           type: string
+ *           example: "2026-04-12 15:30:00"
  *       - name: token
  *         in: query
- *         description: Token value for charting API
- *         required: true
+ *         description: Optional token value for charting API (auto-fetched when omitted)
+ *         required: false
  *         schema:
  *           type: string
  *           example: "2475"
@@ -1281,30 +1285,55 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *       400:
  *         description: Returns error object if API call fails or parameters are invalid
  */
-mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
+mainRouter.get('/api/charts/equity-historical-data', async (req, res) => {
     try {
-        const { symbol, fromDate, toDate, token, symbolType = 'Equity', chartType = 'I', timeInterval = '5' } = req.query
+        const {
+            symbol,
+            start,
+            end,
+            token,
+            symbolType = 'Equity',
+            chartType = 'I',
+            timeInterval = '5'
+        } = req.query
 
         // Validate required parameters
         if (!symbol) {
             return res.status(400).json({ error: 'Missing required parameter: symbol' })
         }
-        if (!fromDate) {
-            return res.status(400).json({ error: 'Missing required parameter: fromDate' })
-        }
-        if (!toDate) {
-            return res.status(400).json({ error: 'Missing required parameter: toDate' })
-        }
-        if (!token) {
-            return res.status(400).json({ error: 'Missing required parameter: token' })
+        // Call the charting method
+        const parseChartDateParam = (value: unknown): Date => {
+            const input = String(value).trim()
+            const numeric = Number(input)
+            // Accept unix timestamp in seconds (10 digits) or milliseconds (13 digits).
+            if (!Number.isNaN(numeric) && input !== '') {
+                const unixMs = input.length <= 10 ? numeric * 1000 : numeric
+                return new Date(unixMs)
+            }
+            return new Date(input)
         }
 
-        // Call the charting method
+        let range
+        if (start || end) {
+            const endDate = end ? parseChartDateParam(end) : new Date()
+            const startDate = start
+                ? parseChartDateParam(start)
+                : new Date(endDate.getTime() - 24 * 60 * 60 * 1000)
+            if (!(startDate.getTime() > 0 && endDate.getTime() > 0)) {
+                return res.status(400).json({
+                    error: 'Invalid date format. Use YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or unix timestamp'
+                })
+            }
+            range = {
+                start: startDate,
+                end: endDate
+            }
+        }
+
         const chartData = await nseIndia.getEquityChartHistoricalData(
             String(symbol),
-            String(fromDate),
-            String(toDate),
-            String(token),
+            range,
+            token ? String(token) : undefined,
             String(symbolType),
             String(chartType),
             String(timeInterval)
@@ -1318,12 +1347,12 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
 
 /**
  * @openapi
- * /api/v1/charts/symbol-info:
+ * /api/charts/symbol-info:
  *   get:
  *     description: >
  *       Look up NSE charting symbol information (including scripCode / token) for a
  *       given equity symbol. The returned `scripCode` is the value that must be passed
- *       as `token` to the `/api/v1/charts/equity-historical-data` endpoint.
+ *       as `token` to the `/api/charts/equity-historical-data` endpoint.
  *     tags:
  *       - Charting
  *     produces:
@@ -1331,11 +1360,11 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
  *     parameters:
  *       - name: symbol
  *         in: query
- *         description: Equity symbol with or without series code (e.g., 'ONGC-EQ' or 'ONGC')
+ *         description: Equity symbol with or without series code (e.g., 'ONGC' or 'ONGC')
  *         required: true
  *         schema:
  *           type: string
- *           example: ONGC-EQ
+ *           example: ONGC
  *       - name: segment
  *         in: query
  *         description: Optional market segment filter (leave empty to search all segments)
@@ -1353,7 +1382,7 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
  *               properties:
  *                 symbol:
  *                   type: string
- *                   example: ONGC-EQ
+ *                   example: ONGC
  *                 scripCode:
  *                   type: string
  *                   description: The token value required by the historical chart API
@@ -1371,7 +1400,7 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
  *       400:
  *         description: Returns error if symbol is missing or lookup fails
  */
-mainRouter.get('/api/v1/charts/symbol-info', async (req, res) => {
+mainRouter.get('/api/charts/symbol-info', async (req, res) => {
     try {
         const { symbol, segment = '' } = req.query
 
