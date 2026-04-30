@@ -1196,22 +1196,24 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *         schema:
  *           type: string
  *           example: ONGC
- *       - name: fromDate
+ *       - name: start
  *         in: query
- *         description: "Start date to pull chart data (format: YYYY-MM-DD)"
+ *         description: >
+ *           Start date/time. Supports YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, unix timestamp
+ *           (seconds or milliseconds)
  *         required: false
  *         schema:
  *           type: string
- *           format: date
- *           example: "2026-04-10"
- *       - name: toDate
+ *           example: "2026-04-10 09:15:00"
+ *       - name: end
  *         in: query
- *         description: "End date to pull chart data (format: YYYY-MM-DD)"
+ *         description: >
+ *           End date/time. Supports YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, unix timestamp
+ *           (seconds or milliseconds)
  *         required: false
  *         schema:
  *           type: string
- *           format: date
- *           example: "2026-04-12"
+ *           example: "2026-04-12 15:30:00"
  *       - name: token
  *         in: query
  *         description: Optional token value for charting API (auto-fetched when omitted)
@@ -1287,8 +1289,8 @@ mainRouter.get('/api/charts/equity-historical-data', async (req, res) => {
     try {
         const {
             symbol,
-            fromDate,
-            toDate,
+            start,
+            end,
             token,
             symbolType = 'Equity',
             chartType = 'I',
@@ -1300,18 +1302,31 @@ mainRouter.get('/api/charts/equity-historical-data', async (req, res) => {
             return res.status(400).json({ error: 'Missing required parameter: symbol' })
         }
         // Call the charting method
+        const parseChartDateParam = (value: unknown): Date => {
+            const input = String(value).trim()
+            const numeric = Number(input)
+            // Accept unix timestamp in seconds (10 digits) or milliseconds (13 digits).
+            if (!Number.isNaN(numeric) && input !== '') {
+                const unixMs = input.length <= 10 ? numeric * 1000 : numeric
+                return new Date(unixMs)
+            }
+            return new Date(input)
+        }
+
         let range
-        if (fromDate || toDate) {
-            const end = toDate ? new Date(String(toDate)) : new Date()
-            const start = fromDate
-                ? new Date(String(fromDate))
-                : new Date(end.getTime() - 24 * 60 * 60 * 1000)
-            if (start.getTime() <= 0 || end.getTime() <= 0) {
-                return res.status(400).json({ error: 'Invalid date format. Please use the format (YYYY-MM-DD)' })
+        if (start || end) {
+            const endDate = end ? parseChartDateParam(end) : new Date()
+            const startDate = start
+                ? parseChartDateParam(start)
+                : new Date(endDate.getTime() - 24 * 60 * 60 * 1000)
+            if (!(startDate.getTime() > 0 && endDate.getTime() > 0)) {
+                return res.status(400).json({
+                    error: 'Invalid date format. Use YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or unix timestamp'
+                })
             }
             range = {
-                start,
-                end
+                start: startDate,
+                end: endDate
             }
         }
 

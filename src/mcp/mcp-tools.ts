@@ -396,13 +396,13 @@ export const mcpTools = [
           type: 'string',
           description: 'Equity symbol with series code (e.g., ONGC, TCS)',
         },
-        from_date: {
+        start: {
           type: 'string',
-          description: 'Unix timestamp for start date (e.g., 1775834999)',
+          description: 'Optional unix timestamp for start date (e.g., 1775834999)',
         },
-        to_date: {
+        end: {
           type: 'string',
-          description: 'Unix timestamp for end date (e.g., 1775999513)',
+          description: 'Optional unix timestamp for end date (e.g., 1775999513)',
         },
         token: {
           type: 'string',
@@ -422,7 +422,7 @@ export const mcpTools = [
           description: 'Time interval in minutes - 1, 5, 15, 30, 60. (default: 5)',
         },
       },
-      required: ['symbol', 'from_date', 'to_date'],
+      required: ['symbol'],
     },
   },
   {
@@ -876,11 +876,16 @@ export async function handleMCPToolCall(
       if (!args?.symbol || typeof args.symbol !== 'string') {
         throw new Error('Symbol parameter is required and must be a string')
       }
-      if (!args?.from_date || typeof args.from_date !== 'string') {
-        throw new Error('from_date parameter is required and must be a string (unix timestamp)')
+      const startInput = args?.start ?? args?.from_date
+      const endInput = args?.end ?? args?.to_date
+      const hasStartDate = startInput !== undefined && startInput !== null
+      const hasEndDate = endInput !== undefined && endInput !== null
+
+      if (hasStartDate && typeof startInput !== 'string') {
+        throw new Error('start parameter must be a string (unix timestamp)')
       }
-      if (!args?.to_date || typeof args.to_date !== 'string') {
-        throw new Error('to_date parameter is required and must be a string (unix timestamp)')
+      if (hasEndDate && typeof endInput !== 'string') {
+        throw new Error('end parameter must be a string (unix timestamp)')
       }
 
       // token is now optional — the core method auto-fetches it via getEquitySymbolInfo
@@ -896,9 +901,18 @@ export async function handleMCPToolCall(
         ? args.time_interval
         : '5'
 
-      const range = {
-        start: new Date(Number(args.from_date) * 1000),
-        end: new Date(Number(args.to_date) * 1000)
+      let range
+      if (hasStartDate || hasEndDate) {
+        const end = hasEndDate
+          ? new Date(Number(endInput) * 1000)
+          : new Date()
+        const start = hasStartDate
+          ? new Date(Number(startInput) * 1000)
+          : new Date(end.getTime() - 24 * 60 * 60 * 1000)
+        if (!(start.getTime() > 0 && end.getTime() > 0)) {
+          throw new Error('Invalid date format. start/end must be unix timestamps')
+        }
+        range = { start, end }
       }
 
       result = await nseClient.getEquityChartHistoricalData(

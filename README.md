@@ -336,9 +336,9 @@ console.log(symbolInfo.scripcode);
 
 - **`GET /api/charts/equity-historical-data`**
   - Required: `symbol`
-  - Optional: `fromDate`, `toDate` (format: `YYYY-MM-DD`), `token`, `symbolType`, `chartType`, `timeInterval`
+  - Optional: `start`, `end` (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, or unix timestamp), `token`, `symbolType`, `chartType`, `timeInterval`
   - If `token` is omitted, the API auto-fetches it.
-  - If both `fromDate` and `toDate` are omitted, default range is used.
+  - If both `start` and `end` are omitted, default range is used.
   - If only one date is provided, the other date is auto-derived.
 
 - **`GET /api/charts/symbol-info`**
