@@ -244,8 +244,7 @@ export class NseIndia {
     /**
      * Get historical chart data from charting.nseindia.com
      * @param symbol Equity symbol with series (e.g., 'ONGC-EQ')
-     * @param fromDate Unix timestamp for start date
-     * @param toDate Unix timestamp for end date
+     * @param range Optional date range for chart data query
      * @param token NSE script code (token) for the symbol. If not provided, it is
      *              automatically fetched via {@link getEquitySymbolInfo}.
      * @param symbolType Type of symbol (e.g., 'Equity', 'Index')
@@ -255,18 +254,22 @@ export class NseIndia {
      */
     async getEquityChartHistoricalData(
         symbol: string,
-        fromDate: string | number,
-        toDate: string | number,
+        range?: DateRange,
         token?: string | number,
         symbolType = 'Equity',
         chartType = 'I',
         timeInterval: string | number = '5'
     ): Promise<ChartingOHLCResponse> {
+        const endDate = range?.end ?? new Date()
+        const startDate = range?.start ?? new Date(endDate.getTime() - 24 * 60 * 60 * 1000)
+        const fromDate = Math.floor(startDate.getTime() / 1000)
+        const toDate = Math.floor(endDate.getTime() / 1000)
+
         // Auto-fetch token (scripCode) when not supplied by the caller
         let resolvedToken = token
         if (!resolvedToken) {
             const symbolInfo = await this.getEquitySymbolInfo(symbol)
-            resolvedToken = symbolInfo.scripCode
+            resolvedToken = symbolInfo.scripcode
         }
 
         const url = `${this.chartingBaseUrl}/v1/charts/symbolHistoricalData?` +

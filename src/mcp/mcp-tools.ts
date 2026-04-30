@@ -896,10 +896,14 @@ export async function handleMCPToolCall(
         ? args.time_interval
         : '5'
 
+      const range = {
+        start: new Date(Number(args.from_date) * 1000),
+        end: new Date(Number(args.to_date) * 1000)
+      }
+
       result = await nseClient.getEquityChartHistoricalData(
         args.symbol,
-        args.from_date,
-        args.to_date,
+        range,
         token,
         symbolType,
         chartType,

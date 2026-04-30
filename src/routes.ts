@@ -1198,22 +1198,24 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *           example: ONGC-EQ
  *       - name: fromDate
  *         in: query
- *         description: Unix timestamp for start date
- *         required: true
+ *         description: "Start date to pull chart data (format: YYYY-MM-DD)"
+ *         required: false
  *         schema:
- *           type: number
- *           example: 1775834999
+ *           type: string
+ *           format: date
+ *           example: "2026-04-10"
  *       - name: toDate
  *         in: query
- *         description: Unix timestamp for end date
- *         required: true
+ *         description: "End date to pull chart data (format: YYYY-MM-DD)"
+ *         required: false
  *         schema:
- *           type: number
- *           example: 1775999513
+ *           type: string
+ *           format: date
+ *           example: "2026-04-12"
  *       - name: token
  *         in: query
- *         description: Token value for charting API
- *         required: true
+ *         description: Optional token value for charting API (auto-fetched when omitted)
+ *         required: false
  *         schema:
  *           type: string
  *           example: "2475"
@@ -1283,28 +1285,40 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  */
 mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
     try {
-        const { symbol, fromDate, toDate, token, symbolType = 'Equity', chartType = 'I', timeInterval = '5' } = req.query
+        const {
+            symbol,
+            fromDate,
+            toDate,
+            token,
+            symbolType = 'Equity',
+            chartType = 'I',
+            timeInterval = '5'
+        } = req.query
 
         // Validate required parameters
         if (!symbol) {
             return res.status(400).json({ error: 'Missing required parameter: symbol' })
         }
-        if (!fromDate) {
-            return res.status(400).json({ error: 'Missing required parameter: fromDate' })
-        }
-        if (!toDate) {
-            return res.status(400).json({ error: 'Missing required parameter: toDate' })
-        }
-        if (!token) {
-            return res.status(400).json({ error: 'Missing required parameter: token' })
+        // Call the charting method
+        let range
+        if (fromDate || toDate) {
+            const end = toDate ? new Date(String(toDate)) : new Date()
+            const start = fromDate
+                ? new Date(String(fromDate))
+                : new Date(end.getTime() - 24 * 60 * 60 * 1000)
+            if (start.getTime() <= 0 || end.getTime() <= 0) {
+                return res.status(400).json({ error: 'Invalid date format. Please use the format (YYYY-MM-DD)' })
+            }
+            range = {
+                start,
+                end
+            }
         }
 
-        // Call the charting method
         const chartData = await nseIndia.getEquityChartHistoricalData(
             String(symbol),
-            String(fromDate),
-            String(toDate),
-            String(token),
+            range,
+            token ? String(token) : undefined,
             String(symbolType),
             String(chartType),
             String(timeInterval)
