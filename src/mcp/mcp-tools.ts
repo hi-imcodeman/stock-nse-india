@@ -386,6 +386,65 @@ export const mcpTools = [
       required: ['index_symbol'],
     },
   },
+  {
+    name: 'get_equity_chart_historical_data',
+    description: 'Get historical chart data from charting.nseindia.com for equity symbols with OHLC candle data',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        symbol: {
+          type: 'string',
+          description: 'Equity symbol with series code (e.g., ONGC-EQ, TCS-EQ)',
+        },
+        from_date: {
+          type: 'string',
+          description: 'Unix timestamp for start date (e.g., 1775834999)',
+        },
+        to_date: {
+          type: 'string',
+          description: 'Unix timestamp for end date (e.g., 1775999513)',
+        },
+        token: {
+          type: 'string',
+          description: 'NSE script code (token / scripCode) for the symbol. ' +
+                       'If omitted, it is looked up automatically via get_equity_chart_symbol_info.',
+        },
+        symbol_type: {
+          type: 'string',
+          description: 'Type of symbol - Equity or Index (default: Equity)',
+        },
+        chart_type: {
+          type: 'string',
+          description: 'Chart type - I for intraday, D for daily (default: I)',
+        },
+        time_interval: {
+          type: 'string',
+          description: 'Time interval in minutes - 1, 5, 15, 30, 60. (default: 5)',
+        },
+      },
+      required: ['symbol', 'from_date', 'to_date'],
+    },
+  },
+  {
+    name: 'get_equity_chart_symbol_info',
+    description:
+      'Look up NSE charting symbol information for an equity symbol. Returns scripCode (token) ' +
+      'needed by get_equity_chart_historical_data. Call this first when you do not already know the token.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        symbol: {
+          type: 'string',
+          description: 'Equity symbol with or without series code (e.g., ONGC-EQ or ONGC)',
+        },
+        segment: {
+          type: 'string',
+          description: 'Optional market segment filter. Leave empty to search all segments.',
+        },
+      },
+      required: ['symbol'],
+    },
+  },
 ]
 
 // Common tool call handler function
@@ -397,421 +456,466 @@ export async function handleMCPToolCall(
   let result: unknown
 
   switch (name) {
-          case 'get_all_stock_symbols': {
-        result = await nseClient.getAllStockSymbols()
-        break
+    case 'get_all_stock_symbols': {
+      result = await nseClient.getAllStockSymbols()
+      break
+    }
+
+    case 'get_equity_details': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
+      }
+      result = await nseClient.getEquityDetails(args.symbol)
+      break
+    }
+
+    case 'get_equity_trade_info': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
+      }
+      result = await nseClient.getEquityTradeInfo(args.symbol)
+      break
+    }
+
+    case 'get_equity_corporate_info': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
+      }
+      result = await nseClient.getEquityCorporateInfo(args.symbol)
+      break
+    }
+
+    case 'get_equity_intraday_data': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
+      }
+      result = await nseClient.getEquityIntradayData(args.symbol)
+      break
+    }
+
+    case 'get_equity_historical_data': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
+      }
+      const range = args.start_date && args.end_date &&
+        typeof args.start_date === 'string' &&
+        typeof args.end_date === 'string'
+        ? { start: new Date(args.start_date), end: new Date(args.end_date) }
+        : undefined
+      result = await nseClient.getEquityHistoricalData(args.symbol, range)
+      break
+    }
+
+    case 'get_equity_series': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
+      }
+      result = await nseClient.getEquitySeries(args.symbol)
+      break
+    }
+
+    case 'get_equity_stock_indices': {
+      if (!args?.index || typeof args.index !== 'string') {
+        throw new Error('Index parameter is required and must be a string')
+      }
+      result = await nseClient.getEquityStockIndices(args.index)
+      break
+    }
+
+    case 'get_index_intraday_data': {
+      if (!args?.index || typeof args.index !== 'string') {
+        throw new Error('Index parameter is required and must be a string')
+      }
+      result = await nseClient.getIndexIntradayData(args.index)
+      break
+    }
+
+    case 'get_index_option_chain': {
+      if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
+        throw new Error('Index symbol parameter is required and must be a string')
+      }
+      result = await nseClient.getIndexOptionChain(args.index_symbol)
+      break
+    }
+
+    case 'get_index_option_chain_contract_info': {
+      if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
+        throw new Error('Index symbol parameter is required and must be a string')
+      }
+      result = await nseClient.getIndexOptionChainContractInfo(args.index_symbol)
+      break
+    }
+
+    case 'get_equity_option_chain': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
+      }
+      result = await nseClient.getEquityOptionChain(args.symbol)
+      break
+    }
+
+    case 'get_commodity_option_chain': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
+      }
+      result = await nseClient.getCommodityOptionChain(args.symbol)
+      break
+    }
+
+    case 'get_glossary': {
+      result = await nseClient.getGlossary()
+      break
+    }
+
+    case 'get_trading_holidays': {
+      result = await nseClient.getTradingHolidays()
+      break
+    }
+
+    case 'get_clearing_holidays': {
+      result = await nseClient.getClearingHolidays()
+      break
+    }
+
+    case 'get_market_status': {
+      result = await nseClient.getMarketStatus()
+      break
+    }
+
+    case 'get_market_turnover': {
+      result = await nseClient.getMarketTurnover()
+      break
+    }
+
+    case 'get_all_indices': {
+      result = await nseClient.getAllIndices()
+      break
+    }
+
+    case 'get_index_names': {
+      result = await nseClient.getIndexNames()
+      break
+    }
+
+    case 'get_circulars': {
+      result = await nseClient.getCirculars()
+      break
+    }
+
+    case 'get_latest_circulars': {
+      result = await nseClient.getLatestCirculars()
+      break
+    }
+
+    case 'get_equity_master': {
+      result = await nseClient.getEquityMaster()
+      break
+    }
+
+    case 'get_pre_open_market_data': {
+      result = await nseClient.getPreOpenMarketData()
+      break
+    }
+
+    case 'get_merged_daily_reports_capital': {
+      result = await nseClient.getMergedDailyReportsCapital()
+      break
+    }
+
+    case 'get_merged_daily_reports_derivatives': {
+      result = await nseClient.getMergedDailyReportsDerivatives()
+      break
+    }
+
+    case 'get_merged_daily_reports_debt': {
+      result = await nseClient.getMergedDailyReportsDebt()
+      break
+    }
+
+    case 'get_equity_technical_indicators': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
       }
 
-      case 'get_equity_details': {
-        if (!args?.symbol || typeof args.symbol !== 'string') {
-          throw new Error('Symbol parameter is required and must be a string')
-        }
-        result = await nseClient.getEquityDetails(args.symbol)
-        break
+      const options: Record<string, unknown> = {}
+      const showOnlyLatest = args.show_only_latest !== undefined
+        ? args.show_only_latest
+        : true
+
+      if (args.period && typeof args.period === 'number') {
+        options.period = args.period
       }
 
-      case 'get_equity_trade_info': {
-        if (!args?.symbol || typeof args.symbol !== 'string') {
-          throw new Error('Symbol parameter is required and must be a string')
-        }
-        result = await nseClient.getEquityTradeInfo(args.symbol)
-        break
+      if (args.sma_periods && Array.isArray(args.sma_periods)) {
+        options.smaPeriods = args.sma_periods
       }
 
-      case 'get_equity_corporate_info': {
-        if (!args?.symbol || typeof args.symbol !== 'string') {
-          throw new Error('Symbol parameter is required and must be a string')
-        }
-        result = await nseClient.getEquityCorporateInfo(args.symbol)
-        break
+      if (args.ema_periods && Array.isArray(args.ema_periods)) {
+        options.emaPeriods = args.ema_periods
       }
 
-          case 'get_equity_intraday_data': {
-        if (!args?.symbol || typeof args.symbol !== 'string') {
-          throw new Error('Symbol parameter is required and must be a string')
-        }
-        result = await nseClient.getEquityIntradayData(args.symbol)
-        break
+      if (args.rsi_period && typeof args.rsi_period === 'number') {
+        options.rsiPeriod = args.rsi_period
       }
 
-          case 'get_equity_historical_data': {
-        if (!args?.symbol || typeof args.symbol !== 'string') {
-          throw new Error('Symbol parameter is required and must be a string')
-        }
-        const range = args.start_date && args.end_date && 
-          typeof args.start_date === 'string' && 
-          typeof args.end_date === 'string'
-          ? { start: new Date(args.start_date), end: new Date(args.end_date) }
-          : undefined
-        result = await nseClient.getEquityHistoricalData(args.symbol, range)
-        break
+      if (args.bb_period && typeof args.bb_period === 'number') {
+        options.bbPeriod = args.bb_period
       }
 
-          case 'get_equity_series': {
-        if (!args?.symbol || typeof args.symbol !== 'string') {
-          throw new Error('Symbol parameter is required and must be a string')
-        }
-        result = await nseClient.getEquitySeries(args.symbol)
-        break
+      if (args.bb_std_dev && typeof args.bb_std_dev === 'number') {
+        options.bbStdDev = args.bb_std_dev
       }
 
-      case 'get_equity_stock_indices': {
-        if (!args?.index || typeof args.index !== 'string') {
-          throw new Error('Index parameter is required and must be a string')
-        }
-        result = await nseClient.getEquityStockIndices(args.index)
-        break
+      const indicators = await nseClient.getTechnicalIndicators(
+        args.symbol,
+        (options.period as number) || 200,
+        options
+      )
+
+      // Helper function to round numbers to 2 decimal places
+      const roundTo2Decimals = (value: number | null | undefined): number | null => {
+        return value !== null && value !== undefined ? Math.round(value * 100) / 100 : null
       }
 
-          case 'get_index_intraday_data': {
-        if (!args?.index || typeof args.index !== 'string') {
-          throw new Error('Index parameter is required and must be a string')
-        }
-        result = await nseClient.getIndexIntradayData(args.index)
-        break
+      // Helper function to round array of numbers to 2 decimal places
+      const roundArrayTo2Decimals = (arr: number[]): number[] => {
+        return arr.map(value => roundTo2Decimals(value) ?? 0)
       }
 
-      case 'get_index_option_chain': {
-        if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
-          throw new Error('Index symbol parameter is required and must be a string')
-        }
-        result = await nseClient.getIndexOptionChain(args.index_symbol)
-        break
-      }
+      if (showOnlyLatest) {
+        // Return only the latest values
+        const latestIndicators: Record<string, unknown> = {}
 
-      case 'get_index_option_chain_contract_info': {
-        if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
-          throw new Error('Index symbol parameter is required and must be a string')
-        }
-        result = await nseClient.getIndexOptionChainContractInfo(args.index_symbol)
-        break
-      }
+        // Process SMA indicators
+        latestIndicators.sma = {}
+        Object.keys(indicators.sma).forEach(key => {
+          const values = indicators.sma[key]
+            ; (latestIndicators.sma as Record<string, unknown>)[key] =
+              values.length > 0 ? roundTo2Decimals(values[values.length - 1]) : null
+        })
 
-      case 'get_equity_option_chain': {
-        if (!args?.symbol || typeof args.symbol !== 'string') {
-          throw new Error('Symbol parameter is required and must be a string')
-        }
-        result = await nseClient.getEquityOptionChain(args.symbol)
-        break
-      }
+        // Process EMA indicators
+        latestIndicators.ema = {}
+        Object.keys(indicators.ema).forEach(key => {
+          const values = indicators.ema[key]
+            ; (latestIndicators.ema as Record<string, unknown>)[key] =
+              values.length > 0 ? roundTo2Decimals(values[values.length - 1]) : null
+        })
 
-      case 'get_commodity_option_chain': {
-        if (!args?.symbol || typeof args.symbol !== 'string') {
-          throw new Error('Symbol parameter is required and must be a string')
-        }
-        result = await nseClient.getCommodityOptionChain(args.symbol)
-        break
-      }
-
-      case 'get_glossary': {
-        result = await nseClient.getGlossary()
-        break
-      }
-
-      case 'get_trading_holidays': {
-        result = await nseClient.getTradingHolidays()
-        break
-      }
-
-      case 'get_clearing_holidays': {
-        result = await nseClient.getClearingHolidays()
-        break
-      }
-
-      case 'get_market_status': {
-        result = await nseClient.getMarketStatus()
-        break
-      }
-
-      case 'get_market_turnover': {
-        result = await nseClient.getMarketTurnover()
-        break
-      }
-
-      case 'get_all_indices': {
-        result = await nseClient.getAllIndices()
-        break
-      }
-
-      case 'get_index_names': {
-        result = await nseClient.getIndexNames()
-        break
-      }
-
-      case 'get_circulars': {
-        result = await nseClient.getCirculars()
-        break
-      }
-
-      case 'get_latest_circulars': {
-        result = await nseClient.getLatestCirculars()
-        break
-      }
-
-      case 'get_equity_master': {
-        result = await nseClient.getEquityMaster()
-        break
-      }
-
-      case 'get_pre_open_market_data': {
-        result = await nseClient.getPreOpenMarketData()
-        break
-      }
-
-      case 'get_merged_daily_reports_capital': {
-        result = await nseClient.getMergedDailyReportsCapital()
-        break
-      }
-
-      case 'get_merged_daily_reports_derivatives': {
-        result = await nseClient.getMergedDailyReportsDerivatives()
-        break
-      }
-
-      case 'get_merged_daily_reports_debt': {
-        result = await nseClient.getMergedDailyReportsDebt()
-        break
-      }
-
-      case 'get_equity_technical_indicators': {
-        if (!args?.symbol || typeof args.symbol !== 'string') {
-          throw new Error('Symbol parameter is required and must be a string')
-        }
-        
-        const options: Record<string, unknown> = {}
-        const showOnlyLatest = args.show_only_latest !== undefined 
-          ? args.show_only_latest 
-          : true
-        
-        if (args.period && typeof args.period === 'number') {
-          options.period = args.period
-        }
-        
-        if (args.sma_periods && Array.isArray(args.sma_periods)) {
-          options.smaPeriods = args.sma_periods
-        }
-        
-        if (args.ema_periods && Array.isArray(args.ema_periods)) {
-          options.emaPeriods = args.ema_periods
-        }
-        
-        if (args.rsi_period && typeof args.rsi_period === 'number') {
-          options.rsiPeriod = args.rsi_period
-        }
-        
-        if (args.bb_period && typeof args.bb_period === 'number') {
-          options.bbPeriod = args.bb_period
-        }
-        
-        if (args.bb_std_dev && typeof args.bb_std_dev === 'number') {
-          options.bbStdDev = args.bb_std_dev
-        }
-        
-        const indicators = await nseClient.getTechnicalIndicators(
-          args.symbol, 
-          (options.period as number) || 200, 
-          options
+        // Process other indicators
+        latestIndicators.rsi = roundTo2Decimals(
+          indicators.rsi.length > 0
+            ? indicators.rsi[indicators.rsi.length - 1]
+            : null
         )
-        
-        // Helper function to round numbers to 2 decimal places
-        const roundTo2Decimals = (value: number | null | undefined): number | null => {
-          return value !== null && value !== undefined ? Math.round(value * 100) / 100 : null
+        latestIndicators.macd = {
+          macd: roundTo2Decimals(
+            indicators.macd.macd.length > 0
+              ? indicators.macd.macd[indicators.macd.macd.length - 1]
+              : null
+          ),
+          signal: roundTo2Decimals(
+            indicators.macd.signal.length > 0
+              ? indicators.macd.signal[indicators.macd.signal.length - 1]
+              : null
+          ),
+          histogram: roundTo2Decimals(
+            indicators.macd.histogram.length > 0
+              ? indicators.macd.histogram[indicators.macd.histogram.length - 1]
+              : null
+          )
         }
+        latestIndicators.bollingerBands = {
+          upper: roundTo2Decimals(
+            indicators.bollingerBands.upper.length > 0
+              ? indicators.bollingerBands.upper[indicators.bollingerBands.upper.length - 1]
+              : null
+          ),
+          middle: roundTo2Decimals(
+            indicators.bollingerBands.middle.length > 0
+              ? indicators.bollingerBands.middle[indicators.bollingerBands.middle.length - 1]
+              : null
+          ),
+          lower: roundTo2Decimals(
+            indicators.bollingerBands.lower.length > 0
+              ? indicators.bollingerBands.lower[indicators.bollingerBands.lower.length - 1]
+              : null
+          )
+        }
+        latestIndicators.stochastic = {
+          k: roundTo2Decimals(
+            indicators.stochastic.k.length > 0
+              ? indicators.stochastic.k[indicators.stochastic.k.length - 1]
+              : null
+          ),
+          d: roundTo2Decimals(
+            indicators.stochastic.d.length > 0
+              ? indicators.stochastic.d[indicators.stochastic.d.length - 1]
+              : null
+          )
+        }
+        latestIndicators.williamsR = roundTo2Decimals(
+          indicators.williamsR.length > 0
+            ? indicators.williamsR[indicators.williamsR.length - 1]
+            : null
+        )
+        latestIndicators.atr = roundTo2Decimals(
+          indicators.atr.length > 0
+            ? indicators.atr[indicators.atr.length - 1]
+            : null
+        )
+        latestIndicators.adx = roundTo2Decimals(
+          indicators.adx.length > 0
+            ? indicators.adx[indicators.adx.length - 1]
+            : null
+        )
+        latestIndicators.obv = roundTo2Decimals(
+          indicators.obv.length > 0
+            ? indicators.obv[indicators.obv.length - 1]
+            : null
+        )
+        latestIndicators.cci = roundTo2Decimals(
+          indicators.cci.length > 0
+            ? indicators.cci[indicators.cci.length - 1]
+            : null
+        )
+        latestIndicators.mfi = roundTo2Decimals(
+          indicators.mfi.length > 0
+            ? indicators.mfi[indicators.mfi.length - 1]
+            : null
+        )
+        latestIndicators.roc = roundTo2Decimals(
+          indicators.roc.length > 0
+            ? indicators.roc[indicators.roc.length - 1]
+            : null
+        )
+        latestIndicators.momentum = roundTo2Decimals(
+          indicators.momentum.length > 0
+            ? indicators.momentum[indicators.momentum.length - 1]
+            : null
+        )
+        latestIndicators.ad = roundTo2Decimals(
+          indicators.ad.length > 0
+            ? indicators.ad[indicators.ad.length - 1]
+            : null
+        )
+        latestIndicators.vwap = roundTo2Decimals(
+          indicators.vwap.length > 0
+            ? indicators.vwap[indicators.vwap.length - 1]
+            : null
+        )
 
-        // Helper function to round array of numbers to 2 decimal places
-        const roundArrayTo2Decimals = (arr: number[]): number[] => {
-          return arr.map(value => roundTo2Decimals(value) ?? 0)
+        result = latestIndicators
+      } else {
+        // Return all values with 2 decimal precision
+        const roundedIndicators: Record<string, unknown> = {}
+
+        // Process SMA indicators
+        roundedIndicators.sma = {}
+        Object.keys(indicators.sma).forEach(key => {
+          (roundedIndicators.sma as Record<string, unknown>)[key] =
+            roundArrayTo2Decimals(indicators.sma[key])
+        })
+
+        // Process EMA indicators
+        roundedIndicators.ema = {}
+        Object.keys(indicators.ema).forEach(key => {
+          (roundedIndicators.ema as Record<string, unknown>)[key] =
+            roundArrayTo2Decimals(indicators.ema[key])
+        })
+
+        // Process other indicators
+        roundedIndicators.rsi = roundArrayTo2Decimals(indicators.rsi)
+        roundedIndicators.macd = {
+          macd: roundArrayTo2Decimals(indicators.macd.macd),
+          signal: roundArrayTo2Decimals(indicators.macd.signal),
+          histogram: roundArrayTo2Decimals(indicators.macd.histogram)
         }
-        
-        if (showOnlyLatest) {
-          // Return only the latest values
-          const latestIndicators: Record<string, unknown> = {}
-          
-          // Process SMA indicators
-          latestIndicators.sma = {}
-          Object.keys(indicators.sma).forEach(key => {
-            const values = indicators.sma[key]
-            ;(latestIndicators.sma as Record<string, unknown>)[key] = 
-              values.length > 0 ? roundTo2Decimals(values[values.length - 1]) : null
-          })
-          
-          // Process EMA indicators
-          latestIndicators.ema = {}
-          Object.keys(indicators.ema).forEach(key => {
-            const values = indicators.ema[key]
-            ;(latestIndicators.ema as Record<string, unknown>)[key] = 
-              values.length > 0 ? roundTo2Decimals(values[values.length - 1]) : null
-          })
-          
-          // Process other indicators
-          latestIndicators.rsi = roundTo2Decimals(
-            indicators.rsi.length > 0 
-              ? indicators.rsi[indicators.rsi.length - 1] 
-              : null
-          )
-          latestIndicators.macd = {
-            macd: roundTo2Decimals(
-              indicators.macd.macd.length > 0 
-                ? indicators.macd.macd[indicators.macd.macd.length - 1] 
-                : null
-            ),
-            signal: roundTo2Decimals(
-              indicators.macd.signal.length > 0 
-                ? indicators.macd.signal[indicators.macd.signal.length - 1] 
-                : null
-            ),
-            histogram: roundTo2Decimals(
-              indicators.macd.histogram.length > 0 
-                ? indicators.macd.histogram[indicators.macd.histogram.length - 1] 
-                : null
-            )
-          }
-          latestIndicators.bollingerBands = {
-            upper: roundTo2Decimals(
-              indicators.bollingerBands.upper.length > 0 
-                ? indicators.bollingerBands.upper[indicators.bollingerBands.upper.length - 1] 
-                : null
-            ),
-            middle: roundTo2Decimals(
-              indicators.bollingerBands.middle.length > 0 
-                ? indicators.bollingerBands.middle[indicators.bollingerBands.middle.length - 1] 
-                : null
-            ),
-            lower: roundTo2Decimals(
-              indicators.bollingerBands.lower.length > 0 
-                ? indicators.bollingerBands.lower[indicators.bollingerBands.lower.length - 1] 
-                : null
-            )
-          }
-          latestIndicators.stochastic = {
-            k: roundTo2Decimals(
-              indicators.stochastic.k.length > 0 
-                ? indicators.stochastic.k[indicators.stochastic.k.length - 1] 
-                : null
-            ),
-            d: roundTo2Decimals(
-              indicators.stochastic.d.length > 0 
-                ? indicators.stochastic.d[indicators.stochastic.d.length - 1] 
-                : null
-            )
-          }
-          latestIndicators.williamsR = roundTo2Decimals(
-            indicators.williamsR.length > 0 
-              ? indicators.williamsR[indicators.williamsR.length - 1] 
-              : null
-          )
-          latestIndicators.atr = roundTo2Decimals(
-            indicators.atr.length > 0 
-              ? indicators.atr[indicators.atr.length - 1] 
-              : null
-          )
-          latestIndicators.adx = roundTo2Decimals(
-            indicators.adx.length > 0 
-              ? indicators.adx[indicators.adx.length - 1] 
-              : null
-          )
-          latestIndicators.obv = roundTo2Decimals(
-            indicators.obv.length > 0 
-              ? indicators.obv[indicators.obv.length - 1] 
-              : null
-          )
-          latestIndicators.cci = roundTo2Decimals(
-            indicators.cci.length > 0 
-              ? indicators.cci[indicators.cci.length - 1] 
-              : null
-          )
-          latestIndicators.mfi = roundTo2Decimals(
-            indicators.mfi.length > 0 
-              ? indicators.mfi[indicators.mfi.length - 1] 
-              : null
-          )
-          latestIndicators.roc = roundTo2Decimals(
-            indicators.roc.length > 0 
-              ? indicators.roc[indicators.roc.length - 1] 
-              : null
-          )
-          latestIndicators.momentum = roundTo2Decimals(
-            indicators.momentum.length > 0 
-              ? indicators.momentum[indicators.momentum.length - 1] 
-              : null
-          )
-          latestIndicators.ad = roundTo2Decimals(
-            indicators.ad.length > 0 
-              ? indicators.ad[indicators.ad.length - 1] 
-              : null
-          )
-          latestIndicators.vwap = roundTo2Decimals(
-            indicators.vwap.length > 0 
-              ? indicators.vwap[indicators.vwap.length - 1] 
-              : null
-          )
-          
-          result = latestIndicators
-        } else {
-          // Return all values with 2 decimal precision
-          const roundedIndicators: Record<string, unknown> = {}
-          
-          // Process SMA indicators
-          roundedIndicators.sma = {}
-          Object.keys(indicators.sma).forEach(key => {
-            (roundedIndicators.sma as Record<string, unknown>)[key] = 
-              roundArrayTo2Decimals(indicators.sma[key])
-          })
-          
-          // Process EMA indicators
-          roundedIndicators.ema = {}
-          Object.keys(indicators.ema).forEach(key => {
-            (roundedIndicators.ema as Record<string, unknown>)[key] = 
-              roundArrayTo2Decimals(indicators.ema[key])
-          })
-          
-          // Process other indicators
-          roundedIndicators.rsi = roundArrayTo2Decimals(indicators.rsi)
-          roundedIndicators.macd = {
-            macd: roundArrayTo2Decimals(indicators.macd.macd),
-            signal: roundArrayTo2Decimals(indicators.macd.signal),
-            histogram: roundArrayTo2Decimals(indicators.macd.histogram)
-          }
-          roundedIndicators.bollingerBands = {
-            upper: roundArrayTo2Decimals(indicators.bollingerBands.upper),
-            middle: roundArrayTo2Decimals(indicators.bollingerBands.middle),
-            lower: roundArrayTo2Decimals(indicators.bollingerBands.lower)
-          }
-          roundedIndicators.stochastic = {
-            k: roundArrayTo2Decimals(indicators.stochastic.k),
-            d: roundArrayTo2Decimals(indicators.stochastic.d)
-          }
-          roundedIndicators.williamsR = roundArrayTo2Decimals(indicators.williamsR)
-          roundedIndicators.atr = roundArrayTo2Decimals(indicators.atr)
-          roundedIndicators.adx = roundArrayTo2Decimals(indicators.adx)
-          roundedIndicators.obv = roundArrayTo2Decimals(indicators.obv)
-          roundedIndicators.cci = roundArrayTo2Decimals(indicators.cci)
-          roundedIndicators.mfi = roundArrayTo2Decimals(indicators.mfi)
-          roundedIndicators.roc = roundArrayTo2Decimals(indicators.roc)
-          roundedIndicators.momentum = roundArrayTo2Decimals(indicators.momentum)
-          roundedIndicators.ad = roundArrayTo2Decimals(indicators.ad)
-          roundedIndicators.vwap = roundArrayTo2Decimals(indicators.vwap)
-          
-          result = roundedIndicators
+        roundedIndicators.bollingerBands = {
+          upper: roundArrayTo2Decimals(indicators.bollingerBands.upper),
+          middle: roundArrayTo2Decimals(indicators.bollingerBands.middle),
+          lower: roundArrayTo2Decimals(indicators.bollingerBands.lower)
         }
-        break
+        roundedIndicators.stochastic = {
+          k: roundArrayTo2Decimals(indicators.stochastic.k),
+          d: roundArrayTo2Decimals(indicators.stochastic.d)
+        }
+        roundedIndicators.williamsR = roundArrayTo2Decimals(indicators.williamsR)
+        roundedIndicators.atr = roundArrayTo2Decimals(indicators.atr)
+        roundedIndicators.adx = roundArrayTo2Decimals(indicators.adx)
+        roundedIndicators.obv = roundArrayTo2Decimals(indicators.obv)
+        roundedIndicators.cci = roundArrayTo2Decimals(indicators.cci)
+        roundedIndicators.mfi = roundArrayTo2Decimals(indicators.mfi)
+        roundedIndicators.roc = roundArrayTo2Decimals(indicators.roc)
+        roundedIndicators.momentum = roundArrayTo2Decimals(indicators.momentum)
+        roundedIndicators.ad = roundArrayTo2Decimals(indicators.ad)
+        roundedIndicators.vwap = roundArrayTo2Decimals(indicators.vwap)
+
+        result = roundedIndicators
+      }
+      break
+    }
+
+    case 'get_gainers_and_losers_by_index': {
+      if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
+        throw new Error('Index symbol parameter is required and must be a string')
+      }
+      result = await getGainersAndLosersByIndex(args.index_symbol)
+      break
+    }
+
+    case 'get_most_active_equities': {
+      if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
+        throw new Error('Index symbol parameter is required and must be a string')
+      }
+      result = await getMostActiveEquities(args.index_symbol)
+      break
+    }
+
+    case 'get_equity_chart_historical_data': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
+      }
+      if (!args?.from_date || typeof args.from_date !== 'string') {
+        throw new Error('from_date parameter is required and must be a string (unix timestamp)')
+      }
+      if (!args?.to_date || typeof args.to_date !== 'string') {
+        throw new Error('to_date parameter is required and must be a string (unix timestamp)')
       }
 
-      case 'get_gainers_and_losers_by_index': {
-        if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
-          throw new Error('Index symbol parameter is required and must be a string')
-        }
-        result = await getGainersAndLosersByIndex(args.index_symbol)
-        break
-      }
+      // token is now optional — the core method auto-fetches it via getEquitySymbolInfo
+      const token = args.token && typeof args.token === 'string' ? args.token : undefined
 
-      case 'get_most_active_equities': {
-        if (!args?.index_symbol || typeof args.index_symbol !== 'string') {
-          throw new Error('Index symbol parameter is required and must be a string')
-        }
-        result = await getMostActiveEquities(args.index_symbol)
-        break
+      const symbolType = args.symbol_type && typeof args.symbol_type === 'string'
+        ? args.symbol_type
+        : 'Equity'
+      const chartType = args.chart_type && typeof args.chart_type === 'string'
+        ? args.chart_type
+        : 'I'
+      const timeInterval = args.time_interval && typeof args.time_interval === 'string'
+        ? args.time_interval
+        : '5'
+
+      result = await nseClient.getEquityChartHistoricalData(
+        args.symbol,
+        args.from_date,
+        args.to_date,
+        token,
+        symbolType,
+        chartType,
+        timeInterval
+      )
+      break
+    }
+
+    case 'get_equity_chart_symbol_info': {
+      if (!args?.symbol || typeof args.symbol !== 'string') {
+        throw new Error('Symbol parameter is required and must be a string')
       }
+      const segment = args.segment && typeof args.segment === 'string' ? args.segment : ''
+      result = await nseClient.getEquitySymbolInfo(args.symbol, segment)
+      break
+    }
 
     default:
       throw new Error(`Unknown tool: ${name}`)
