@@ -7,6 +7,8 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   collectCoverageFrom: [
+    'src/index.ts',
+    'src/helpers.ts',
     'src/equity-mappers.ts',
     'src/route-errors.ts',
     'src/utils.ts'

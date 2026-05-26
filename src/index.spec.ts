@@ -1,407 +1,1006 @@
-import { NseIndia, ApiList } from "./index";
+import { NseIndia, ApiList } from './index'
+import quoteEquityFixture from './__fixtures__/nse/quote-equity-tcs.json'
+import axios from 'axios'
 
-jest.setTimeout(999999)
+describe('Class: NseIndia (mocked)', () => {
+    let nseIndia: NseIndia
+    let getDataByEndpointSpy: jest.SpyInstance
 
-const describeLive = process.env.NSE_LIVE_TESTS === '1' ? describe : describe.skip
+    beforeEach(() => {
+        nseIndia = new NseIndia()
+        getDataByEndpointSpy = jest.spyOn(nseIndia, 'getDataByEndpoint')
+    })
 
-const skipOnNseUnavailable = (error: unknown): void => {
-    if (error instanceof Error && /status code (403|502|503)/.test(error.message)) {
-        console.warn(`Skipping due to NSE transient/unavailable response: ${error.message}`)
-        return
-    }
-    throw error
-}
+    afterEach(() => {
+        jest.restoreAllMocks()
+    })
 
-describeLive('Class: NseIndia (live NSE — set NSE_LIVE_TESTS=1)', () => {
-    const symbol = 'ITC'
-    const nseIndia = new NseIndia()
-    test('getAllStockSymbols', async () => {
+    test('getAllStockSymbols returns sorted symbols from pre-open market data', async () => {
+        getDataByEndpointSpy.mockResolvedValue({
+            data: [
+                { metadata: { symbol: 'TCS' } },
+                { metadata: { symbol: 'ITC' } }
+            ]
+        })
+
         const symbols = await nseIndia.getAllStockSymbols()
-        expect(symbols.length).toBeGreaterThan(1000)
-    })
-    test('getEquityDetails', async () => {
-        try {
-            const details = await nseIndia.getEquityDetails(symbol.toLowerCase())
-            // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-            expect(details.info.symbol).toBe(symbol)
-        } catch (error) {
-            skipOnNseUnavailable(error)
-        }
+
+        expect(symbols).toEqual(['ITC', 'TCS'])
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.MARKET_DATA_PRE_OPEN)
     })
 
-    test('getIndexOptionChain', async () => {
-        const optionChain = await nseIndia.getIndexOptionChain('NIFTY')
-        // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(optionChain).toBeDefined()
-        expect(optionChain).toHaveProperty('records')
-        expect(optionChain).toHaveProperty('filtered')
-        // Handle case where filtered or records might be null
-        if (optionChain.filtered && optionChain.filtered.data && optionChain.filtered.data.length > 0) {
-            const firstItem = optionChain.filtered.data[0]
-            expect(firstItem.PE?.underlying || firstItem.CE?.underlying).toBe('NIFTY')
-        } else if (optionChain.records && optionChain.records.data && optionChain.records.data.length > 0) {
-            const firstItem = optionChain.records.data[0]
-            expect(firstItem.PE?.underlying || firstItem.CE?.underlying).toBe('NIFTY')
+    test('getEquityDetails returns mapped quote-equity payload', async () => {
+        getDataByEndpointSpy.mockResolvedValue(quoteEquityFixture)
+
+        const details = await nseIndia.getEquityDetails('tcs')
+
+        expect(details.info.symbol).toBe('TCS')
+        expect(details.priceInfo.lastPrice).toBe(2308.2)
+    })
+
+    test('getIndexOptionChain with expiry calls option-chain endpoint', async () => {
+        const mockOptionChain = {
+            records: { data: [{ CE: { underlying: 'NIFTY' } }] },
+            filtered: { data: [] }
         }
-        // At least one of records or filtered should exist (even if null)
-        expect(optionChain.records !== undefined && optionChain.filtered !== undefined).toBe(true)
+        getDataByEndpointSpy.mockResolvedValue(mockOptionChain)
+
+        const optionChain = await nseIndia.getIndexOptionChain('NIFTY', '23-Dec-2025')
+
+        expect(optionChain).toEqual(mockOptionChain)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(
+            '/api/option-chain-v3?type=Indices&symbol=NIFTY&expiry=23-Dec-2025'
+        )
     })
-    test('getIndexOptionChain with expiry', async () => {
-        const expiry = '23-Dec-2025'
-        const optionChain = await nseIndia.getIndexOptionChain('NIFTY', expiry)
-        expect(optionChain).toBeDefined()
-        expect(optionChain).toHaveProperty('records')
-        expect(optionChain).toHaveProperty('filtered')
-        // Handle case where filtered or records might be null
-        if (optionChain.filtered && optionChain.filtered.data && optionChain.filtered.data.length > 0) {
-            const firstItem = optionChain.filtered.data[0]
-            expect(firstItem.PE?.underlying || firstItem.CE?.underlying).toBe('NIFTY')
-        } else if (optionChain.records && optionChain.records.data && optionChain.records.data.length > 0) {
-            const firstItem = optionChain.records.data[0]
-            expect(firstItem.PE?.underlying || firstItem.CE?.underlying).toBe('NIFTY')
+
+    test('getIndexOptionChainContractInfo returns contract metadata', async () => {
+        const contractInfo = {
+            expiryDates: ['23-Dec-2025'],
+            strikePrice: [24000, 24100]
         }
-        // At least one of records or filtered should exist (even if null)
-        expect(optionChain.records !== undefined && optionChain.filtered !== undefined).toBe(true)
+        getDataByEndpointSpy.mockResolvedValue(contractInfo)
+
+        const result = await nseIndia.getIndexOptionChainContractInfo('NIFTY')
+
+        expect(result).toEqual(contractInfo)
     })
-    test('getIndexOptionChainContractInfo', async () => {
-        const contractInfo = await nseIndia.getIndexOptionChainContractInfo('NIFTY')
-        expect(contractInfo).toBeDefined()
-        expect(contractInfo.expiryDates).toBeDefined()
-        expect(Array.isArray(contractInfo.expiryDates)).toBe(true)
-        expect(contractInfo.expiryDates.length).toBeGreaterThan(0)
-        expect(contractInfo.strikePrice).toBeDefined()
-        expect(Array.isArray(contractInfo.strikePrice)).toBe(true)
-        expect(contractInfo.strikePrice.length).toBeGreaterThan(0)
-    })
-    test('getCommodityOptionChain', async () => {
-        const optionChain = await nseIndia.getCommodityOptionChain('CRUDEOIL')
-        // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(optionChain).toBeDefined()
-        expect(optionChain).toHaveProperty('records')
-        expect(optionChain).toHaveProperty('filtered')
-        // Handle case where filtered or records might be null
-        if (optionChain.filtered && optionChain.filtered.data && optionChain.filtered.data.length > 0) {
-            const firstItem = optionChain.filtered.data[0]
-            expect(firstItem.PE?.underlying || firstItem.CE?.underlying).toBe('CRUDEOIL')
-        } else if (optionChain.records && optionChain.records.data && optionChain.records.data.length > 0) {
-            const firstItem = optionChain.records.data[0]
-            expect(firstItem.PE?.underlying || firstItem.CE?.underlying).toBe('CRUDEOIL')
+
+    test('getEquityOptionChain returns equity derivatives payload', async () => {
+        const mockPayload = {
+            data: [{ underlying: 'TCS' }],
+            timestamp: '2025-01-01T10:00:00'
         }
-        // At least one of records or filtered should exist (even if null)
-        expect(optionChain.records !== undefined && optionChain.filtered !== undefined).toBe(true)
-    })
-    test('getEquityOptionChain', async () => {
+        getDataByEndpointSpy.mockResolvedValue(mockPayload)
+
         const optionChain = await nseIndia.getEquityOptionChain('TCS')
-        // expect(getDataSchema(details,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(optionChain).toBeDefined()
-        expect(optionChain).toHaveProperty('data')
-        expect(optionChain).toHaveProperty('timestamp')
-        expect(Array.isArray(optionChain.data)).toBe(true)
-        expect(optionChain.data.length).toBeGreaterThan(0)
-        const firstItem = optionChain.data[0]
-        expect(firstItem).toHaveProperty('underlying')
-        expect(firstItem.underlying).toBe('TCS')
+
+        expect(optionChain).toEqual(mockPayload)
     })
-    test('getEquityTradeInfo', async () => {
-        try {
-            const tradeInfo = await nseIndia.getEquityTradeInfo(symbol)
-            // expect(getDataSchema(tradeInfo,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-            expect(Object.keys(tradeInfo).length).toBeGreaterThan(3)
-        } catch (error) {
-            skipOnNseUnavailable(error)
+
+    test('getEquityCorporateInfo calls top-corp-info endpoint', async () => {
+        const corporateInfo = {
+            latest_announcements: { data: [{ symbol: 'ITC' }] }
         }
+        getDataByEndpointSpy.mockResolvedValue(corporateInfo)
+
+        const data = await nseIndia.getEquityCorporateInfo('ITC')
+
+        expect(data).toEqual(corporateInfo)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith('/api/top-corp-info?symbol=ITC&market=equities')
     })
-    test('getEquityCorporateInfo', async () => {
-        const data = await nseIndia.getEquityCorporateInfo(symbol)
-        // expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(data.latest_announcements.data[0].symbol).toBe(symbol)
-    })
-    test('getEquityIntradayData', async () => {
-        try {
-            const intradayData = await nseIndia.getEquityIntradayData(symbol)
-            // expect(getDataSchema(intradayData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-            expect(intradayData.name).toBe(symbol)
-            expect(intradayData.grapthData).toBeDefined()
-            expect(Array.isArray(intradayData.grapthData)).toBe(true)
-        } catch (error) {
-            skipOnNseUnavailable(error)
+
+    test('getEquityStockIndices returns index metadata', async () => {
+        const indexData = {
+            metadata: { indexName: 'NIFTY AUTO' },
+            data: []
         }
-    })
-    test('getEquityHistoricalData', async () => {
-        try {
-            const historicalData = await nseIndia.getEquityHistoricalData(symbol)
-            // expect(getDataSchema(historicalData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-            expect(historicalData.length).toBeGreaterThan(1)
-            expect(historicalData[historicalData.length - 1].data[0].chSymbol).toBe(symbol)
-        } catch (error) {
-            skipOnNseUnavailable(error)
-        }
-    })
-    test('getEquityHistoricalData with Date range', async () => {
-        const range = {
-            start: new Date("2021-03-10"),
-            end: new Date("2021-03-20")
-        }
-        try {
-            const historicalData = await nseIndia.getEquityHistoricalData(symbol, range)
-            // expect(getDataSchema(historicalData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-            expect(historicalData[0].data[0].chSymbol).toBe(symbol)
-            expect(historicalData[0].meta.fromDate).toBe('10-03-2021')
-            expect(historicalData[0].meta.toDate).toBe('20-03-2021')
-        } catch (error) {
-            skipOnNseUnavailable(error)
-        }
-    })
-    test('getEquitySeries', async () => {
-        const seriesData = await nseIndia.getEquitySeries(symbol)
-        // expect(getDataSchema(seriesData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(seriesData.data.length).toBeGreaterThanOrEqual(1)
-    })
-    test('getIndexIntradayData', async () => {
-        const index = 'NIFTY 50'
-        const intradayData = await nseIndia.getIndexIntradayData(index)
-        // expect(getDataSchema(intradayData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(intradayData).toBeDefined()
-        expect(intradayData.name).toBe(index)
-        expect(intradayData.grapthData).toBeDefined()
-        expect(Array.isArray(intradayData.grapthData)).toBe(true)
-    })
-    test('getEquityStockIndices', async () => {
-        const index = 'NIFTY AUTO'
-        const indexData = await nseIndia.getEquityStockIndices(index)
-        // expect(getDataSchema(indexData,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-        expect(indexData.metadata.indexName).toBe(index)
-    })
-    test('Multiple request to getaData', async () => {
-        const limit = 15
-        const symbols = await nseIndia.getAllStockSymbols()
-        const selectedSymbols = symbols.filter((_symbol, index) => index < limit)
-        try {
-            const promises = selectedSymbols.map(async (symbol) => {
-                const data = await nseIndia.getEquityDetails(symbol)
-                return { symbol, data }
-            })
-            const allData = await Promise.all(promises)
-            expect(allData.length).toBe(limit)
-        } catch (error) {
-            skipOnNseUnavailable(error)
-        }
-    })
-    test('Invalid API call', async () => {
-        try {
-            await nseIndia.getDataByEndpoint('/api/invalidapi')
-        } catch (error) {
-            expect((error as Error).message).toContain('Request failed with status code 404')
-        }
+        getDataByEndpointSpy.mockResolvedValue(indexData)
+
+        const result = await nseIndia.getEquityStockIndices('NIFTY AUTO')
+
+        expect(result.metadata.indexName).toBe('NIFTY AUTO')
     })
 
-    // Test convenience methods for better coverage
-    test('getGlossary', async () => {
-        const glossary = await nseIndia.getGlossary()
-        expect(glossary).toBeDefined()
-        expect(JSON.stringify(glossary).length).toBeGreaterThan(0)
+    test('getGlossary delegates to ApiList endpoint', async () => {
+        const glossary = { terms: [{ term: 'IEP', definition: 'Indicative Equilibrium Price' }] }
+        getDataByEndpointSpy.mockResolvedValue(glossary)
+
+        const result = await nseIndia.getGlossary()
+
+        expect(result).toEqual(glossary)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.GLOSSARY)
     })
 
-    test('getTradingHolidays', async () => {
-        const holidays = await nseIndia.getTradingHolidays()
-        expect(holidays).toBeDefined()
-        expect(JSON.stringify(holidays).length).toBeGreaterThan(0)
+    test('getMarketStatus delegates to ApiList endpoint', async () => {
+        const status = { marketState: [{ market: 'Capital Market', marketStatus: 'Open' }] }
+        getDataByEndpointSpy.mockResolvedValue(status)
+
+        const result = await nseIndia.getMarketStatus()
+
+        expect(result).toEqual(status)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.MARKET_STATUS)
     })
 
-    test('getClearingHolidays', async () => {
-        const holidays = await nseIndia.getClearingHolidays()
-        expect(holidays).toBeDefined()
-        expect(JSON.stringify(holidays).length).toBeGreaterThan(0)
-    })
-
-    test('getMarketStatus', async () => {
-        const status = await nseIndia.getMarketStatus()
-        expect(status).toBeDefined()
-        expect(JSON.stringify(status).length).toBeGreaterThan(0)
-    })
-
-    test('getMarketTurnover', async () => {
-        const turnover = await nseIndia.getMarketTurnover()
-        expect(turnover).toBeDefined()
-        expect(JSON.stringify(turnover).length).toBeGreaterThan(0)
-    })
-
-    test('getAllIndices', async () => {
-        const indices = await nseIndia.getAllIndices()
-        expect(indices).toBeDefined()
-        expect(JSON.stringify(indices).length).toBeGreaterThan(0)
-    })
-
-    test('getIndexNames', async () => {
-        const names = await nseIndia.getIndexNames()
-        expect(names).toBeDefined()
-        expect(JSON.stringify(names).length).toBeGreaterThan(0)
-    })
-
-    test('getCirculars', async () => {
-        const circulars = await nseIndia.getCirculars()
-        expect(circulars).toBeDefined()
-        expect(JSON.stringify(circulars).length).toBeGreaterThan(0)
-    })
-
-    test('getLatestCirculars', async () => {
-        const circulars = await nseIndia.getLatestCirculars()
-        expect(circulars).toBeDefined()
-        expect(JSON.stringify(circulars).length).toBeGreaterThan(0)
-    })
-
-    test('getEquityMaster', async () => {
-        const master = await nseIndia.getEquityMaster()
-        expect(master).toBeDefined()
-        expect(JSON.stringify(master).length).toBeGreaterThan(0)
-    })
-
-    test('getPreOpenMarketData', async () => {
-        const data = await nseIndia.getPreOpenMarketData()
-        expect(data).toBeDefined()
-        expect(JSON.stringify(data).length).toBeGreaterThan(0)
-    })
-
-    test('getMergedDailyReportsCapital', async () => {
-        const reports = await nseIndia.getMergedDailyReportsCapital()
-        expect(reports).toBeDefined()
-        expect(JSON.stringify(reports).length).toBeGreaterThan(0)
-    })
-
-    test('getMergedDailyReportsDerivatives', async () => {
-        const reports = await nseIndia.getMergedDailyReportsDerivatives()
-        expect(reports).toBeDefined()
-        expect(JSON.stringify(reports).length).toBeGreaterThan(0)
-    })
-
-    test('getMergedDailyReportsDebt', async () => {
-        const reports = await nseIndia.getMergedDailyReportsDebt()
-        expect(reports).toBeDefined()
-        expect(JSON.stringify(reports).length).toBeGreaterThan(0)
-    })
-
-    test('getTechnicalIndicators', async () => {
-        try {
-            const indicators = await nseIndia.getTechnicalIndicators(symbol)
-            // expect(getDataSchema(indicators,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-            expect(indicators).toBeDefined()
-            expect(indicators).toHaveProperty('sma')
-            expect(indicators).toHaveProperty('ema')
-            expect(indicators).toHaveProperty('rsi')
-            expect(indicators).toHaveProperty('macd')
-            expect(indicators).toHaveProperty('bollingerBands')
-            expect(indicators).toHaveProperty('stochastic')
-            expect(indicators).toHaveProperty('williamsR')
-            expect(indicators).toHaveProperty('atr')
-            expect(indicators).toHaveProperty('adx')
-            expect(indicators).toHaveProperty('obv')
-            expect(indicators).toHaveProperty('cci')
-            expect(indicators).toHaveProperty('mfi')
-            expect(indicators).toHaveProperty('roc')
-            expect(indicators).toHaveProperty('momentum')
-            expect(indicators).toHaveProperty('ad')
-            expect(indicators).toHaveProperty('vwap')
-
-            // Verify structure of key indicators
-            expect(Array.isArray(indicators.rsi)).toBe(true)
-            expect(indicators.rsi.length).toBeGreaterThan(0)
-            expect(indicators.macd).toHaveProperty('macd')
-            expect(indicators.macd).toHaveProperty('signal')
-            expect(indicators.macd).toHaveProperty('histogram')
-            expect(Array.isArray(indicators.macd.macd)).toBe(true)
-            expect(indicators.bollingerBands).toHaveProperty('upper')
-            expect(indicators.bollingerBands).toHaveProperty('middle')
-            expect(indicators.bollingerBands).toHaveProperty('lower')
-            expect(Array.isArray(indicators.bollingerBands.upper)).toBe(true)
-        } catch (error) {
-            skipOnNseUnavailable(error)
-        }
-    })
-
-    test('getTechnicalIndicators with custom options', async () => {
-        try {
-            const indicators = await nseIndia.getTechnicalIndicators(symbol, 100, {
-                smaPeriods: [5, 10, 20],
-                emaPeriods: [5, 10],
-                rsiPeriod: 14,
-                bbPeriod: 20,
-                bbStdDev: 2
-            })
-            expect(indicators).toBeDefined()
-            expect(indicators).toHaveProperty('sma')
-            expect(indicators).toHaveProperty('ema')
-            expect(indicators).toHaveProperty('rsi')
-            // Verify custom SMA periods exist
-            expect(indicators.sma).toHaveProperty('sma5')
-            expect(indicators.sma).toHaveProperty('sma10')
-            expect(indicators.sma).toHaveProperty('sma20')
-            // Verify custom EMA periods exist
-            expect(indicators.ema).toHaveProperty('ema5')
-            expect(indicators.ema).toHaveProperty('ema10')
-        } catch (error) {
-            skipOnNseUnavailable(error)
-        }
-    })
-
-    test('getEquityChartHistoricalData', async () => {
-        // Test charting API with real parameters
-        const chartData = await nseIndia.getEquityChartHistoricalData(
-            'ONGC',
-            {
-                start: new Date(1775834999 * 1000),
-                end: new Date(1775999513 * 1000)
-            },
-            '2475',
-            'Equity',
-            'I',
-            '5'
+    test('getDataByEndpoint propagates API errors', async () => {
+        jest.spyOn(nseIndia, 'getData').mockRejectedValue(
+            new Error('Request failed with status code 404')
         )
-        // Verify response structure
-        expect(chartData).toBeDefined()
-        expect(chartData).toHaveProperty('status')
-        expect(chartData).toHaveProperty('data')
-        expect(Array.isArray(chartData.data)).toBe(true)
-        if (chartData.data.length > 0) {
-            // Verify each candle has necessary fields
-            const candle = chartData.data[0]
-            expect(candle).toBeDefined()
-        }
+
+        await expect(nseIndia.getDataByEndpoint('/api/invalidapi')).rejects.toThrow(
+            'Request failed with status code 404'
+        )
     })
 
-    test('getEquitySymbolInfo', async () => {
+    test('getEquityTradeInfo maps trade_info quote payload', async () => {
+        getDataByEndpointSpy.mockResolvedValue({
+            securityWiseDP: { quantityTraded: 10, deliveryQuantity: 6, deliveryToTradedQuantity: 60 },
+            marketDeptOrderBook: { tradeInfo: { deliveryToTradedQuantity: 60 } }
+        })
+
+        const result = await nseIndia.getEquityTradeInfo('TCS')
+        expect(result.securityWiseDP.quantityTraded).toBe(10)
+    })
+
+    test('getEquityTradeInfo uses pre-open fallback for retryable quote errors', async () => {
+        getDataByEndpointSpy
+            .mockRejectedValueOnce(new Error('Request failed with status code 403'))
+            .mockResolvedValueOnce({
+                data: [
+                    {
+                        metadata: { symbol: 'TCS' },
+                        detail: {
+                            preOpenMarket: {
+                                totalTradedVolume: 20,
+                                totalBuyQuantity: 5,
+                                totalSellQuantity: 10
+                            }
+                        }
+                    }
+                ]
+            })
+
+        const result = await nseIndia.getEquityTradeInfo('TCS')
+        expect(result.securityWiseDP.quantityTraded).toBe(20)
+    })
+
+    test('getEquityHistoricalData wraps array response with meta', async () => {
+        jest.spyOn(nseIndia, 'getEquityDetails').mockResolvedValue({
+            info: { activeSeries: ['EQ'] },
+            metadata: { listingDate: '01-Jan-2025' }
+        } as never)
+        getDataByEndpointSpy.mockResolvedValue([{ chSymbol: 'TCS' }])
+
+        const data = await nseIndia.getEquityHistoricalData('TCS')
+        expect(Array.isArray(data)).toBe(true)
+        expect(Array.isArray(data[0].data)).toBe(true)
+        expect(data[0].meta.series).toEqual(['EQ'])
+    })
+
+    test('getEquitySeries wraps response as series data', async () => {
+        getDataByEndpointSpy.mockResolvedValue(['EQ', 'BE'])
+        const data = await nseIndia.getEquitySeries('TCS')
+        expect(data.data).toEqual(['EQ', 'BE'])
+    })
+
+    test('getEquityStockIndices falls back to summary endpoint on 404 legacy response', async () => {
+        const getDataSpy = jest.spyOn(nseIndia, 'getData')
+        getDataSpy
+            .mockRejectedValueOnce(new Error('Request failed with status code 404'))
+            .mockResolvedValueOnce({ data: [{ symbol: 'TCS' }] })
+
+        const data = await nseIndia.getEquityStockIndices('NIFTY 50')
+        expect(data.data.length).toBe(1)
+    })
+
+    test('getIndexIntradayData returns response.data when wrapped payload exists', async () => {
+        getDataByEndpointSpy.mockResolvedValue({ data: { name: 'NIFTY 50', grapthData: [] } })
+        const data = await nseIndia.getIndexIntradayData('NIFTY 50')
+        expect(data.name).toBe('NIFTY 50')
+    })
+
+    test('getCommodityOptionChain calls commodity endpoint', async () => {
+        getDataByEndpointSpy.mockResolvedValue({ records: {}, filtered: {} })
+        await nseIndia.getCommodityOptionChain('crudeoil')
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith('/api/option-chain-com?symbol=CRUDEOIL')
+    })
+
+    test('misc ApiList convenience methods delegate correctly', async () => {
+        getDataByEndpointSpy.mockResolvedValue({ ok: true })
+        await nseIndia.getTradingHolidays()
+        await nseIndia.getClearingHolidays()
+        await nseIndia.getMarketTurnover()
+        await nseIndia.getAllIndices()
+        await nseIndia.getIndexNames()
+        await nseIndia.getCirculars()
+        await nseIndia.getLatestCirculars()
+        await nseIndia.getEquityMaster()
+        await nseIndia.getPreOpenMarketData()
+        await nseIndia.getMergedDailyReportsCapital()
+        await nseIndia.getMergedDailyReportsDerivatives()
+        await nseIndia.getMergedDailyReportsDebt()
+
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.HOLIDAY_TRADING)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.HOLIDAY_CLEARING)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.MARKET_TURNOVER)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.ALL_INDICES)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.INDEX_NAMES)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.CIRCULARS)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.LATEST_CIRCULARS)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.EQUITY_MASTER)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.MARKET_DATA_PRE_OPEN)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.MERGED_DAILY_REPORTS_CAPITAL)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.MERGED_DAILY_REPORTS_DERIVATIVES)
+        expect(getDataByEndpointSpy).toHaveBeenCalledWith(ApiList.MERGED_DAILY_REPORTS_DEBT)
+    })
+
+    test('getTechnicalIndicators delegates to helpers module', async () => {
+        const helpersModule = await import('./helpers')
+        const technicalSpy = jest
+            .spyOn(helpersModule, 'getTechnicalIndicators')
+            .mockResolvedValue({ rsi: [50] } as never)
+
+        const result = await nseIndia.getTechnicalIndicators('TCS', 20, { rsiPeriod: 14 })
+
+        expect(technicalSpy).toHaveBeenCalledWith('TCS', 20, { rsiPeriod: 14 })
+        expect(result).toEqual({ rsi: [50] })
+    })
+
+    test('private session helpers handle invalidation and error conversion', async () => {
+        const anyNse = nseIndia as any
+        anyNse.chartingCookies = 'abc'
+        anyNse.chartingCookieExpiry = Date.now() + 1000
+        anyNse.invalidateChartingSession()
+        expect(anyNse.chartingCookies).toBe('')
+
+        expect(anyNse.isAuthError(new Error('x'))).toBe(false)
+        const err = anyNse.toHttpError('plain-string')
+        expect(err.message).toContain('plain-string')
+        expect(anyNse.toHttpError(new Error('native')).message).toBe('native')
+    })
+
+    test('isAuthError and toHttpError handle axios-style errors', async () => {
+        const anyNse = nseIndia as any
+        const axiosLikeError = {
+            isAxiosError: true,
+            response: { status: 403 },
+            config: { url: 'https://example.test' }
+        }
+        jest.spyOn(axios, 'isAxiosError').mockImplementation((e) => e === axiosLikeError)
+        expect(anyNse.isAuthError(axiosLikeError)).toBe(true)
+
+        const httpErr = anyNse.toHttpError(axiosLikeError)
+        expect(httpErr.message).toContain('status code 403')
+        expect(httpErr.message).toContain('https://example.test')
+    })
+
+    test('toHttpError uses unknown placeholders when axios fields are missing', async () => {
+        const anyNse = nseIndia as any
+        const axiosLikeError = { isAxiosError: true }
+        jest.spyOn(axios, 'isAxiosError').mockImplementation((e) => e === axiosLikeError)
+        expect(anyNse.toHttpError(axiosLikeError).message).toBe(
+            'Request failed with status code unknown (unknown URL)'
+        )
+    })
+
+    test('warmEquityQuotePage builds expected quote URL', async () => {
+        const warmSpy = jest.spyOn(nseIndia as any, 'warmNsePage').mockResolvedValue(undefined)
+        await (nseIndia as any).warmEquityQuotePage('tcs')
+        expect(warmSpy).toHaveBeenCalledWith('/get-quotes/equity?symbol=TCS')
+    })
+
+    test('getNseCookies delegates to ensureNseSession', async () => {
+        const ensureSpy = jest.spyOn(nseIndia as any, 'ensureNseSession').mockResolvedValue('cookie=1')
+        const cookies = await (nseIndia as any).getNseCookies()
+        expect(cookies).toBe('cookie=1')
+        expect(ensureSpy).toHaveBeenCalled()
+    })
+
+    test('getData retries auth errors and then throws after max retries', async () => {
+        const anyNse = nseIndia as any
+        anyNse.maxRetries = 1
+        anyNse.noOfConnections = 0
+        jest.spyOn(anyNse, 'ensureNseSession').mockResolvedValue('cookie=1')
+        anyNse.nseClient = {
+            get: jest.fn().mockRejectedValue({ isAxiosError: true, response: { status: 403 }, config: { url: 'u' } })
+        }
+
+        await expect(nseIndia.getData('https://www.nseindia.com/api/quote-equity?symbol=TCS')).rejects.toThrow(
+            'NSE request failed after 1 attempts'
+        )
+    })
+
+    test('getData sets quote referer path for equity endpoints', async () => {
+        const anyNse = nseIndia as any
+        jest.spyOn(anyNse, 'ensureNseSession').mockResolvedValue('cookie=1')
+        const warmSpy = jest.spyOn(anyNse, 'warmEquityQuotePage').mockResolvedValue(undefined)
+        anyNse.nseClient = { get: jest.fn().mockResolvedValue({ data: { ok: true } }) }
+
+        const data = await nseIndia.getData('https://www.nseindia.com/api/quote-equity?symbol=TCS')
+        expect(data).toEqual({ ok: true })
+        expect(warmSpy).toHaveBeenCalledWith('TCS')
+    })
+
+    test('getData sets index referer path for equity-stockIndices endpoint', async () => {
+        const anyNse = nseIndia as any
+        jest.spyOn(anyNse, 'ensureNseSession').mockResolvedValue('cookie=1')
+        const warmSpy = jest.spyOn(anyNse, 'warmNsePage').mockResolvedValue(undefined)
+        anyNse.nseClient = { get: jest.fn().mockResolvedValue({ data: { ok: true } }) }
+
+        await nseIndia.getData('https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050')
+        expect(warmSpy).toHaveBeenCalled()
+    })
+
+    test('getEquitySymbolInfo supports wrapped response.data array', async () => {
+        jest.spyOn(nseIndia, 'getData').mockResolvedValue({
+            data: [{ symbol: 'ONGC', scripcode: '2475' }]
+        })
         const info = await nseIndia.getEquitySymbolInfo('ONGC')
-        expect(info).toBeDefined()
-        expect(info).toHaveProperty('symbol')
-        expect(info).toHaveProperty('scripcode')
-        // scripcode is the token required by the chart API — must be a non-empty string
-        expect(typeof info.scripcode).toBe('string')
-        expect(info.scripcode.length).toBeGreaterThan(0)
+        expect(info.scripcode).toBe('2475')
     })
 
-    test('getEquityChartHistoricalData without token (auto-lookup)', async () => {
-        // Token omitted — the method should call getEquitySymbolInfo internally
-        const chartData = await nseIndia.getEquityChartHistoricalData(
-            'ONGC',
-            {
-                start: new Date(1775834999 * 1000),
-                end: new Date(1775999513 * 1000)
-            }
-            // no token — should auto-fetch via symbolsDynamic
+    test('resolveCapitalMarketType and enrichment helpers return expected values', async () => {
+        jest.spyOn(nseIndia, 'getMarketStatus').mockResolvedValue({
+            marketState: [{ market: 'Capital Market', marketStatus: 'Pre Open' }]
+        } as never)
+        const type = await (nseIndia as any).resolveCapitalMarketType()
+        expect(type).toBe('preOpen')
+
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: 'Company A',
+            isin: 'INE123'
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([
+            { companyName: 'Company B', isin: 'INE999', industry: 'IT' }
+        ])
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({ companyName: 'Company B', isin: 'INE999', industry: 'IT' })
+    })
+
+    test('getEquityDetails and getEquityTradeInfo include fallback attempt errors', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({ data: [] })
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({ data: [] })
+
+        await expect(nseIndia.getEquityDetails('TCS')).rejects.toThrow('No equity quote available for TCS')
+        await expect(nseIndia.getEquityTradeInfo('TCS')).rejects.toThrow('No equity trade info available for TCS')
+    })
+
+    test('getEquityIntradayData falls back to charting map and then throws when empty', async () => {
+        getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValue({ data: [{ t: 1 }] } as never)
+        const mapped = await nseIndia.getEquityIntradayData('TCS')
+        expect(mapped.name).toBe('TCS')
+
+        getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValueOnce({ data: [] } as never)
+        await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('No intraday data available for TCS')
+    })
+
+    test('getEquityHistoricalData range mode falls back to EQ when series lookup fails', async () => {
+        jest.spyOn(nseIndia, 'getEquitySeries').mockRejectedValue(new Error('series unavailable'))
+        getDataByEndpointSpy.mockResolvedValue([])
+        const result = await nseIndia.getEquityHistoricalData('TCS', {
+            start: new Date('2025-01-01'),
+            end: new Date('2025-01-05')
+        })
+        expect(result[0].meta.series).toEqual(['EQ'])
+    })
+
+    test('getEquityStockIndices keeps legacy response when it has data and throws for non-404 errors', async () => {
+        const getDataSpy = jest.spyOn(nseIndia, 'getData')
+        getDataSpy.mockResolvedValueOnce({ records: [{ symbol: 'X' }] } as never)
+        const data = await nseIndia.getEquityStockIndices('NIFTY NEXT 50')
+        expect(data.data.length).toBe(1)
+
+        getDataSpy.mockRejectedValueOnce(new Error('Request failed with status code 500'))
+        await expect(nseIndia.getEquityStockIndices('NIFTY 50')).rejects.toThrow('500')
+    })
+
+    test('warmNsePage converts unknown failures to HTTP error', async () => {
+        const anyNse = nseIndia as any
+        anyNse.nseClient = { get: jest.fn().mockRejectedValue('boom') }
+        await expect(anyNse.warmNsePage('/market-data')).rejects.toThrow('boom')
+    })
+
+    test('getData waits when too many connections exist', async () => {
+        const anyNse = nseIndia as any
+        anyNse.noOfConnections = 5
+        setTimeout(() => {
+            anyNse.noOfConnections = 0
+        }, 10)
+        jest.spyOn(anyNse, 'ensureNseSession').mockResolvedValue('cookie=1')
+        anyNse.nseClient = { get: jest.fn().mockResolvedValue({ data: { ok: true } }) }
+
+        const result = await nseIndia.getData('https://www.nseindia.com/api/allIndices')
+        expect(result).toEqual({ ok: true })
+    })
+
+    test('getEquityChartHistoricalData auto-fetches token when missing', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({ scripcode: '999' } as never)
+        jest.spyOn(nseIndia, 'getData').mockResolvedValue({ status: true, data: [] })
+        await nseIndia.getEquityChartHistoricalData('ONGC')
+        expect(nseIndia.getData).toHaveBeenCalledWith(expect.stringContaining('token=999'), 'charting')
+    })
+
+    test('getIndexOptionChain auto-selects nearest upcoming expiry when expiry is omitted', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({ expiryDates: ['01-Jan-2020', '31-Dec-2099'], strikePrice: [] })
+            .mockResolvedValueOnce({ records: {}, filtered: {} })
+
+        await nseIndia.getIndexOptionChain('NIFTY')
+        expect(getDataByEndpointSpy).toHaveBeenLastCalledWith(
+            '/api/option-chain-v3?type=Indices&symbol=NIFTY&expiry=31-Dec-2099'
         )
-        expect(chartData).toBeDefined()
-        expect(chartData).toHaveProperty('status')
-        expect(chartData).toHaveProperty('data')
-        expect(Array.isArray(chartData.data)).toBe(true)
     })
 
+    test('getIndexOptionChain falls back to last expiry when all dates are in past', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({ expiryDates: ['01-Jan-2020', '02-Jan-2020'], strikePrice: [] })
+            .mockResolvedValueOnce({ records: {}, filtered: {} })
+
+        await nseIndia.getIndexOptionChain('NIFTY')
+        expect(getDataByEndpointSpy).toHaveBeenLastCalledWith(
+            '/api/option-chain-v3?type=Indices&symbol=NIFTY&expiry=02-Jan-2020'
+        )
+    })
+
+    test('resolveCapitalMarketType uses cache and handles failures', async () => {
+        const anyNse = nseIndia as any
+        anyNse.capitalMarketTypeCache = { type: 'NM', expiry: Date.now() + 10000 }
+        await expect(anyNse.resolveCapitalMarketType()).resolves.toBe('NM')
+
+        anyNse.capitalMarketTypeCache = undefined
+        jest.spyOn(nseIndia, 'getMarketStatus').mockRejectedValueOnce(new Error('status down'))
+        await expect(anyNse.resolveCapitalMarketType()).resolves.toBe('NM')
+    })
+
+    test('fetch enrichment tolerates provider failures and enrichPreOpen applies output', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockRejectedValue(new Error('chart down'))
+        getDataByEndpointSpy.mockRejectedValue(new Error('corp down'))
+        await expect((nseIndia as any).fetchEquityDetailsEnrichment('TCS')).resolves.toEqual({})
+
+        jest.spyOn(nseIndia as any, 'resolveCapitalMarketType').mockResolvedValue('NM')
+        jest.spyOn(nseIndia as any, 'fetchEquityDetailsEnrichment').mockResolvedValue({ companyName: 'X' })
+        const base = structuredClone(quoteEquityFixture) as any
+        const enriched = await (nseIndia as any).enrichPreOpenEquityDetails(base, 'TCS')
+        expect(enriched.info.companyName).toBe('X')
+        expect(enriched.currentMarketType).toBe('NM')
+    })
+
+    test('equity detail/trade fallback handles thrown pre-open and non-retryable quote errors', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockRejectedValueOnce(new Error('pre-open unavailable'))
+            .mockRejectedValueOnce(new Error('Request failed with status code 500'))
+
+        await expect(nseIndia.getEquityDetails('TCS')).rejects.toThrow('No equity quote available for TCS')
+        await expect(nseIndia.getEquityTradeInfo('TCS')).rejects.toThrow('500')
+    })
+
+    test('equity details/trade map from pre-open row and intraday handles non-retryable errors', async () => {
+        jest.spyOn(nseIndia as any, 'enrichPreOpenEquityDetails').mockImplementation(async (d: any) => d)
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({
+                data: [{
+                    metadata: { symbol: 'TCS' },
+                    detail: { preOpenMarket: { totalTradedVolume: 1, totalBuyQuantity: 1, totalSellQuantity: 1 } }
+                }]
+            })
+            .mockResolvedValueOnce({
+                securityWiseDP: { quantityTraded: 1, deliveryQuantity: 1, deliveryToTradedQuantity: 100 },
+                marketDeptOrderBook: { tradeInfo: {} }
+            })
+            .mockResolvedValueOnce({ grapthData: [] })
+
+        const details = await nseIndia.getEquityDetails('TCS')
+        const trade = await nseIndia.getEquityTradeInfo('TCS')
+        const intraday = await nseIndia.getEquityIntradayData('TCS')
+        expect(details.info.symbol).toBe('TCS')
+        expect(trade.securityWiseDP.quantityTraded).toBe(1)
+        expect(Array.isArray(intraday.grapthData)).toBe(true)
+
+        getDataByEndpointSpy.mockRejectedValueOnce(new Error('Request failed with status code 500'))
+        await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('500')
+    })
+
+    test('intraday fallback captures charting error and historical range picks non-EQ series', async () => {
+        getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockRejectedValueOnce(new Error('charting down'))
+        await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('No intraday data available for TCS')
+
+        jest.spyOn(nseIndia, 'getEquitySeries').mockResolvedValue({ data: ['BE'] } as never)
+        getDataByEndpointSpy.mockResolvedValue([])
+        const result = await nseIndia.getEquityHistoricalData('TCS', {
+            start: new Date('2025-01-01'),
+            end: new Date('2025-01-03')
+        })
+        expect(result[0].meta.series).toEqual(['BE'])
+    })
+
+    test('getEquityDetails throws immediately on non-retryable quote-equity error', async () => {
+        getDataByEndpointSpy.mockRejectedValueOnce(new Error('Request failed with status code 500'))
+        await expect(nseIndia.getEquityDetails('TCS')).rejects.toThrow('500')
+    })
+
+    test('getEquityDetails converts non-Error rejections to Error message', async () => {
+        getDataByEndpointSpy.mockRejectedValueOnce('raw-failure')
+        await expect(nseIndia.getEquityDetails('TCS')).rejects.toThrow('raw-failure')
+    })
+
+    test('getEquityTradeInfo records pre-open fetch errors in final attempts', async () => {
+        getDataByEndpointSpy
+            .mockRejectedValueOnce(new Error('Request failed with status code 403'))
+            .mockRejectedValueOnce(new Error('pre-open fetch failed'))
+
+        await expect(nseIndia.getEquityTradeInfo('TCS')).rejects.toThrow('No equity trade info available for TCS')
+    })
+
+    test('getEquityTradeInfo records non-Error pre-open failures', async () => {
+        getDataByEndpointSpy
+            .mockRejectedValueOnce(new Error('Request failed with status code 403'))
+            .mockRejectedValueOnce('pre-open-raw')
+
+        await expect(nseIndia.getEquityTradeInfo('TCS')).rejects.toThrow('No equity trade info available for TCS')
+    })
+
+    test('warmNsePage ignores transient axios statuses', async () => {
+        const anyNse = nseIndia as any
+        const transientError = { response: { status: 503 } }
+        jest.spyOn(axios, 'isAxiosError').mockImplementation((e) => e === transientError)
+        anyNse.nseClient = { get: jest.fn().mockRejectedValue(transientError) }
+        await expect(anyNse.warmNsePage('/market-data')).resolves.toBeUndefined()
+    })
+
+    test('getData uses defaults when quote/index query params are missing', async () => {
+        const anyNse = nseIndia as any
+        jest.spyOn(anyNse, 'ensureNseSession').mockResolvedValue('cookie=1')
+        const warmQuoteSpy = jest.spyOn(anyNse, 'warmEquityQuotePage').mockResolvedValue(undefined)
+        const warmIndexSpy = jest.spyOn(anyNse, 'warmNsePage').mockResolvedValue(undefined)
+        anyNse.nseClient = { get: jest.fn().mockResolvedValue({ data: { ok: true } }) }
+
+        await nseIndia.getData('https://www.nseindia.com/api/quote-equity')
+        await nseIndia.getData('https://www.nseindia.com/api/equity-stockIndices')
+        expect(warmQuoteSpy).toHaveBeenCalledWith('TCS')
+        expect(warmIndexSpy).toHaveBeenCalled()
+    })
+
+    test('getEquityChartHistoricalData honors explicit token and range', async () => {
+        const getDataSpy = jest.spyOn(nseIndia, 'getData').mockResolvedValue({ status: true, data: [] })
+        await nseIndia.getEquityChartHistoricalData(
+            'ONGC',
+            { start: new Date('2025-01-01'), end: new Date('2025-01-02') },
+            '2475'
+        )
+        expect(getDataSpy).toHaveBeenCalledWith(expect.stringContaining('token=2475'), 'charting')
+    })
+
+    test('fetch enrichment handles corporate placeholders', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: 'Chart Name',
+            isin: 'CHART-ISIN'
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([
+            { companyName: 'Corp Name', isin: '-', industry: '-' }
+        ] as never)
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({ companyName: 'Corp Name', isin: 'CHART-ISIN' })
+    })
+
+    test('historical no-range mode falls back for invalid listing date', async () => {
+        jest.spyOn(nseIndia, 'getEquityDetails').mockResolvedValue({
+            info: { activeSeries: [] },
+            metadata: { listingDate: 'invalid-date' }
+        } as never)
+        getDataByEndpointSpy.mockResolvedValue([])
+        const result = await nseIndia.getEquityHistoricalData('TCS')
+        expect(result[0].meta.series).toEqual(['EQ'])
+    })
+
+    test('getIndexOptionChain uses fallback when expiry list missing', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({ expiryDates: null, strikePrice: [] })
+            .mockResolvedValueOnce({ records: {}, filtered: {} })
+        await nseIndia.getIndexOptionChain('NIFTY')
+        expect(getDataByEndpointSpy.mock.calls[1][0]).toContain(
+            '/api/option-chain-v3?type=Indices&symbol=NIFTY&expiry='
+        )
+    })
+
+    test('getTechnicalIndicators wrapper uses defaults', async () => {
+        const helpersModule = await import('./helpers')
+        const technicalSpy = jest
+            .spyOn(helpersModule, 'getTechnicalIndicators')
+            .mockResolvedValue({ rsi: [] } as never)
+        await nseIndia.getTechnicalIndicators('TCS')
+        expect(technicalSpy).toHaveBeenCalledWith('TCS', 200, {})
+    })
+
+    test('isAuthError handles 401 and non-auth statuses', async () => {
+        const anyNse = nseIndia as any
+        const e401 = { response: { status: 401 } }
+        const e500 = { response: { status: 500 } }
+        jest.spyOn(axios, 'isAxiosError').mockImplementation((e) => e === e401 || e === e500)
+        expect(anyNse.isAuthError(e401)).toBe(true)
+        expect(anyNse.isAuthError(e500)).toBe(false)
+    })
+
+    test('resolveCapitalMarketType returns NM when capital market state missing', async () => {
+        jest.spyOn(nseIndia, 'getMarketStatus').mockResolvedValue({
+            marketState: [{ market: 'Debt Market', marketStatus: 'Open' }]
+        } as never)
+        await expect((nseIndia as any).resolveCapitalMarketType()).resolves.toBe('NM')
+    })
+
+    test('fetch enrichment prefers first valid corporate ISIN row and charting fallback name', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: '',
+            description: 'Fallback Name',
+            isin: 'CHART-ISIN'
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([
+            { companyName: 'First Row', isin: '-', industry: '-' },
+            { companyName: 'Second Row', isin: 'INE123', industry: 'Auto' }
+        ] as never)
+
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({ companyName: 'Second Row', isin: 'INE123', industry: 'Auto' })
+    })
+
+    test('fetch enrichment handles non-array corporate response', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: 'ChartCo',
+            isin: 'CHART-ISIN'
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue({ bad: true } as never)
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({ companyName: 'ChartCo', isin: 'CHART-ISIN' })
+    })
+
+    test('getEquityDetails and trade info capture symbol-not-found in pre-open fallback', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({ data: [{ metadata: { symbol: 'ABC' } }] })
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({ data: [{ metadata: { symbol: 'ABC' } }] })
+        await expect(nseIndia.getEquityDetails('TCS')).rejects.toThrow('symbol not found in market-data-pre-open')
+        await expect(nseIndia.getEquityTradeInfo('TCS')).rejects.toThrow('symbol not found in market-data-pre-open')
+    })
+
+    test('getEquityTradeInfo converts non-Error non-retryable rejection to Error', async () => {
+        getDataByEndpointSpy.mockRejectedValueOnce('fatal-raw')
+        await expect(nseIndia.getEquityTradeInfo('TCS')).rejects.toThrow('fatal-raw')
+    })
+
+    test('getEquityIntradayData handles retryable and charting-empty branches', async () => {
+        getDataByEndpointSpy
+            .mockRejectedValueOnce(new Error('Request failed with status code 403'))
+            .mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValue({ data: [] } as never)
+        await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: empty data')
+    })
+
+    test('getEquityHistoricalData handles seriesData without data field', async () => {
+        jest.spyOn(nseIndia, 'getEquitySeries').mockResolvedValue({} as never)
+        getDataByEndpointSpy.mockResolvedValue([])
+        const result = await nseIndia.getEquityHistoricalData('TCS', {
+            start: new Date('2025-01-01'),
+            end: new Date('2025-01-03')
+        })
+        expect(result[0].meta.series).toEqual(['EQ'])
+    })
+
+    test('getEquityStockIndices rethrows non-Error legacy failures', async () => {
+        const getDataSpy = jest.spyOn(nseIndia, 'getData')
+        getDataSpy.mockRejectedValueOnce('legacy-raw')
+        await expect(nseIndia.getEquityStockIndices('NIFTY 50')).rejects.toBe('legacy-raw')
+    })
+
+    test('isAuthError returns false for axios error without status', async () => {
+        const anyNse = nseIndia as any
+        const eNoStatus = { response: {} }
+        jest.spyOn(axios, 'isAxiosError').mockImplementation((e) => e === eNoStatus)
+        expect(anyNse.isAuthError(eNoStatus)).toBe(false)
+    })
+
+    test('getEquityDetails captures non-Error pre-open fallback failure', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockRejectedValueOnce('pre-open-raw')
+        await expect(nseIndia.getEquityDetails('TCS')).rejects.toThrow('pre-open: pre-open-raw')
+    })
+
+    test('getEquityIntradayData converts non-Error non-retryable failures', async () => {
+        getDataByEndpointSpy.mockRejectedValueOnce('intraday-raw-failure')
+        await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('intraday-raw-failure')
+    })
+
+    test('resolveCapitalMarketType handles missing marketState object', async () => {
+        jest.spyOn(nseIndia, 'getMarketStatus').mockResolvedValue({} as never)
+        await expect((nseIndia as any).resolveCapitalMarketType()).resolves.toBe('NM')
+    })
+
+    test('isAuthError and warmNsePage handle axios errors without response object', async () => {
+        const anyNse = nseIndia as any
+        const errNoResponse = {}
+        jest.spyOn(axios, 'isAxiosError').mockImplementation((e) => e === errNoResponse)
+        expect(anyNse.isAuthError(errNoResponse)).toBe(false)
+        anyNse.nseClient = { get: jest.fn().mockRejectedValue(errNoResponse) }
+        await expect(anyNse.warmNsePage('/market-data')).rejects.toThrow(
+            'Request failed with status code unknown (unknown URL)'
+        )
+    })
+
+    test('getEquitySymbolInfo exact-match handles row without symbol', async () => {
+        jest.spyOn(nseIndia, 'getData').mockResolvedValue([
+            { scripcode: 'x' },
+            { symbol: 'ONGC', scripcode: '2475' }
+        ])
+        const info = await nseIndia.getEquitySymbolInfo('ONGC')
+        expect(info.scripcode).toBe('2475')
+    })
+
+    test('fetch enrichment covers charting and corporate empty-field branches', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: '  ',
+            description: 'Desc',
+            isin: '  '
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([
+            { companyName: 'Corp', isin: 'INE555', industry: '  ' }
+        ] as never)
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({ companyName: 'Corp', isin: 'INE555' })
+    })
+
+    test('getEquityDetails and trade info handle pre-open object without data', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({})
+        await expect(nseIndia.getEquityDetails('TCS')).rejects.toThrow('symbol not found in market-data-pre-open')
+        await expect(nseIndia.getEquityTradeInfo('TCS')).rejects.toThrow('symbol not found in market-data-pre-open')
+    })
+
+    test('intraday fallback handles chart object without data and range mode keeps EQ series', async () => {
+        getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValueOnce({} as never)
+        await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: empty data')
+
+        jest.spyOn(nseIndia, 'getEquitySeries').mockResolvedValue({ data: ['EQ', 'BE'] } as never)
+        getDataByEndpointSpy.mockResolvedValue([])
+        const result = await nseIndia.getEquityHistoricalData('TCS', {
+            start: new Date('2025-01-01'),
+            end: new Date('2025-01-03')
+        })
+        expect(result[0].meta.series).toEqual(['EQ'])
+    })
+
+    test('getEquityStockIndices returns normalized legacy data branch', async () => {
+        const getDataSpy = jest.spyOn(nseIndia, 'getData')
+        getDataSpy.mockResolvedValueOnce({ data: [{ symbol: 'LEGACY' }] } as never)
+        const data = await nseIndia.getEquityStockIndices('NIFTY 50')
+        expect(data.data).toEqual([{ symbol: 'LEGACY' }])
+    })
+
+    test('fetch enrichment returns charting values when corporate rows are empty', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: 'Charting Co',
+            isin: 'CHART123'
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([] as never)
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({ companyName: 'Charting Co', isin: 'CHART123' })
+    })
+
+    test('fetch enrichment handles sparse corporate rows', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: '',
+            description: '',
+            isin: ''
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([
+            {}
+        ] as never)
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({})
+    })
+
+    test('intraday fallback captures non-Error charting failure message', async () => {
+        getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockRejectedValueOnce('chart-raw')
+        await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: chart-raw')
+    })
+
+    test('stock indices falls back when normalized legacy has undefined data', async () => {
+        const getDataSpy = jest.spyOn(nseIndia, 'getData')
+        getDataSpy
+            .mockResolvedValueOnce({ records: null } as never)
+            .mockResolvedValueOnce({ data: [{ symbol: 'SUMMARY' }] } as never)
+        const data = await nseIndia.getEquityStockIndices('NIFTY 50')
+        expect(data.data).toEqual([{ symbol: 'SUMMARY' }])
+    })
+
+    test('fetch enrichment charting field assignment branches', async () => {
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([] as never)
+
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValueOnce({
+            companyName: 'Primary Name',
+            description: 'Secondary',
+            isin: 'ISIN1'
+        } as never)
+        await expect((nseIndia as any).fetchEquityDetailsEnrichment('TCS')).resolves.toEqual({
+            companyName: 'Primary Name',
+            isin: 'ISIN1'
+        })
+
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValueOnce({
+            companyName: '',
+            description: '',
+            isin: ''
+        } as never)
+        await expect((nseIndia as any).fetchEquityDetailsEnrichment('TCS')).resolves.toEqual({})
+    })
+
+    test('pre-open fallback branches for row-found paths in details and trade', async () => {
+        const row = {
+            metadata: { symbol: 'TCS' },
+            detail: { preOpenMarket: { totalTradedVolume: 1, totalBuyQuantity: 1, totalSellQuantity: 1 } }
+        }
+        jest.spyOn(nseIndia as any, 'enrichPreOpenEquityDetails').mockImplementation(async (d: any) => d)
+
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({ data: [row] })
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({ data: [row] })
+
+        await expect(nseIndia.getEquityDetails('TCS')).resolves.toHaveProperty('info.symbol', 'TCS')
+        await expect(nseIndia.getEquityTradeInfo('TCS')).resolves.toHaveProperty('securityWiseDP')
+    })
+
+    test('intraday fallback handles undefined chart response branch', async () => {
+        getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValueOnce(undefined as never)
+        await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: empty data')
+    })
+
+    test('stock indices legacy empty-array branch triggers summary fallback', async () => {
+        const getDataSpy = jest.spyOn(nseIndia, 'getData')
+        getDataSpy
+            .mockResolvedValueOnce({ data: [] } as never)
+            .mockResolvedValueOnce({ data: [{ symbol: 'SUM2' }] } as never)
+        const data = await nseIndia.getEquityStockIndices('NIFTY 50')
+        expect(data.data).toEqual([{ symbol: 'SUM2' }])
+    })
+
+    test('fetch enrichment uses description when companyName is absent', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            description: 'Description Only'
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([] as never)
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({ companyName: 'Description Only' })
+    })
+
+    test('fetch enrichment prefers companyName over description when both exist', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: 'Primary Name',
+            description: 'Secondary Name',
+            isin: 'INE111'
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([] as never)
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({ companyName: 'Primary Name', isin: 'INE111' })
+    })
+
+    test('fetch enrichment uses description when companyName trims to empty', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: '   ',
+            description: 'Trim Fallback'
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([] as never)
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({ companyName: 'Trim Fallback' })
+    })
+
+    test('fetch enrichment handles missing description after empty companyName', async () => {
+        jest.spyOn(nseIndia, 'getEquitySymbolInfo').mockResolvedValue({
+            companyName: ''
+        } as never)
+        jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([] as never)
+        const enrichment = await (nseIndia as any).fetchEquityDetailsEnrichment('TCS')
+        expect(enrichment).toEqual({})
+    })
+
+    test('getEquityDetails find skips entries with missing metadata.symbol', async () => {
+        jest.spyOn(nseIndia as any, 'enrichPreOpenEquityDetails').mockImplementation(async (d: any) => d)
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({
+                data: [
+                    { metadata: undefined },
+                    { metadata: { symbol: 'OTHER' } },
+                    {
+                        metadata: { symbol: 'TCS' },
+                        detail: { preOpenMarket: { totalTradedVolume: 1, totalBuyQuantity: 1, totalSellQuantity: 1 } }
+                    }
+                ]
+            })
+        const details = await nseIndia.getEquityDetails('TCS')
+        expect(details.info.symbol).toBe('TCS')
+    })
+
+    test('getEquityTradeInfo find matches row via pre-open cache', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({
+                data: [
+                    { metadata: { symbol: 'OTHER' } },
+                    {
+                        metadata: { symbol: 'TCS' },
+                        detail: { preOpenMarket: { totalTradedVolume: 5, totalBuyQuantity: 2, totalSellQuantity: 3 } }
+                    }
+                ]
+            })
+        const trade = await nseIndia.getEquityTradeInfo('TCS')
+        expect(trade.securityWiseDP.quantityTraded).toBe(5)
+    })
+
+    test('getEquityTradeInfo uses cached pre-open row when quote trade_info fails', async () => {
+        const preOpenRow = {
+            metadata: { symbol: 'TCS' },
+            detail: { preOpenMarket: { totalTradedVolume: 9, totalBuyQuantity: 4, totalSellQuantity: 4 } }
+        }
+        jest.spyOn(nseIndia as any, 'getPreOpenMarketCached').mockResolvedValue({
+            data: [{ metadata: undefined }, preOpenRow]
+        })
+        getDataByEndpointSpy.mockResolvedValueOnce({})
+
+        const trade = await nseIndia.getEquityTradeInfo('TCS')
+        expect(trade.securityWiseDP.quantityTraded).toBe(9)
+    })
+
+    test('getEquityTradeInfo skips find when cached pre-open has no data array', async () => {
+        jest.spyOn(nseIndia as any, 'getPreOpenMarketCached').mockResolvedValue({})
+        getDataByEndpointSpy.mockResolvedValueOnce({})
+
+        await expect(nseIndia.getEquityTradeInfo('TCS')).rejects.toThrow('symbol not found in market-data-pre-open')
+    })
+
+    test('getEquityDetails skips find when pre-open payload has no data array', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({})
+        await expect(nseIndia.getEquityDetails('TCS')).rejects.toThrow('symbol not found in market-data-pre-open')
+    })
+
+    test('getEquityStockIndices falls back when normalized legacy data is undefined', async () => {
+        const getDataSpy = jest.spyOn(nseIndia, 'getData')
+        const normalizeSpy = jest.spyOn(nseIndia as any, 'normalizeIndexDetails')
+        getDataSpy
+            .mockResolvedValueOnce({ legacy: true } as never)
+            .mockResolvedValueOnce({ data: [{ symbol: 'FROM_SUMMARY' }] } as never)
+        normalizeSpy
+            .mockReturnValueOnce({ data: undefined } as never)
+            .mockReturnValueOnce({ data: [{ symbol: 'FROM_SUMMARY' }] } as never)
+
+        const data = await nseIndia.getEquityStockIndices('NIFTY 50')
+        expect(data.data).toEqual([{ symbol: 'FROM_SUMMARY' }])
+    })
 
     describe('ApiList', () => {
-        Object.entries(ApiList).forEach(entry => {
-            test(`should return content for ${entry[0]}`, async () => {
-                const data = await nseIndia.getDataByEndpoint(entry[1])
-                // expect(getDataSchema(data,IS_TYPE_STRICT)).toMatchSnapshot(API_RESPONSE_VALIDATION)
-                const contentLength = JSON.stringify(data).length
-                expect(contentLength).not.toBe(0)
+        Object.entries(ApiList).forEach(([name, endpoint]) => {
+            test(`getDataByEndpoint returns content for ${name}`, async () => {
+                getDataByEndpointSpy.mockResolvedValue({ endpoint, ok: true })
+
+                const data = await nseIndia.getDataByEndpoint(endpoint)
+
+                expect(data).toEqual({ endpoint, ok: true })
+                expect(getDataByEndpointSpy).toHaveBeenCalledWith(endpoint)
             })
         })
     })

@@ -497,7 +497,8 @@ npm run docs
 - **`npm start`** - Start production server
 - **`npm run start:dev`** - Development mode with auto-reload
 - **`npm run build`** - Build TypeScript to JavaScript
-- **`npm test`** - Run test suite with coverage
+- **`npm test`** - Run unit/mock test suite with coverage
+- **`npm run test:e2e`** - Run live NSE e2e tests
 - **`npm run docs`** - Generate TypeDoc documentation
 - **`npm run lint`** - Run ESLint
 
@@ -509,11 +510,14 @@ npm run docs
 ## 🧪 Testing
 
 ```bash
-# Run all tests
+# Run unit/mock tests (default CI)
 npm test
 
 # Run tests with coverage
 npm test -- --coverage
+
+# Run live NSE e2e tests (requires network; runs daily in CI)
+npm run test:e2e
 
 # Run specific test file
 npm test -- utils.spec.ts
