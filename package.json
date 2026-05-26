@@ -11,7 +11,7 @@
     "nseindia": "build/cli/index.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "remove-build": "rimraf ./build",
