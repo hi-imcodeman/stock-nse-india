@@ -5,7 +5,8 @@ import {
     getGainersAndLosersByIndex,
     getMostActiveEquities
 } from './helpers'
-import { mcpClient, MCPClientRequest, MCPClient } from './mcp/client/mcp-client.js'
+import { getMcpClient, MCPClientRequest, MCPClient } from './mcp/client/mcp-client.js'
+import { sendRouteError } from './route-errors'
 
 const mainRouter: Router = Router()
 
@@ -31,7 +32,7 @@ mainRouter.get('/', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -71,7 +72,7 @@ mainRouter.get('/api/glossary', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.GLOSSARY))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -94,7 +95,7 @@ mainRouter.get('/api/marketStatus', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_STATUS))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -117,7 +118,7 @@ mainRouter.get('/api/marketTurnover', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.MARKET_TURNOVER))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -140,7 +141,7 @@ mainRouter.get('/api/equityMaster', async (_req, res) => {
     try {
         res.json(await nseIndia.getDataByEndpoint(ApiList.EQUITY_MASTER))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -176,7 +177,7 @@ mainRouter.get('/api/holidays', async (req, res) => {
             res.json(await nseIndia.getDataByEndpoint(ApiList.HOLIDAY_TRADING))
         }
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -212,7 +213,7 @@ mainRouter.get('/api/circulars', async (req, res) => {
             res.json(await nseIndia.getDataByEndpoint(ApiList.CIRCULARS))
         }
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -250,7 +251,7 @@ mainRouter.get('/api/mergedDailyReports', async (req, res) => {
             res.json(await nseIndia.getDataByEndpoint(ApiList.MERGED_DAILY_REPORTS_CAPITAL))
         }
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -274,7 +275,7 @@ mainRouter.get('/api/allIndices', async (_req, res) => {
         const allIndices = await nseIndia.getDataByEndpoint(ApiList.ALL_INDICES)
         res.json(allIndices)
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -298,7 +299,7 @@ mainRouter.get('/api/indexNames', async (_req, res) => {
         const indexNames = await nseIndia.getDataByEndpoint(ApiList.INDEX_NAMES)
         res.json(indexNames)
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -322,7 +323,7 @@ mainRouter.get('/api/allSymbols', async (_req, res) => {
         const symbols = await nseIndia.getAllStockSymbols()
         res.json(symbols)
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -355,7 +356,7 @@ mainRouter.get('/api/equity/:symbol', async (req, res) => {
         const data = await nseIndia.getEquityDetails(symbol);
         res.json(data);
     } catch (error) {
-        res.status(400).json(error);
+        sendRouteError(res, error);
     }
 })
 
@@ -386,7 +387,7 @@ mainRouter.get('/api/equity/series/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquitySeries(req.params.symbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -417,7 +418,7 @@ mainRouter.get('/api/equity/tradeInfo/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityTradeInfo(req.params.symbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -448,7 +449,7 @@ mainRouter.get('/api/equity/corporateInfo/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityCorporateInfo(req.params.symbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -479,7 +480,7 @@ mainRouter.get('/api/equity/options/:symbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityOptionChain(req.params.symbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -512,7 +513,7 @@ mainRouter.get('/api/equity/intraday/:symbol', async (req, res) => {
         const data = await nseIndia.getEquityIntradayData(symbol);
         res.json(data);
     } catch (error) {
-        res.status(400).json(error);
+        sendRouteError(res, error);
     }
 })
 
@@ -573,7 +574,7 @@ mainRouter.get('/api/equity/historical/:symbol', async (req, res) => {
             res.json(await nseIndia.getEquityHistoricalData(req.params.symbol))
         }
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -955,7 +956,7 @@ mainRouter.get('/api/equity/technicalIndicators/:symbol', async (req, res) => {
             res.json(roundedIndicators)
         }
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -986,7 +987,7 @@ mainRouter.get('/api/index/:indexSymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getEquityStockIndices(req.params.indexSymbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -1021,7 +1022,7 @@ mainRouter.get('/api/index/options/:indexSymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getIndexOptionChain(req.params.indexSymbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -1049,7 +1050,7 @@ mainRouter.get('/api/index/options/contract-info/:indexSymbol', async (req, res)
     try {
         res.json(await nseIndia.getIndexOptionChainContractInfo(req.params.indexSymbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -1082,7 +1083,7 @@ mainRouter.get('/api/commodity/options/:commoditySymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getCommodityOptionChain(req.params.commoditySymbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -1113,7 +1114,7 @@ mainRouter.get('/api/index/intraday/:indexSymbol', async (req, res) => {
     try {
         res.json(await nseIndia.getIndexIntradayData(req.params.indexSymbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -1144,7 +1145,7 @@ mainRouter.get('/api/gainersAndLosers/:indexSymbol', async (req, res) => {
     try {
         res.json(await getGainersAndLosersByIndex(req.params.indexSymbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -1175,13 +1176,13 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
     try {
         res.json(await getMostActiveEquities(req.params.indexSymbol))
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
 /**
  * @openapi
- * /api/v1/charts/equity-historical-data:
+ * /api/charts/equity-historical-data:
  *   get:
  *     description: Get historical chart data from charting.nseindia.com for equity symbols
  *     tags:
@@ -1191,29 +1192,33 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *     parameters:
  *       - name: symbol
  *         in: query
- *         description: Equity symbol with series code (e.g., 'ONGC-EQ')
+ *         description: Equity symbol with series code (e.g., 'ONGC')
  *         required: true
  *         schema:
  *           type: string
- *           example: ONGC-EQ
- *       - name: fromDate
+ *           example: ONGC
+ *       - name: start
  *         in: query
- *         description: Unix timestamp for start date
- *         required: true
+ *         description: >
+ *           Start date/time. Supports YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, unix timestamp
+ *           (seconds or milliseconds)
+ *         required: false
  *         schema:
- *           type: number
- *           example: 1775834999
- *       - name: toDate
+ *           type: string
+ *           example: "2026-04-10 09:15:00"
+ *       - name: end
  *         in: query
- *         description: Unix timestamp for end date
- *         required: true
+ *         description: >
+ *           End date/time. Supports YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, unix timestamp
+ *           (seconds or milliseconds)
+ *         required: false
  *         schema:
- *           type: number
- *           example: 1775999513
+ *           type: string
+ *           example: "2026-04-12 15:30:00"
  *       - name: token
  *         in: query
- *         description: Token value for charting API
- *         required: true
+ *         description: Optional token value for charting API (auto-fetched when omitted)
+ *         required: false
  *         schema:
  *           type: string
  *           example: "2475"
@@ -1281,30 +1286,55 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
  *       400:
  *         description: Returns error object if API call fails or parameters are invalid
  */
-mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
+mainRouter.get('/api/charts/equity-historical-data', async (req, res) => {
     try {
-        const { symbol, fromDate, toDate, token, symbolType = 'Equity', chartType = 'I', timeInterval = '5' } = req.query
+        const {
+            symbol,
+            start,
+            end,
+            token,
+            symbolType = 'Equity',
+            chartType = 'I',
+            timeInterval = '5'
+        } = req.query
 
         // Validate required parameters
         if (!symbol) {
             return res.status(400).json({ error: 'Missing required parameter: symbol' })
         }
-        if (!fromDate) {
-            return res.status(400).json({ error: 'Missing required parameter: fromDate' })
-        }
-        if (!toDate) {
-            return res.status(400).json({ error: 'Missing required parameter: toDate' })
-        }
-        if (!token) {
-            return res.status(400).json({ error: 'Missing required parameter: token' })
+        // Call the charting method
+        const parseChartDateParam = (value: unknown): Date => {
+            const input = String(value).trim()
+            const numeric = Number(input)
+            // Accept unix timestamp in seconds (10 digits) or milliseconds (13 digits).
+            if (!Number.isNaN(numeric) && input !== '') {
+                const unixMs = input.length <= 10 ? numeric * 1000 : numeric
+                return new Date(unixMs)
+            }
+            return new Date(input)
         }
 
-        // Call the charting method
+        let range
+        if (start || end) {
+            const endDate = end ? parseChartDateParam(end) : new Date()
+            const startDate = start
+                ? parseChartDateParam(start)
+                : new Date(endDate.getTime() - 24 * 60 * 60 * 1000)
+            if (!(startDate.getTime() > 0 && endDate.getTime() > 0)) {
+                return res.status(400).json({
+                    error: 'Invalid date format. Use YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, or unix timestamp'
+                })
+            }
+            range = {
+                start: startDate,
+                end: endDate
+            }
+        }
+
         const chartData = await nseIndia.getEquityChartHistoricalData(
             String(symbol),
-            String(fromDate),
-            String(toDate),
-            String(token),
+            range,
+            token ? String(token) : undefined,
             String(symbolType),
             String(chartType),
             String(timeInterval)
@@ -1312,18 +1342,18 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
 
         res.json(chartData)
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
 /**
  * @openapi
- * /api/v1/charts/symbol-info:
+ * /api/charts/symbol-info:
  *   get:
  *     description: >
  *       Look up NSE charting symbol information (including scripCode / token) for a
  *       given equity symbol. The returned `scripCode` is the value that must be passed
- *       as `token` to the `/api/v1/charts/equity-historical-data` endpoint.
+ *       as `token` to the `/api/charts/equity-historical-data` endpoint.
  *     tags:
  *       - Charting
  *     produces:
@@ -1331,11 +1361,11 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
  *     parameters:
  *       - name: symbol
  *         in: query
- *         description: Equity symbol with or without series code (e.g., 'ONGC-EQ' or 'ONGC')
+ *         description: Equity symbol with or without series code (e.g., 'ONGC' or 'ONGC')
  *         required: true
  *         schema:
  *           type: string
- *           example: ONGC-EQ
+ *           example: ONGC
  *       - name: segment
  *         in: query
  *         description: Optional market segment filter (leave empty to search all segments)
@@ -1353,7 +1383,7 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
  *               properties:
  *                 symbol:
  *                   type: string
- *                   example: ONGC-EQ
+ *                   example: ONGC
  *                 scripCode:
  *                   type: string
  *                   description: The token value required by the historical chart API
@@ -1371,7 +1401,7 @@ mainRouter.get('/api/v1/charts/equity-historical-data', async (req, res) => {
  *       400:
  *         description: Returns error if symbol is missing or lookup fails
  */
-mainRouter.get('/api/v1/charts/symbol-info', async (req, res) => {
+mainRouter.get('/api/charts/symbol-info', async (req, res) => {
     try {
         const { symbol, segment = '' } = req.query
 
@@ -1382,7 +1412,7 @@ mainRouter.get('/api/v1/charts/symbol-info', async (req, res) => {
         const symbolInfo = await nseIndia.getEquitySymbolInfo(String(symbol), String(segment))
         res.json(symbolInfo)
     } catch (error) {
-        res.status(400).json(error)
+        sendRouteError(res, error)
     }
 })
 
@@ -1565,15 +1595,15 @@ mainRouter.post('/api/mcp/query', async (req, res) => {
         const shouldEnableDebug = enableDebugLogging || process.env.MCP_DEBUG_LOGGING === 'true'
 
         // Store original debug state to restore later
-        const originalDebugState = mcpClient.isDebugLoggingEnabled()
+        const originalDebugState = getMcpClient().isDebugLoggingEnabled()
 
         // Temporarily enable debug logging if requested
         if (shouldEnableDebug) {
-            mcpClient.setDebugLogging(true)
+            getMcpClient().setDebugLogging(true)
         }
 
         try {
-            const result = await mcpClient.processQuery({
+            const result = await getMcpClient().processQuery({
                 query,
                 sessionId,
                 userId,
@@ -1589,7 +1619,7 @@ mainRouter.post('/api/mcp/query', async (req, res) => {
             res.json(result)
         } finally {
             // Restore original debug state
-            mcpClient.setDebugLogging(originalDebugState)
+            getMcpClient().setDebugLogging(originalDebugState)
         }
     } catch (error) {
         console.error('MCP Query Error:', error)
@@ -1633,7 +1663,7 @@ mainRouter.post('/api/mcp/query', async (req, res) => {
  */
 mainRouter.get('/api/mcp/tools', async (_req, res) => {
     try {
-        const tools = mcpClient.getAvailableTools()
+        const tools = getMcpClient().getAvailableTools()
         res.json({ tools })
     } catch (error) {
         console.error('MCP Tools Error:', error)
@@ -1681,7 +1711,7 @@ mainRouter.get('/api/mcp/test', async (_req, res) => {
             })
         }
 
-        const isConnected = await mcpClient.testConnection()
+        const isConnected = await getMcpClient().testConnection()
 
         if (isConnected) {
             res.json({
@@ -1744,7 +1774,7 @@ mainRouter.get('/api/mcp/test', async (_req, res) => {
  */
 mainRouter.get('/api/mcp/functions', async (_req, res) => {
     try {
-        const functions = mcpClient.getOpenAIFunctions()
+        const functions = getMcpClient().getOpenAIFunctions()
         res.json({ functions })
     } catch (error) {
         console.error('MCP Functions Error:', error)
@@ -1804,7 +1834,7 @@ mainRouter.get('/api/mcp/functions', async (_req, res) => {
 mainRouter.get('/api/mcp/session/:sessionId', async (req, res) => {
     try {
         const { sessionId } = req.params
-        const sessionInfo = mcpClient.getSessionInfo(sessionId)
+        const sessionInfo = getMcpClient().getSessionInfo(sessionId)
 
         if (!sessionInfo) {
             return res.status(404).json({
@@ -1877,7 +1907,7 @@ mainRouter.get('/api/mcp/session/:sessionId/history', async (req, res) => {
         const { sessionId } = req.params
         const { maxMessages } = req.query
 
-        const history = mcpClient.getConversationHistory(
+        const history = getMcpClient().getConversationHistory(
             sessionId,
             maxMessages ? parseInt(maxMessages as string) : undefined
         )
@@ -1958,7 +1988,7 @@ mainRouter.put('/api/mcp/session/:sessionId/preferences', async (req, res) => {
         const { sessionId } = req.params
         const preferences = req.body
 
-        mcpClient.updateUserPreferences(sessionId, preferences)
+        getMcpClient().updateUserPreferences(sessionId, preferences)
 
         res.json({
             message: 'Preferences updated successfully',
@@ -1996,7 +2026,7 @@ mainRouter.delete('/api/mcp/session/:sessionId/clear', async (req, res) => {
     try {
         const { sessionId } = req.params
 
-        mcpClient.clearSession(sessionId)
+        getMcpClient().clearSession(sessionId)
 
         res.json({
             message: 'Session cleared successfully',
@@ -2033,7 +2063,7 @@ mainRouter.delete('/api/mcp/session/:sessionId/clear', async (req, res) => {
 mainRouter.get('/api/mcp/session/:sessionId/export', async (req, res) => {
     try {
         const { sessionId } = req.params
-        const sessionData = mcpClient.exportSessionData(sessionId)
+        const sessionData = getMcpClient().exportSessionData(sessionId)
 
         if (!sessionData) {
             return res.status(404).json({
@@ -2063,7 +2093,7 @@ mainRouter.get('/api/mcp/session/:sessionId/export', async (req, res) => {
  */
 mainRouter.post('/api/mcp/cleanup', async (_req, res) => {
     try {
-        mcpClient.cleanupExpiredSessions()
+        getMcpClient().cleanupExpiredSessions()
 
         res.json({
             message: 'Cleanup completed successfully',
@@ -2121,7 +2151,7 @@ mainRouter.post('/api/mcp/cleanup', async (_req, res) => {
 mainRouter.get('/api/mcp/session/:sessionId/context-stats', async (req, res) => {
     try {
         const { sessionId } = req.params
-        const stats = await mcpClient.getContextStats(sessionId)
+        const stats = await getMcpClient().getContextStats(sessionId)
 
         res.json(stats)
     } catch (error) {
@@ -2166,7 +2196,7 @@ mainRouter.get('/api/mcp/session/:sessionId/context-stats', async (req, res) => 
 mainRouter.post('/api/mcp/session/:sessionId/summarize', async (req, res) => {
     try {
         const { sessionId } = req.params
-        const summary = await mcpClient.forceContextSummarization(sessionId)
+        const summary = await getMcpClient().forceContextSummarization(sessionId)
 
         if (!summary) {
             return res.status(404).json({
@@ -2206,7 +2236,7 @@ mainRouter.post('/api/mcp/session/:sessionId/summarize', async (req, res) => {
  */
 mainRouter.get('/api/mcp/session/:sessionId/context-window', async (req, res) => {
     try {
-        const config = mcpClient.getContextWindowConfig()
+        const config = getMcpClient().getContextWindowConfig()
         res.json(config)
     } catch (error) {
         console.error('Get Context Window Config Error:', error)
@@ -2259,11 +2289,11 @@ mainRouter.get('/api/mcp/session/:sessionId/context-window', async (req, res) =>
 mainRouter.put('/api/mcp/session/:sessionId/context-window', async (req, res) => {
     try {
         const config = req.body
-        mcpClient.updateContextWindowConfig(config)
+        getMcpClient().updateContextWindowConfig(config)
 
         res.json({
             message: 'Context window configuration updated successfully',
-            config: mcpClient.getContextWindowConfig()
+            config: getMcpClient().getContextWindowConfig()
         })
     } catch (error) {
         console.error('Update Context Window Config Error:', error)
@@ -2301,11 +2331,11 @@ mainRouter.get('/api/mcp/session/:sessionId/summarization/last', async (req, res
     try {
         const { sessionId } = req.params
 
-        if (!mcpClient.isMemoryEnabled()) {
+        if (!getMcpClient().isMemoryEnabled()) {
             return res.status(500).json({ error: 'Memory manager not enabled' })
         }
 
-        const lastSummarization = mcpClient.getLastSummarization(sessionId)
+        const lastSummarization = getMcpClient().getLastSummarization(sessionId)
 
         if (!lastSummarization) {
             return res.status(404).json({
@@ -2350,11 +2380,11 @@ mainRouter.get('/api/mcp/session/:sessionId/summarization/history', async (req, 
         const { sessionId } = req.params
         const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined
 
-        if (!mcpClient.isMemoryEnabled()) {
+        if (!getMcpClient().isMemoryEnabled()) {
             return res.status(500).json({ error: 'Memory manager not enabled' })
         }
 
-        const history = mcpClient.getSummarizationHistory(sessionId, limit)
+        const history = getMcpClient().getSummarizationHistory(sessionId, limit)
 
         res.json({
             sessionId,
@@ -2391,11 +2421,11 @@ mainRouter.get('/api/mcp/session/:sessionId/summarization/summary', async (req, 
     try {
         const { sessionId } = req.params
 
-        if (!mcpClient.isMemoryEnabled()) {
+        if (!getMcpClient().isMemoryEnabled()) {
             return res.status(500).json({ error: 'Memory manager not enabled' })
         }
 
-        const summary = mcpClient.getSummarizationSummary(sessionId)
+        const summary = getMcpClient().getSummarizationSummary(sessionId)
 
         if (!summary) {
             return res.status(404).json({
@@ -2434,11 +2464,11 @@ mainRouter.get('/api/mcp/session/:sessionId/openai-messages', async (req, res) =
     try {
         const { sessionId } = req.params
 
-        if (!mcpClient.isMemoryEnabled()) {
+        if (!getMcpClient().isMemoryEnabled()) {
             return res.status(500).json({ error: 'Memory manager not enabled' })
         }
 
-        const data = mcpClient.getOpenAIMessages(sessionId)
+        const data = getMcpClient().getOpenAIMessages(sessionId)
 
         if (!data) {
             return res.status(404).json({ error: 'Session not found' })

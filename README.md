@@ -292,9 +292,13 @@ Comprehensive REST endpoints with automatic Swagger documentation:
 - `GET /` - Market status
 - `GET /api/marketStatus` - Market status information
 - `GET /api/glossary` - NSE glossary
-- `GET /api/equity/:symbol` - Equity details
+- `GET /api/equity/:symbol` - Equity details (uses NSE `quote-equity` when available; otherwise pre-open data enriched from charting/corporate APIs; failures return 403/502 with a message, not an empty 400)
+- `GET /api/equity/tradeInfo/:symbol` - Trade info / order book (same `quote-equity` fallback via pre-open when blocked)
+- `GET /api/equity/intraday/:symbol` - Intraday chart (`GetQuoteApi` when available; otherwise charting.nseindia.com OHLC)
 - `GET /api/equity/:symbol/historical` - Historical data
 - `GET /api/indices` - Market indices
+- `GET /api/charts/equity-historical-data` - Charting OHLC historical data
+- `GET /api/charts/symbol-info` - Charting symbol/token lookup
 - `GET /api-docs` - Interactive API documentation
 
 ### MCP Client Endpoints
@@ -305,6 +309,44 @@ Comprehensive REST endpoints with automatic Swagger documentation:
 ### API Documentation
 
 Visit `http://localhost:3000/api-docs` for complete interactive API documentation powered by Swagger UI.
+
+### Charting APIs
+
+#### NPM Package Methods
+
+```javascript
+import { NseIndia } from "stock-nse-india";
+
+const nseIndia = new NseIndia();
+
+// Optional date range and optional token.
+// If token is omitted, it is auto-fetched internally using getEquitySymbolInfo().
+const chartData = await nseIndia.getEquityChartHistoricalData(
+  "ONGC",
+  {
+    start: new Date("2026-04-10"),
+    end: new Date("2026-04-12")
+  }
+);
+
+// You can also fetch symbol info/token explicitly.
+const symbolInfo = await nseIndia.getEquitySymbolInfo("ONGC");
+console.log(symbolInfo.scripcode);
+```
+
+#### REST Endpoints
+
+- **`GET /api/charts/equity-historical-data`**
+  - Required: `symbol`
+  - Optional: `start`, `end` (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, or unix timestamp), `token`, `symbolType`, `chartType`, `timeInterval`
+  - If `token` is omitted, the API auto-fetches it.
+  - If both `start` and `end` are omitted, default range is used.
+  - If only one date is provided, the other date is auto-derived.
+
+- **`GET /api/charts/symbol-info`**
+  - Required: `symbol`
+  - Optional: `segment`
+  - Returns charting symbol details including `scripcode` (token).
 
 ## 💻 CLI Usage
 
@@ -415,6 +457,11 @@ CORS_CREDENTIALS=true
 - **`getEquityCorporateInfo(symbol)`** - Corporate information
 - **`getEquityTradeInfo(symbol)`** - Trading statistics
 
+### Charting Methods
+
+- **`getEquityChartHistoricalData(symbol, range?, token?, symbolType?, chartType?, timeInterval?)`** - Get charting OHLC historical data
+- **`getEquitySymbolInfo(symbol, segment?)`** - Resolve charting symbol/token (`scripcode`)
+
 ### Index Methods
 
 - **`getEquityStockIndices()`** - Get all market indices
@@ -463,7 +510,8 @@ npm run docs
 - **`npm start`** - Start production server
 - **`npm run start:dev`** - Development mode with auto-reload
 - **`npm run build`** - Build TypeScript to JavaScript
-- **`npm test`** - Run test suite with coverage
+- **`npm test`** - Run unit/mock test suite with coverage
+- **`npm run test:e2e`** - Run live NSE e2e tests
 - **`npm run docs`** - Generate TypeDoc documentation
 - **`npm run lint`** - Run ESLint
 
@@ -475,11 +523,14 @@ npm run docs
 ## 🧪 Testing
 
 ```bash
-# Run all tests
+# Run unit/mock tests (default CI)
 npm test
 
 # Run tests with coverage
 npm test -- --coverage
+
+# Run live NSE e2e tests (requires network; runs daily in CI)
+npm run test:e2e
 
 # Run specific test file
 npm test -- utils.spec.ts
