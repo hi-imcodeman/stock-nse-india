@@ -292,7 +292,9 @@ Comprehensive REST endpoints with automatic Swagger documentation:
 - `GET /` - Market status
 - `GET /api/marketStatus` - Market status information
 - `GET /api/glossary` - NSE glossary
-- `GET /api/equity/:symbol` - Equity details
+- `GET /api/equity/:symbol` - Equity details (uses NSE `quote-equity` when available; otherwise pre-open data enriched from charting/corporate APIs; failures return 403/502 with a message, not an empty 400)
+- `GET /api/equity/tradeInfo/:symbol` - Trade info / order book (same `quote-equity` fallback via pre-open when blocked)
+- `GET /api/equity/intraday/:symbol` - Intraday chart (`GetQuoteApi` when available; otherwise charting.nseindia.com OHLC)
 - `GET /api/equity/:symbol/historical` - Historical data
 - `GET /api/indices` - Market indices
 - `GET /api/charts/equity-historical-data` - Charting OHLC historical data

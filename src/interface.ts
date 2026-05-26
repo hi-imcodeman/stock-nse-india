@@ -15,11 +15,16 @@ export interface IntradayData {
 export interface ChartingSymbolInfo {
     symbol: string
     scripcode: string   // This is the "token" required by the historical chart API
-    companyName: string
-    isin: string
-    segment: string
-    series: string
-    status: string
+    companyName?: string
+    description?: string
+    isin?: string
+    segment?: string
+    series?: string
+    status?: string
+    exchange?: string
+    fullname?: string
+    type?: string
+    instrumentType?: string
 }
 
 /**

@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "symbol": "TCS",
+    "identifier": "TCSEQN",
+    "series": "EQ",
+    "purpose": null,
+    "lastPrice": 2308.2,
+    "change": 0,
+    "pChange": 0,
+    "previousClose": 2308.2,
+    "finalQuantity": 9395,
+    "totalTurnover": 21685539,
+    "marketCap": "-",
+    "yearHigh": 3545,
+    "yearLow": 2206.4,
+    "iep": 2308.2,
+    "companyName": "Tata Consultancy Services Ltd.",
+    "industry": "IT Services",
+    "isinCode": "INE467B01029"
+  },
+  "detail": {
+    "preOpenMarket": {
+      "preopen": [{ "price": 2308.2, "buyQty": 100, "sellQty": 0, "iep": true }],
+      "ato": { "totalBuyQuantity": 0, "totalSellQuantity": 0 },
+      "IEP": 2308.2,
+      "totalTradedVolume": 1000,
+      "finalPrice": 2308.2,
+      "finalQuantity": 9395,
+      "lastUpdateTime": "26-May-2026 09:00",
+      "totalBuyQuantity": 100,
+      "totalSellQuantity": 50
+    }
+  }
+}

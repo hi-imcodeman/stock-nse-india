@@ -1,6 +1,23 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
+import { wrapper } from 'axios-cookiejar-support'
+import { CookieJar } from 'tough-cookie'
 import UserAgent from 'user-agents'
 import { getDateRangeChunks, sleep } from './utils'
+import {
+    applyEquityDetailsEnrichment,
+    equityRefererSymbol,
+    EquityDetailsEnrichment,
+    isEquityDetailsShape,
+    isEquityTradeInfoShape,
+    isIntradayDataShape,
+    isRetryableEquityEndpointError,
+    mapChartingToIntradayData,
+    mapIntradayApiResponse,
+    mapPreOpenRowToEquityDetails,
+    mapPreOpenRowToEquityTradeInfo,
+    mapQuoteEquityResponse,
+    mapQuoteEquityTradeInfoResponse
+} from './equity-mappers'
 import {
     DateRange,
     IntradayData,
@@ -72,48 +89,144 @@ export enum ApiList {
 export class NseIndia {
     private readonly baseUrl = 'https://www.nseindia.com'
     private readonly cookieMaxAge = 60 // should be in seconds
-    private readonly baseHeaders = {
+    private readonly maxRetries = 3
+    private readonly apiHeaders = {
         'Authority': 'www.nseindia.com',
         'Referer': 'https://www.nseindia.com/',
-        'Accept': '*/*',
-        'Origin': this.baseUrl,
+        'Accept': 'application/json, text/plain, */*',
+        'Origin': 'https://www.nseindia.com',
         'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'application/json, text/plain, */*',
+        'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive'
     }
+    private nseJar = new CookieJar()
+    private chartingJar = new CookieJar()
+    private nseClient = wrapper(axios.create({ jar: this.nseJar }))
+    private chartingClient = wrapper(axios.create({ jar: this.chartingJar }))
     private userAgent = ''
     private cookies = ''
     private cookieUsedCount = 0
-    private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
+    private cookieExpiry = 0
     private noOfConnections = 0
     private readonly chartingBaseUrl = 'https://charting.nseindia.com'
     private chartingCookies = ''
     private chartingCookieUsedCount = 0
-    private chartingCookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
+    private chartingCookieExpiry = 0
+    private chartingUserAgent = ''
+    private preOpenCache?: { data: PreOpenMarketData; expiry: number }
+    private capitalMarketTypeCache?: { type: string; expiry: number }
 
+    private resetNseClient(): void {
+        this.nseJar = new CookieJar()
+        this.nseClient = wrapper(axios.create({ jar: this.nseJar }))
+    }
 
-    private async getNseCookies() {
-        if (this.cookies === '' || this.cookieUsedCount > 10 || this.cookieExpiry <= new Date().getTime()) {
-            this.userAgent = new UserAgent().toString()
-            const response = await axios.get(`${this.baseUrl}/get-quotes/equity?symbol=TCS`, {
-                headers: { ...this.baseHeaders, 'User-Agent': this.userAgent }
+    private resetChartingClient(): void {
+        this.chartingJar = new CookieJar()
+        this.chartingClient = wrapper(axios.create({ jar: this.chartingJar }))
+    }
+
+    private invalidateNseSession(): void {
+        this.cookies = ''
+        this.cookieExpiry = 0
+        this.cookieUsedCount = 0
+        this.resetNseClient()
+    }
+
+    private invalidateChartingSession(): void {
+        this.chartingCookies = ''
+        this.chartingCookieExpiry = 0
+        this.chartingCookieUsedCount = 0
+        this.resetChartingClient()
+    }
+
+    private isAuthError(error: unknown): boolean {
+        if (axios.isAxiosError(error)) {
+            const status = error.response?.status
+            return status === 401 || status === 403
+        }
+        return false
+    }
+
+    private toHttpError(error: unknown): Error {
+        if (axios.isAxiosError(error)) {
+            const status = error.response?.status
+            const url = error.config?.url ?? 'unknown URL'
+            return new Error(`Request failed with status code ${status ?? 'unknown'} (${url})`)
+        }
+        if (error instanceof Error) {
+            return error
+        }
+        return new Error(String(error))
+    }
+
+    private async warmNsePage(path: string, referer = `${this.baseUrl}/`): Promise<void> {
+        try {
+            await this.nseClient.get(`${this.baseUrl}${path}`, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    Connection: 'keep-alive',
+                    Referer: referer
+                }
             })
-            const setCookies: string[] | undefined = response.headers['set-cookie']
-            const cookies: string[] = []
-            if (setCookies) {
-                setCookies.forEach((cookie: string) => {
-                    const cookieKeyValue = cookie.split(';')[0]
-                    cookies.push(cookieKeyValue)
-                })
-                this.cookies = cookies.join('; ')
-                this.cookieUsedCount = 0
-                this.cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
+        } catch (error) {
+            // Warm-up is best-effort; NSE often returns 403/502/503 for HTML pages under load.
+            if (axios.isAxiosError(error)) {
+                const status = error.response?.status
+                if (status === 403 || status === 502 || status === 503) {
+                    return
+                }
             }
-            this.cookieUsedCount++
-            return this.cookies
+            throw this.toHttpError(error)
+        }
+    }
+
+    private async warmEquityQuotePage(symbol: string): Promise<void> {
+        const upper = symbol.toUpperCase()
+        await this.warmNsePage(`/get-quotes/equity?symbol=${encodeURIComponent(upper)}`)
+    }
+
+    private normalizeIndexDetails(raw: Record<string, unknown>): IndexDetails {
+        const data = (raw.data ?? raw.records ?? []) as IndexDetails['data']
+        return { ...(raw as unknown as IndexDetails), data }
+    }
+
+    /**
+     * Bootstrap NSE session via homepage and persist all Set-Cookie values in the jar.
+     * Note: some endpoints (e.g. /api/quote-equity) may still return 403 from Akamai WAF
+     * even with a valid session.
+     */
+    private async ensureNseSession(force = false): Promise<string> {
+        const needsRefresh = force ||
+            this.cookies === '' ||
+            this.cookieUsedCount > 10 ||
+            this.cookieExpiry <= Date.now()
+
+        if (needsRefresh) {
+            this.userAgent = new UserAgent().toString()
+            await this.nseClient.get(`${this.baseUrl}/`, {
+                headers: {
+                    'User-Agent': this.userAgent,
+                    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    Connection: 'keep-alive'
+                }
+            })
+            this.cookies = await this.nseJar.getCookieString(this.baseUrl)
+            this.cookieUsedCount = 0
+            this.cookieExpiry = Date.now() + (this.cookieMaxAge * 1000)
         }
         this.cookieUsedCount++
         return this.cookies
+    }
+
+    /** @deprecated Use ensureNseSession internally; kept for tests that spy on cookie bootstrap. */
+    private async getNseCookies(): Promise<string> {
+        return this.ensureNseSession()
     }
 
     /**
@@ -121,40 +234,35 @@ export class NseIndia {
      * Used as fallback when charting API fails with NSE cookies
      * @returns Charting domain cookies
      */
-    private async getChartingCookies() {
-        if (
+    private async ensureChartingSession(force = false): Promise<string> {
+        const needsRefresh = force ||
             this.chartingCookies === '' ||
             this.chartingCookieUsedCount > 10 ||
-            this.chartingCookieExpiry <= new Date().getTime()
-        ) {
-            const userAgent = new UserAgent().toString()
-            const response = await axios.get(`${this.chartingBaseUrl}/`, {
+            this.chartingCookieExpiry <= Date.now()
+
+        if (needsRefresh) {
+            this.chartingUserAgent = new UserAgent().toString()
+            await this.chartingClient.get(`${this.chartingBaseUrl}/`, {
                 headers: {
                     'Authority': 'charting.nseindia.com',
                     'Referer': `${this.chartingBaseUrl}/`,
-                    'Accept': '*/*',
+                    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                     'Accept-Language': 'en-US,en;q=0.9',
-                    'Accept-Encoding': 'application/json, text/plain, */*',
-                    'Connection': 'keep-alive',
-                    'User-Agent': userAgent
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    Connection: 'keep-alive',
+                    'User-Agent': this.chartingUserAgent
                 }
             })
-            const setCookies: string[] | undefined = response.headers['set-cookie']
-            const cookies: string[] = []
-            if (setCookies) {
-                setCookies.forEach((cookie: string) => {
-                    const cookieKeyValue = cookie.split(';')[0]
-                    cookies.push(cookieKeyValue)
-                })
-                this.chartingCookies = cookies.join('; ')
-                this.chartingCookieUsedCount = 0
-                this.chartingCookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
-            }
-            this.chartingCookieUsedCount++
-            return this.chartingCookies
+            this.chartingCookies = await this.chartingJar.getCookieString(this.chartingBaseUrl)
+            this.chartingCookieUsedCount = 0
+            this.chartingCookieExpiry = Date.now() + (this.cookieMaxAge * 1000)
         }
         this.chartingCookieUsedCount++
         return this.chartingCookies
+    }
+
+    private async getChartingCookies(): Promise<string> {
+        return this.ensureChartingSession()
     }
     /**
      * 
@@ -164,73 +272,86 @@ export class NseIndia {
      */
     async getData(url: string, domain: 'nse' | 'charting' = 'nse'): Promise<any> {
         let retries = 0
-        let hasError = false
-        let lastError: any = null
+        let sessionRefreshed = false
 
-        do {
+        while (retries < this.maxRetries) {
             while (this.noOfConnections >= 5) {
                 await sleep(500)
             }
             this.noOfConnections++
             try {
                 if (domain === 'charting') {
-                    // For charting domain: try NSE cookies first, then fallback to charting cookies
                     const chartingHeaders = {
                         'Authority': 'charting.nseindia.com',
                         'Referer': `${this.chartingBaseUrl}/`,
-                        'Accept': 'application/json, text/plain, */*',
+                        Accept: 'application/json, text/plain, */*',
                         'Accept-Language': 'en-GB,en;q=0.5',
-                        'Accept-Encoding': 'application/json, text/plain, */*',
-                        'Connection': 'keep-alive'
+                        'Accept-Encoding': 'gzip, deflate, br',
+                        Connection: 'keep-alive'
                     }
 
-                    let cookies = await this.getNseCookies() // Try NSE cookies first (PRIMARY)
-                    let response: any
+                    await this.ensureNseSession(sessionRefreshed)
+                    let response
 
                     try {
-                        response = await axios.get(url, {
+                        response = await this.chartingClient.get(url, {
                             headers: {
                                 ...chartingHeaders,
-                                'Cookie': cookies,
+                                Cookie: this.cookies,
                                 'User-Agent': this.userAgent
                             }
                         })
                     } catch (primaryError) {
-                        // NSE cookies failed, try charting cookies (FALLBACK)
-                        lastError = primaryError
-                        cookies = await this.getChartingCookies()
-                        response = await axios.get(url, {
+                        const chartingCookies = await this.ensureChartingSession(
+                            this.isAuthError(primaryError)
+                        )
+                        response = await this.chartingClient.get(url, {
                             headers: {
                                 ...chartingHeaders,
-                                'Cookie': cookies,
-                                'User-Agent': this.userAgent
+                                Cookie: chartingCookies,
+                                'User-Agent': this.chartingUserAgent || this.userAgent
                             }
                         })
                     }
 
                     this.noOfConnections--
                     return response.data
-                } else {
-                    // For NSE domain: use standard NSE headers
-                    const response = await axios.get(url, {
-                        headers: {
-                            ...this.baseHeaders,
-                            'Cookie': await this.getNseCookies(),
-                            'User-Agent': this.userAgent
-                        }
-                    })
-                    this.noOfConnections--
-                    return response.data
                 }
-            } catch (error) {
-                hasError = true
-                lastError = error
-                retries++
+
+                await this.ensureNseSession(sessionRefreshed)
+
+                const apiHeaders = { ...this.apiHeaders, 'User-Agent': this.userAgent }
+                if (url.includes('/api/quote-equity') || url.includes('/api/NextApi/apiClient/GetQuoteApi')) {
+                    const symbolMatch = url.match(/[?&]symbol=([^&]+)/)
+                    const apiSymbol = symbolMatch ? decodeURIComponent(symbolMatch[1]) : 'TCS'
+                    const refererSymbol = equityRefererSymbol(apiSymbol)
+                    await this.warmEquityQuotePage(refererSymbol)
+                    apiHeaders.Referer =
+                        `${this.baseUrl}/get-quotes/equity?symbol=${encodeURIComponent(refererSymbol)}`
+                } else if (url.includes('/api/equity-stockIndices')) {
+                    const indexMatch = url.match(/[?&]index=([^&]+)/)
+                    const index = indexMatch ? decodeURIComponent(indexMatch[1]) : 'NIFTY%2050'
+                    const indexPath = `/market-data/live-equity-market?symbol=${encodeURIComponent(index)}`
+                    await this.warmNsePage(indexPath)
+                    apiHeaders.Referer = `${this.baseUrl}${indexPath}`
+                }
+
+                const response = await this.nseClient.get(url, { headers: apiHeaders })
                 this.noOfConnections--
-                if (retries >= 10)
-                    throw error
+                return response.data
+            } catch (error) {
+                this.noOfConnections--
+                retries++
+                if (this.isAuthError(error) && !sessionRefreshed) {
+                    this.invalidateNseSession()
+                    sessionRefreshed = true
+                    continue
+                }
+                throw this.toHttpError(error)
             }
-        } while (hasError);
+        }
+
+        throw new Error(`NSE request failed after ${this.maxRetries} attempts`)
     }
     /**
      * 
@@ -327,22 +448,173 @@ export class NseIndia {
         const { data } = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
         return data.map((obj: { metadata: { symbol: string } }) => obj.metadata.symbol).sort()
     }
+    private async getPreOpenMarketCached(): Promise<PreOpenMarketData> {
+        if (!this.preOpenCache || this.preOpenCache.expiry <= Date.now()) {
+            const data = await this.getDataByEndpoint(ApiList.MARKET_DATA_PRE_OPEN)
+            this.preOpenCache = { data, expiry: Date.now() + (this.cookieMaxAge * 1000) }
+        }
+        return this.preOpenCache.data
+    }
+
+    private async resolveCapitalMarketType(): Promise<string> {
+        if (this.capitalMarketTypeCache && this.capitalMarketTypeCache.expiry > Date.now()) {
+            return this.capitalMarketTypeCache.type
+        }
+
+        try {
+            const status = await this.getMarketStatus()
+            const capital = status.marketState?.find((entry) => entry.market === 'Capital Market')
+            const marketStatus = capital?.marketStatus?.toLowerCase() ?? ''
+            let type = 'NM'
+            if (marketStatus.includes('pre') && marketStatus.includes('open')) {
+                type = 'preOpen'
+            }
+            this.capitalMarketTypeCache = {
+                type,
+                expiry: Date.now() + (this.cookieMaxAge * 1000)
+            }
+            return type
+        } catch {
+            return 'NM'
+        }
+    }
+
+    private async fetchEquityDetailsEnrichment(symbol: string): Promise<EquityDetailsEnrichment> {
+        const upper = symbol.toUpperCase()
+        let chartingName = ''
+        let chartingIsin = ''
+        let corporateName = ''
+        let corporateIsin = ''
+        let corporateIndustry = ''
+
+        await Promise.all([
+            this.getEquitySymbolInfo(upper)
+                .then((info) => {
+                    chartingName = info.companyName?.trim() || info.description?.trim() || ''
+                    chartingIsin = info.isin?.trim() || ''
+                })
+                .catch(() => undefined),
+            this.getDataByEndpoint(
+                `/api/corporates-financial-results?index=equities&symbol=${encodeURIComponent(upper)}`
+            )
+                .then((rows: Array<{ companyName?: string; isin?: string; industry?: string }>) => {
+                    if (!Array.isArray(rows) || rows.length === 0) return
+                    const row = rows.find((entry) => entry.isin && entry.isin !== '-') ?? rows[0]
+                    corporateName = row.companyName?.trim() || ''
+                    corporateIsin = row.isin?.trim() && row.isin !== '-' ? row.isin.trim() : ''
+                    corporateIndustry = row.industry?.trim() && row.industry !== '-' ? row.industry.trim() : ''
+                })
+                .catch(() => undefined)
+        ])
+
+        const enrichment: EquityDetailsEnrichment = {}
+        if (corporateName || chartingName) {
+            enrichment.companyName = corporateName || chartingName
+        }
+        if (corporateIsin || chartingIsin) {
+            enrichment.isin = corporateIsin || chartingIsin
+        }
+        if (corporateIndustry) {
+            enrichment.industry = corporateIndustry
+        }
+        return enrichment
+    }
+
+    private async enrichPreOpenEquityDetails(
+        details: EquityDetails,
+        symbol: string
+    ): Promise<EquityDetails> {
+        const [marketType, enrichment] = await Promise.all([
+            this.resolveCapitalMarketType(),
+            this.fetchEquityDetailsEnrichment(symbol)
+        ])
+        return applyEquityDetailsEnrichment(details, {
+            ...enrichment,
+            currentMarketType: marketType
+        })
+    }
+
     /**
-     * 
-     * @param symbol 
-     * @returns 
+     * Equity quote with fallback when /api/quote-equity is blocked (Akamai 403).
+     * Primary: quote-equity JSON; fallback: market-data-pre-open row for the symbol.
      */
-    getEquityDetails(symbol: string): Promise<EquityDetails> {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol.toUpperCase())}`)
+    async getEquityDetails(symbol: string): Promise<EquityDetails> {
+        const upper = symbol.toUpperCase()
+        const attempts: string[] = []
+
+        try {
+            const raw = await this.getDataByEndpoint(
+                `/api/quote-equity?symbol=${encodeURIComponent(upper)}`
+            )
+            if (isEquityDetailsShape(raw)) {
+                return mapQuoteEquityResponse(raw)
+            }
+            attempts.push('quote-equity: unexpected response shape')
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            attempts.push(`quote-equity: ${message}`)
+            if (!isRetryableEquityEndpointError(error)) {
+                throw error instanceof Error ? error : new Error(message)
+            }
+        }
+
+        try {
+            const preOpen = await this.getPreOpenMarketCached()
+            const row = preOpen.data?.find((entry) => entry.metadata?.symbol === upper)
+            if (row) {
+                const mapped = mapPreOpenRowToEquityDetails(row, upper)
+                return this.enrichPreOpenEquityDetails(mapped, upper)
+            }
+            attempts.push('pre-open: symbol not found in market-data-pre-open')
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            attempts.push(`pre-open: ${message}`)
+        }
+
+        throw new Error(
+            `No equity quote available for ${upper}. Attempts: ${attempts.join('; ')}`
+        )
     }
     /**
      * 
      * @param symbol 
      * @returns 
      */
-    getEquityTradeInfo(symbol: string): Promise<EquityTradeInfo> {
-        return this.getDataByEndpoint(`/api/quote-equity?symbol=${encodeURIComponent(symbol
-            .toUpperCase())}&section=trade_info`)
+    async getEquityTradeInfo(symbol: string): Promise<EquityTradeInfo> {
+        const upper = symbol.toUpperCase()
+        const attempts: string[] = []
+
+        try {
+            const raw = await this.getDataByEndpoint(
+                `/api/quote-equity?symbol=${encodeURIComponent(upper)}&section=trade_info`
+            )
+            if (isEquityTradeInfoShape(raw)) {
+                return mapQuoteEquityTradeInfoResponse(raw)
+            }
+            attempts.push('quote-equity trade_info: unexpected response shape')
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            attempts.push(`quote-equity trade_info: ${message}`)
+            if (!isRetryableEquityEndpointError(error)) {
+                throw error instanceof Error ? error : new Error(message)
+            }
+        }
+
+        try {
+            const preOpen = await this.getPreOpenMarketCached()
+            const row = preOpen.data?.find((entry) => entry.metadata?.symbol === upper)
+            if (row) {
+                return mapPreOpenRowToEquityTradeInfo(row, upper)
+            }
+            attempts.push('pre-open: symbol not found in market-data-pre-open')
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            attempts.push(`pre-open: ${message}`)
+        }
+
+        throw new Error(
+            `No equity trade info available for ${upper}. Attempts: ${attempts.join('; ')}`
+        )
     }
 
     /**
@@ -360,11 +632,50 @@ export class NseIndia {
      * @returns 
      */
     async getEquityIntradayData(symbol: string): Promise<IntradayData> {
-        const details = await this.getEquityDetails(symbol.toUpperCase())
-        const identifier = details.info.identifier
-        const url = `/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolChartData` +
-            `&symbol=${encodeURIComponent(identifier)}&days=1D`
-        return this.getDataByEndpoint(url)
+        const upper = symbol.toUpperCase()
+        const attempts: string[] = []
+        const chartSymbols = [`${upper}-EQ`, upper]
+
+        for (const chartSymbol of chartSymbols) {
+            try {
+                const raw = await this.getDataByEndpoint(
+                    `/api/NextApi/apiClient/GetQuoteApi?functionName=getSymbolChartData` +
+                    `&symbol=${encodeURIComponent(chartSymbol)}&days=1D`
+                )
+                if (isIntradayDataShape(raw)) {
+                    return mapIntradayApiResponse(raw, upper)
+                }
+                attempts.push(`${chartSymbol}: unexpected response shape`)
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error)
+                attempts.push(`${chartSymbol}: ${message}`)
+                if (!isRetryableEquityEndpointError(error)) {
+                    throw error instanceof Error ? error : new Error(message)
+                }
+            }
+        }
+
+        try {
+            const chart = await this.getEquityChartHistoricalData(
+                upper,
+                undefined,
+                undefined,
+                'Equity',
+                'I',
+                '5'
+            )
+            if (chart?.data?.length) {
+                return mapChartingToIntradayData(chart, upper)
+            }
+            attempts.push('charting: empty data')
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            attempts.push(`charting: ${message}`)
+        }
+
+        throw new Error(
+            `No intraday data available for ${upper}. Attempts: ${attempts.join('; ')}`
+        )
     }
     /**
      * 
@@ -373,10 +684,29 @@ export class NseIndia {
      * @returns 
      */
     async getEquityHistoricalData(symbol: string, range?: DateRange): Promise<EquityHistoricalData[]> {
-        const data = await this.getEquityDetails(symbol.toUpperCase())
-        const activeSeries = data.info.activeSeries.length ? data.info.activeSeries[0] : /* istanbul ignore next */ 'EQ'
+        const upper = symbol.toUpperCase()
+        let activeSeries = 'EQ'
+
         if (!range) {
-            range = { start: new Date(data.metadata.listingDate), end: new Date() }
+            const data = await this.getEquityDetails(upper)
+            activeSeries = data.info.activeSeries.length ? data.info.activeSeries[0] : 'EQ'
+            const now = new Date()
+            const listingDate = new Date(data.metadata.listingDate)
+            const hasValidListingDate = !Number.isNaN(listingDate.getTime())
+            const fallbackStart = new Date(now)
+            fallbackStart.setFullYear(now.getFullYear() - 1)
+            range = {
+                start: hasValidListingDate ? listingDate : fallbackStart,
+                end: now
+            }
+        } else {
+            try {
+                const seriesData = await this.getEquitySeries(upper)
+                const seriesList = seriesData.data ?? []
+                activeSeries = seriesList.includes('EQ') ? 'EQ' : (seriesList[0] ?? 'EQ')
+            } catch {
+                activeSeries = 'EQ'
+            }
         }
         const dateRanges = getDateRangeChunks(range.start, range.end, 66)
         const promises = dateRanges.map(async (dateRange) => {
@@ -420,8 +750,26 @@ export class NseIndia {
      * @param index 
      * @returns 
      */
-    getEquityStockIndices(index: string): Promise<IndexDetails> {
-        return this.getDataByEndpoint(`/api/equity-stockIndices?index=${encodeURIComponent(index.toUpperCase())}`)
+    async getEquityStockIndices(index: string): Promise<IndexDetails> {
+        const indexParam = encodeURIComponent(index.toUpperCase())
+        const legacyUrl = `${this.baseUrl}/api/equity-stockIndices?index=${indexParam}`
+        const summaryUrl = `${this.baseUrl}/api/equity-stockIndex?index=${indexParam}`
+
+        try {
+            const legacy = await this.getData(legacyUrl)
+            const normalized = this.normalizeIndexDetails(legacy)
+            if (normalized.data?.length) {
+                return normalized
+            }
+        } catch (legacyError) {
+            const message = legacyError instanceof Error ? legacyError.message : ''
+            if (!message.includes('404')) {
+                throw legacyError
+            }
+        }
+
+        const summary = await this.getData(summaryUrl)
+        return this.normalizeIndexDetails(summary)
     }
     /**
      * 

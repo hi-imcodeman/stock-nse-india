@@ -70,7 +70,7 @@ export class MemoryManager {
   private sessions: Map<string, UserSession> = new Map()
   private config: MemoryConfig
   private memoryFilePath: string
-  private contextSummarizer: ContextSummarizer
+  private contextSummarizer?: ContextSummarizer
 
   constructor(config: Partial<MemoryConfig> = {}) {
     this.config = {
@@ -89,15 +89,25 @@ export class MemoryManager {
       ...config
     }
     this.memoryFilePath = this.config.memoryFilePath
-    
-    // Initialize context summarizer
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    })
-    this.contextSummarizer = new ContextSummarizer(openai, this.config.contextWindowConfig)
-    
+
     // Load any previously saved memory data synchronously so it's available immediately
     this.loadMemoryFromFile()
+  }
+
+  private getContextSummarizer(): ContextSummarizer {
+    if (!this.contextSummarizer) {
+      const apiKey = process.env.OPENAI_API_KEY
+      if (!apiKey) {
+        throw new Error(
+          'OpenAI API key is required for context summarization. Set OPENAI_API_KEY.'
+        )
+      }
+      this.contextSummarizer = new ContextSummarizer(
+        new OpenAI({ apiKey }),
+        this.config.contextWindowConfig
+      )
+    }
+    return this.contextSummarizer
   }
 
   /**
@@ -256,10 +266,10 @@ export class MemoryManager {
     const prompt = systemPrompt || this.getContextualSystemPrompt(sessionId)
 
     // Calculate tokens before optimization
-    const tokensBefore = this.contextSummarizer.countTokens(messages, prompt)
+    const tokensBefore = this.getContextSummarizer().countTokens(messages, prompt)
 
     // Get optimized context with summarization
-    const optimizedContext = await this.contextSummarizer.getOptimalContext(messages, prompt)
+    const optimizedContext = await this.getContextSummarizer().getOptimalContext(messages, prompt)
 
     // If summarization occurred and persistSummarization is true, update the session history
     if (optimizedContext.wasSummarized && persistSummarization) {
@@ -479,7 +489,7 @@ export class MemoryManager {
     if (!session) return false
 
     const prompt = systemPrompt || this.getContextualSystemPrompt(sessionId)
-    return this.contextSummarizer.needsSummarization(session.conversationHistory, prompt)
+    return this.getContextSummarizer().needsSummarization(session.conversationHistory, prompt)
   }
 
   /**
@@ -502,9 +512,9 @@ export class MemoryManager {
     }
 
     const prompt = systemPrompt || this.getContextualSystemPrompt(sessionId)
-    const tokenCount = this.contextSummarizer.countTokens(session.conversationHistory, prompt)
+    const tokenCount = this.getContextSummarizer().countTokens(session.conversationHistory, prompt)
     const needsSummarization = await this.needsContextSummarization(sessionId, systemPrompt)
-    const contextWindowUsage = (tokenCount.totalTokens / this.contextSummarizer.getConfig().maxTokens) * 100
+    const contextWindowUsage = (tokenCount.totalTokens / this.getContextSummarizer().getConfig().maxTokens) * 100
 
     return {
       messageCount: session.conversationHistory.length,
@@ -522,7 +532,7 @@ export class MemoryManager {
     if (!session) return null
 
     const prompt = systemPrompt || this.getContextualSystemPrompt(sessionId)
-    const summary = await this.contextSummarizer.createContextSummary(session.conversationHistory)
+    const summary = await this.getContextSummarizer().createContextSummary(session.conversationHistory)
     
     // Store summary in session metadata
     if (!session.contextData.marketContext) {
@@ -539,14 +549,14 @@ export class MemoryManager {
    */
   updateContextWindowConfig(config: Partial<ContextWindowConfig>): void {
     this.config.contextWindowConfig = { ...this.config.contextWindowConfig, ...config }
-    this.contextSummarizer.updateConfig(this.config.contextWindowConfig)
+    this.getContextSummarizer().updateConfig(this.config.contextWindowConfig)
   }
 
   /**
    * Get context window configuration
    */
   getContextWindowConfig(): ContextWindowConfig {
-    return this.contextSummarizer.getConfig()
+    return this.getContextSummarizer().getConfig()
   }
 
   /**
