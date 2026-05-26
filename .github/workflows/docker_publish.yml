@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - 'docker-actions*'
   release:
     types:
       - published
@@ -34,7 +35,7 @@ jobs:
         with:
           images: imcodeman/nseindia
           tags: |
-            type=raw,value=latest,enable=${{ github.event_name == 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref_name, 'docker-actions')) }}
             type=semver,pattern={{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
             type=semver,pattern={{major}}.{{minor}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
             type=semver,pattern=v{{version}},value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
