@@ -292,7 +292,9 @@ Comprehensive REST endpoints with automatic Swagger documentation:
 - `GET /` - Market status
 - `GET /api/marketStatus` - Market status information
 - `GET /api/glossary` - NSE glossary
-- `GET /api/equity/:symbol` - Equity details
+- `GET /api/equity/:symbol` - Equity details (uses NSE `quote-equity` when available; otherwise pre-open data enriched from charting/corporate APIs; failures return 403/502 with a message, not an empty 400)
+- `GET /api/equity/tradeInfo/:symbol` - Trade info / order book (same `quote-equity` fallback via pre-open when blocked)
+- `GET /api/equity/intraday/:symbol` - Intraday chart (`GetQuoteApi` when available; otherwise charting.nseindia.com OHLC)
 - `GET /api/equity/:symbol/historical` - Historical data
 - `GET /api/indices` - Market indices
 - `GET /api/charts/equity-historical-data` - Charting OHLC historical data
@@ -495,7 +497,8 @@ npm run docs
 - **`npm start`** - Start production server
 - **`npm run start:dev`** - Development mode with auto-reload
 - **`npm run build`** - Build TypeScript to JavaScript
-- **`npm test`** - Run test suite with coverage
+- **`npm test`** - Run unit/mock test suite with coverage
+- **`npm run test:e2e`** - Run live NSE e2e tests
 - **`npm run docs`** - Generate TypeDoc documentation
 - **`npm run lint`** - Run ESLint
 
@@ -507,11 +510,14 @@ npm run docs
 ## 🧪 Testing
 
 ```bash
-# Run all tests
+# Run unit/mock tests (default CI)
 npm test
 
 # Run tests with coverage
 npm test -- --coverage
+
+# Run live NSE e2e tests (requires network; runs daily in CI)
+npm run test:e2e
 
 # Run specific test file
 npm test -- utils.spec.ts

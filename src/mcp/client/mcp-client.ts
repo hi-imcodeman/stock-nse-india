@@ -60,7 +60,7 @@ export interface MCPClientConfig {
  */
 export class MCPClient {
   private nseClient: NseIndia
-  private openai: OpenAI
+  private openaiClient?: OpenAI
   private availableTools: any[]
   private memoryManager?: MemoryManager
   private config: MCPClientConfig
@@ -77,19 +77,29 @@ export class MCPClient {
 
     // Initialize NSE India client
     this.nseClient = new NseIndia()
-    
-    // Initialize OpenAI client
-    this.openai = new OpenAI({
-      apiKey: config.openaiApiKey || process.env.OPENAI_API_KEY,
-    })
-    
+
     // Initialize available tools
     this.availableTools = mcpTools
-    
-    // Initialize memory manager if enabled
-    if (this.config.enableMemory) {
-      this.memoryManager = new MemoryManager(config.memoryConfig)
+  }
+
+  private getOpenAI(): OpenAI {
+    if (!this.openaiClient) {
+      const apiKey = this.config.openaiApiKey || process.env.OPENAI_API_KEY
+      if (!apiKey) {
+        throw new Error(
+          'OpenAI API key not configured. Set OPENAI_API_KEY environment variable.'
+        )
+      }
+      this.openaiClient = new OpenAI({ apiKey })
     }
+    return this.openaiClient
+  }
+
+  private getMemoryManager(): MemoryManager {
+    if (!this.memoryManager) {
+      this.memoryManager = new MemoryManager(this.config.memoryConfig)
+    }
+    return this.memoryManager
   }
 
   /**
@@ -177,14 +187,14 @@ export class MCPClient {
       this.allToolsUsed = []
       
       // Determine if we should use memory features
-      const shouldUseMemory = !!(useMemory && this.config.enableMemory && this.memoryManager && sessionId)
+      const shouldUseMemory = !!(useMemory && this.config.enableMemory && sessionId)
 
       let session: any = null
       let conversationContext: any = { messages: [], wasSummarized: false, tokenCount: { totalTokens: 0 } }
 
       // Initialize session and memory if enabled
       if (shouldUseMemory) {
-        session = this.memoryManager!.getOrCreateSession(sessionId!, userId)
+        session = this.getMemoryManager().getOrCreateSession(sessionId!, userId)
         
         // Add user message to conversation history
         const userMessage: ConversationMessage = {
@@ -192,23 +202,23 @@ export class MCPClient {
           content: query,
           timestamp: new Date().toISOString()
         }
-        this.memoryManager!.addMessage(sessionId!, userMessage)
+        this.getMemoryManager().addMessage(sessionId!, userMessage)
 
         // Extract stock symbols for context tracking
         const stockSymbols = this.extractStockSymbols(query)
         stockSymbols.forEach(symbol => {
-          this.memoryManager!.updateStockAccess(sessionId!, symbol)
+          this.getMemoryManager().updateStockAccess(sessionId!, symbol)
         })
 
         // Get conversation history with context summarization
         if (includeContext) {
-          conversationContext = await this.memoryManager!.getConversationContext(sessionId!)
+          conversationContext = await this.getMemoryManager().getConversationContext(sessionId!)
         }
       }
 
       // Get system prompt (contextual if memory is enabled)
       const systemPrompt = shouldUseMemory && includeContext
-        ? this.memoryManager!.getContextualSystemPrompt(sessionId!)
+        ? this.getMemoryManager().getContextualSystemPrompt(sessionId!)
         : this.getBaseSystemPrompt()
 
       // Initialize iteration tracking
@@ -269,7 +279,7 @@ export class MCPClient {
         this.debugLog(`Iteration ${currentIteration}/${maxIterations}`)
         this.debugLog('Sending messages to OpenAI:', allMessages)
 
-        const response = await this.openai.chat.completions.create({
+        const response = await this.getOpenAI().chat.completions.create({
           model,
           messages: allMessages,
           tools: functions.map(fn => ({ type: 'function', function: fn })),
@@ -406,7 +416,7 @@ export class MCPClient {
                 'comprehensive final analysis and recommendations.'
             })
             
-            const finalResponse = await this.openai.chat.completions.create({
+            const finalResponse = await this.getOpenAI().chat.completions.create({
               model,
               messages: allMessages,
               temperature,
@@ -429,7 +439,7 @@ export class MCPClient {
                   iterations_used: currentIteration + 1
                 }
               }
-              this.memoryManager!.addMessage(sessionId!, assistantMessage)
+              this.getMemoryManager().addMessage(sessionId!, assistantMessage)
             }
 
             return this.buildFinalResponse(
@@ -464,7 +474,7 @@ export class MCPClient {
                 iterations_used: currentIteration
               }
             }
-            this.memoryManager!.addMessage(sessionId!, assistantMessage)
+            this.getMemoryManager().addMessage(sessionId!, assistantMessage)
           }
 
           return this.buildFinalResponse(
@@ -634,9 +644,9 @@ export class MCPClient {
    * Update user preferences based on query patterns
    */
   private updateUserPreferencesFromQuery(sessionId: string, query: string, toolsUsed: string[]): boolean {
-    if (!this.memoryManager) return false
+    if (!this.config.enableMemory) return false
 
-    const session = this.memoryManager.getOrCreateSession(sessionId)
+    const session = this.getMemoryManager().getOrCreateSession(sessionId)
     let updated = false
 
     const queryLower = query.toLowerCase()
@@ -684,7 +694,7 @@ export class MCPClient {
     })
 
     if (updated) {
-      this.memoryManager.updatePreferences(sessionId, session.userPreferences)
+      this.getMemoryManager().updatePreferences(sessionId, session.userPreferences)
     }
 
     return updated
@@ -698,30 +708,30 @@ export class MCPClient {
    * Get session information
    */
   getSessionInfo(sessionId: string): any {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    return this.memoryManager.getSessionStats(sessionId)
+    return this.getMemoryManager().getSessionStats(sessionId)
   }
 
   /**
    * Update user preferences manually
    */
   updateUserPreferences(sessionId: string, preferences: Record<string, unknown>): void {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    this.memoryManager.updatePreferences(sessionId, preferences)
+    this.getMemoryManager().updatePreferences(sessionId, preferences)
   }
 
   /**
    * Get conversation history
    */
   getConversationHistory(sessionId: string, maxMessages?: number): ConversationMessage[] {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    return this.memoryManager.getConversationContextSync(sessionId, maxMessages)
+    return this.getMemoryManager().getConversationContextSync(sessionId, maxMessages)
   }
 
   /**
@@ -737,40 +747,40 @@ export class MCPClient {
     wasSummarized: boolean
     tokenCount: any
   }> {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    return this.memoryManager.getConversationContext(sessionId, maxMessages, systemPrompt)
+    return this.getMemoryManager().getConversationContext(sessionId, maxMessages, systemPrompt)
   }
 
   /**
    * Clear session data
    */
   clearSession(sessionId: string): void {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    this.memoryManager.clearSession(sessionId)
+    this.getMemoryManager().clearSession(sessionId)
   }
 
   /**
    * Export session data
    */
   exportSessionData(sessionId: string): any {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    return this.memoryManager.exportSessionData(sessionId)
+    return this.getMemoryManager().exportSessionData(sessionId)
   }
 
   /**
    * Check if context needs summarization
    */
   async needsContextSummarization(sessionId: string, systemPrompt?: string): Promise<boolean> {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    return this.memoryManager.needsContextSummarization(sessionId, systemPrompt)
+    return this.getMemoryManager().needsContextSummarization(sessionId, systemPrompt)
   }
 
   /**
@@ -782,50 +792,50 @@ export class MCPClient {
     needsSummarization: boolean
     contextWindowUsage: number
   }> {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    return this.memoryManager.getContextStats(sessionId, systemPrompt)
+    return this.getMemoryManager().getContextStats(sessionId, systemPrompt)
   }
 
   /**
    * Force context summarization
    */
   async forceContextSummarization(sessionId: string, systemPrompt?: string): Promise<any> {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    return this.memoryManager.forceContextSummarization(sessionId, systemPrompt)
+    return this.getMemoryManager().forceContextSummarization(sessionId, systemPrompt)
   }
 
   /**
    * Update context window configuration
    */
   updateContextWindowConfig(config: Record<string, unknown>): void {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    this.memoryManager.updateContextWindowConfig(config)
+    this.getMemoryManager().updateContextWindowConfig(config)
   }
 
   /**
    * Get context window configuration
    */
   getContextWindowConfig(): any {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    return this.memoryManager.getContextWindowConfig()
+    return this.getMemoryManager().getContextWindowConfig()
   }
 
   /**
    * Cleanup expired sessions
    */
   cleanupExpiredSessions(): void {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
-    this.memoryManager.cleanupExpiredSessions()
+    this.getMemoryManager().cleanupExpiredSessions()
   }
 
   // ============================================================================
@@ -866,7 +876,7 @@ export class MCPClient {
    * Test the MCP client with memory
    */
   async testConnectionWithMemory(sessionId: string): Promise<boolean> {
-    if (!this.memoryManager) {
+    if (!this.config.enableMemory) {
       throw new Error('Memory is not enabled for this MCP client')
     }
     
@@ -895,48 +905,48 @@ export class MCPClient {
    * Check if memory is enabled
    */
   isMemoryEnabled(): boolean {
-    return this.config.enableMemory === true && this.memoryManager !== undefined
+    return this.config.enableMemory === true
   }
 
   /**
    * Check if context summarization is enabled
    */
   isContextSummarizationEnabled(): boolean {
-    return this.config.enableContextSummarization === true && this.memoryManager !== undefined
+    return this.config.enableContextSummarization === true && this.config.enableMemory === true
   }
 
   /**
    * Get last summarization for a session
    */
   getLastSummarization(sessionId: string): any {
-    if (!this.memoryManager) return null
-    return this.memoryManager.getLastSummarization(sessionId)
+    if (!this.config.enableMemory) return null
+    return this.getMemoryManager().getLastSummarization(sessionId)
   }
 
   /**
    * Get summarization history for a session
    */
   getSummarizationHistory(sessionId: string, limit?: number): any[] {
-    if (!this.memoryManager) return []
-    return this.memoryManager.getSummarizationHistory(sessionId, limit)
+    if (!this.config.enableMemory) return []
+    return this.getMemoryManager().getSummarizationHistory(sessionId, limit)
   }
 
   /**
    * Get summarization summary for a session
    */
   getSummarizationSummary(sessionId: string): any {
-    if (!this.memoryManager) return null
-    return this.memoryManager.getSummarizationSummary(sessionId)
+    if (!this.config.enableMemory) return null
+    return this.getMemoryManager().getSummarizationSummary(sessionId)
   }
 
   /**
    * Get OpenAI messages for a session (including system message)
    */
   getOpenAIMessages(sessionId: string): any {
-    if (!this.memoryManager) return null
+    if (!this.config.enableMemory) return null
     
-    const session = this.memoryManager.getOrCreateSession(sessionId)
-    const systemPrompt = this.memoryManager.getContextualSystemPrompt(sessionId)
+    const session = this.getMemoryManager().getOrCreateSession(sessionId)
+    const systemPrompt = this.getMemoryManager().getContextualSystemPrompt(sessionId)
     
     return {
       systemPrompt,
@@ -945,11 +955,18 @@ export class MCPClient {
   }
 }
 
-// Export singleton instance with default configuration
-export const mcpClient = new MCPClient({
-  enableMemory: true,
-  enableContextSummarization: true
-})
+let sharedMcpClient: MCPClient | undefined
+
+/** Lazy singleton — does not require OPENAI_API_KEY until MCP AI routes are used. */
+export function getMcpClient(): MCPClient {
+  if (!sharedMcpClient) {
+    sharedMcpClient = new MCPClient({
+      enableMemory: true,
+      enableContextSummarization: true
+    })
+  }
+  return sharedMcpClient
+}
 
 // Export factory function for custom configurations
 export function createMCPClient(config: MCPClientConfig): MCPClient {
