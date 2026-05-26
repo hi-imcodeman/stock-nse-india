@@ -408,6 +408,7 @@ Required repository secrets:
 
 - `DOCKERHUB_USERNAME`
 - `DOCKERHUB_TOKEN` (Docker Hub access token)
+- `SLACK_WEBHOOK_URL` (Slack incoming webhook URL; notifies when the [CI workflow](.github/workflows/ci.yml) finishes on push and scheduled E2E runs)
 
 ### Container URLs
 

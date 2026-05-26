@@ -34,3 +34,74 @@ jobs:
         run: npm install
       - name: E2E Tests
         run: npm run test:e2e
+  notify:
+    name: Slack notification
+    runs-on: ubuntu-latest
+    needs: [build, integration]
+    if: always() && !cancelled() && (needs.build.result != 'skipped' || needs.integration.result != 'skipped')
+    env:
+      CI_RESULT: ${{ needs.build.result != 'skipped' && needs.build.result || needs.integration.result }}
+      CI_JOB_NAME: ${{ needs.build.result != 'skipped' && 'Test & Build' || 'E2E Tests' }}
+      CI_STATUS_LABEL: ${{ (needs.build.result != 'skipped' && needs.build.result || needs.integration.result) == 'success' && 'passed' || 'failed' }}
+    steps:
+      - name: Post to Slack
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "CI ${{ env.CI_STATUS_LABEL }} — ${{ env.CI_JOB_NAME }} (${{ github.event_name }}) on ${{ github.repository }}@${{ github.ref_name }}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "CI ${{ env.CI_STATUS_LABEL }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Job:*\n${{ env.CI_JOB_NAME }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Result:*\n${{ env.CI_RESULT }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Event:*\n${{ github.event_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\n${{ github.repository }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Ref:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Actor:*\n${{ github.actor }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Commit:*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow run>"
+                  }
+                }
+              ]
+            }
