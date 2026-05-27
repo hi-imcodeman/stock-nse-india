@@ -11,4 +11,4 @@ RUN yarn install --frozen-lockfile
 RUN yarn build
 ENV PORT=3001
 EXPOSE 3001
-CMD yarn start
+CMD ["node", "build/server.js"]
