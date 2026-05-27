@@ -27,11 +27,19 @@ def quote_block(body: str) -> str:
     return f"\n{quoted}\n"
 
 
-def header_block(text: str) -> dict:
-    """Large plain-text title block (Slack's biggest text style)."""
+def title_block(text: str) -> dict:
+    """Large title block — biggest text size supported by incoming webhooks."""
     return {
         "type": "header",
-        "text": {"type": "plain_text", "text": text[:150], "emoji": True},
+        "text": {"type": "plain_text", "text": strip_mrkdwn(text)[:150], "emoji": True},
+    }
+
+
+def subtitle_block(text: str) -> dict:
+    """Muted secondary line below the title."""
+    return {
+        "type": "context",
+        "elements": [{"type": "mrkdwn", "text": text}],
     }
 
 
@@ -49,6 +57,7 @@ def compose(
     buttons: Optional[List[dict]] = None,
     footer: Optional[str] = None,
     primary: str = "summary",
+    accent_color: Optional[str] = None,
 ) -> dict:
     """Build a Slack message with dividers and two-column fields."""
     blocks: List[dict] = []
@@ -56,17 +65,12 @@ def compose(
     if summary:
         title = header if primary == "header" else summary
         subtitle = summary if primary == "header" else header
-        blocks.append(header_block(strip_mrkdwn(title)))
+        blocks.append(title_block(title))
         blocks.append(DIVIDER)
-        blocks.append(
-            {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": subtitle},
-            }
-        )
+        blocks.append(subtitle_block(subtitle))
         blocks.append(DIVIDER)
     else:
-        blocks.append(header_block(header))
+        blocks.append(title_block(header))
         blocks.append(DIVIDER)
 
     if quote:
@@ -100,4 +104,10 @@ def compose(
     while blocks and blocks[-1] == DIVIDER:
         blocks.pop()
 
-    return {"text": text, "blocks": blocks}
+    payload: dict = {"text": text, "blocks": blocks}
+    if accent_color:
+        payload = {
+            "text": text,
+            "attachments": [{"color": accent_color, "blocks": blocks}],
+        }
+    return payload

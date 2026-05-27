@@ -25,11 +25,17 @@ def main() -> None:
     workflow_result = os.environ.get("WORKFLOW_RESULT", "unknown")
     workflow_name = os.environ.get("WORKFLOW_NAME", os.environ.get("GITHUB_WORKFLOW", "Workflow"))
 
-    header = f"{status_emoji} {workflow_name}"
+    header = f"{status_emoji} {workflow_name.upper()}"
     summary = os.environ.get(
         "SUMMARY_LINE",
         f"{result_emoji} *{workflow_result}*",
     )
+
+    accent_colors = {
+        "success": "#2eb886",
+        "failure": "#e01e5a",
+    }
+    accent_color = accent_colors.get(workflow_result)
 
     fields = [
         field("📦 *Repository*", f"`{repo}`"),
@@ -58,6 +64,7 @@ def main() -> None:
         buttons=buttons,
         footer=footer,
         primary="header",
+        accent_color=accent_color,
     )
 
     out_path = os.environ.get("SLACK_PAYLOAD_PATH", "slack-payload.json")
