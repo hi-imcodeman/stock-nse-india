@@ -36,7 +36,7 @@ def compose(
     buttons: Optional[List[dict]] = None,
     footer: Optional[str] = None,
 ) -> dict:
-    """Build a Slack message with dividers and stacked fields for clearer spacing."""
+    """Build a Slack message with dividers and two-column fields."""
     blocks: List[dict] = [
         {"type": "header", "text": {"type": "plain_text", "text": header}},
         DIVIDER,
@@ -61,8 +61,10 @@ def compose(
         blocks.append(DIVIDER)
 
     if fields:
-        for item in fields:
-            blocks.append({"type": "section", "fields": [item]})
+        # Slack renders up to two field items per row.
+        # Keep label/value spacing inside each field while using a 2-column layout.
+        for i in range(0, len(fields), 2):
+            blocks.append({"type": "section", "fields": fields[i : i + 2]})
         blocks.append(DIVIDER)
 
     if buttons:
