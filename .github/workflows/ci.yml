@@ -34,3 +34,35 @@ jobs:
         run: npm install
       - name: E2E Tests
         run: npm run test:e2e
+  notify:
+    name: Slack notification
+    runs-on: ubuntu-latest
+    needs: [build, integration]
+    if: always() && !cancelled() && (needs.build.result != 'skipped' || needs.integration.result != 'skipped')
+    env:
+      CI_RESULT: ${{ needs.build.result != 'skipped' && needs.build.result || needs.integration.result }}
+      CI_JOB_NAME: ${{ needs.build.result != 'skipped' && 'Test & Build' || 'E2E Tests' }}
+      CI_STATUS_LABEL: ${{ (needs.build.result != 'skipped' && needs.build.result || needs.integration.result) == 'success' && 'passed' || 'failed' }}
+      CI_STATUS_EMOJI: ${{ (needs.build.result != 'skipped' && needs.build.result || needs.integration.result) == 'success' && '✅' || '❌' }}
+      CI_JOB_EMOJI: ${{ needs.build.result != 'skipped' && '🧪' || '🌐' }}
+      CI_EVENT_EMOJI: ${{ github.event_name == 'push' && '🚀' || '⏰' }}
+      CI_RESULT_EMOJI: ${{ (needs.build.result != 'skipped' && needs.build.result || needs.integration.result) == 'success' && '🟢' || (needs.build.result != 'skipped' && needs.build.result || needs.integration.result) == 'failure' && '🔴' || '🟡' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Slack payload
+        env:
+          NOTIFY_KIND: ci
+          WORKFLOW_NAME: CI ${{ env.CI_STATUS_LABEL }}
+          STATUS_EMOJI: ${{ env.CI_STATUS_EMOJI }}
+          RESULT_EMOJI: ${{ env.CI_RESULT_EMOJI }}
+          WORKFLOW_RESULT: ${{ env.CI_RESULT }}
+          SUMMARY_LINE: ${{ env.CI_JOB_EMOJI }} *${{ env.CI_JOB_NAME }}* finished with ${{ env.CI_RESULT_EMOJI }} *${{ env.CI_RESULT }}*
+        run: python3 .github/scripts/build_workflow_slack_payload.py
+
+      - name: Post to Slack
+        uses: ./.github/actions/slack-notify
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload-file: slack-payload.json

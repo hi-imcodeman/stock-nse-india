@@ -1,0 +1,46 @@
+name: GitHub Events Slack Notifications
+
+on:
+  pull_request:
+    types: [opened, edited, closed]
+  issues:
+    types: [opened, edited, closed, reopened]
+  issue_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited]
+  fork:
+  watch:
+    types: [started]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  notify:
+    name: Slack notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Slack payload
+        id: slack
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_ACTION: ${{ github.event.action }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_EVENT_JSON: ${{ toJson(github.event) }}
+          SLACK_PAYLOAD_PATH: slack-payload.json
+        run: python3 .github/scripts/build_github_event_slack_payload.py
+
+      - name: Post to Slack
+        uses: ./.github/actions/slack-notify
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload-file: slack-payload.json

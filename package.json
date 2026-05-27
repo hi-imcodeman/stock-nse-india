@@ -29,7 +29,6 @@
     "docs": "typedoc",
     "test": "jest --coverage --testTimeout=600000 --testPathIgnorePatterns='\\.e2e\\.spec\\.ts$'",
     "test:e2e": "jest --runInBand --testTimeout=600000 --testPathPattern='\\.e2e\\.spec\\.ts$'",
-    "probe:nse-equity": "node scripts/probe-nse-equity.js",
     "lint": "eslint ./src/**/*.ts",
     "gpr-setup": "node ./scripts/setup-gpr.js",
     "prepare": "husky install"
