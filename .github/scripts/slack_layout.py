@@ -27,6 +27,35 @@ def quote_block(body: str) -> str:
     return f"\n{quoted}\n"
 
 
+def title_block(text: str) -> dict:
+    """Large title block — biggest text size supported by incoming webhooks."""
+    return {
+        "type": "header",
+        "text": {"type": "plain_text", "text": strip_mrkdwn(text)[:150], "emoji": True},
+    }
+
+
+def subtitle_block(text: str) -> dict:
+    """Muted secondary line below the title."""
+    return {
+        "type": "context",
+        "elements": [{"type": "mrkdwn", "text": text}],
+    }
+
+
+def strip_mrkdwn(text: str) -> str:
+    """Remove common mrkdwn markers for plain-text headers."""
+    return (text or "").strip().replace("*", "").replace("_", "")
+
+
+def format_event_header(text: str) -> str:
+    """Uppercase event label while preserving a leading emoji."""
+    parts = (text or "").strip().split(" ", 1)
+    if len(parts) == 2 and not parts[0].isascii():
+        return f"{parts[0]} {parts[1].upper()}"
+    return text.upper()
+
+
 def compose(
     text: str,
     header: str,
@@ -35,20 +64,20 @@ def compose(
     quote: Optional[str] = None,
     buttons: Optional[List[dict]] = None,
     footer: Optional[str] = None,
+    primary: str = "summary",
+    accent_color: Optional[str] = None,
 ) -> dict:
     """Build a Slack message with dividers and two-column fields."""
-    blocks: List[dict] = [
-        {"type": "header", "text": {"type": "plain_text", "text": header}},
-        DIVIDER,
-    ]
+    blocks: List[dict] = []
 
     if summary:
-        blocks.append(
-            {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": f"\n{summary.strip()}\n"},
-            }
-        )
+        title = header if primary == "header" else summary
+        subtitle = summary if primary == "header" else header
+        blocks.append(title_block(title))
+        blocks.append(subtitle_block(subtitle))
+        blocks.append(DIVIDER)
+    else:
+        blocks.append(title_block(header))
         blocks.append(DIVIDER)
 
     if quote:
@@ -82,4 +111,10 @@ def compose(
     while blocks and blocks[-1] == DIVIDER:
         blocks.pop()
 
-    return {"text": text, "blocks": blocks}
+    payload: dict = {"text": text, "blocks": blocks}
+    if accent_color:
+        payload = {
+            "text": text,
+            "attachments": [{"color": accent_color, "blocks": blocks}],
+        }
+    return payload

@@ -25,11 +25,17 @@ def main() -> None:
     workflow_result = os.environ.get("WORKFLOW_RESULT", "unknown")
     workflow_name = os.environ.get("WORKFLOW_NAME", os.environ.get("GITHUB_WORKFLOW", "Workflow"))
 
-    header = f"{status_emoji} {workflow_name}"
+    header = f"{status_emoji} {workflow_name.upper()}"
     summary = os.environ.get(
         "SUMMARY_LINE",
         f"{result_emoji} *{workflow_result}*",
     )
+
+    accent_colors = {
+        "success": "#2eb886",
+        "failure": "#e01e5a",
+    }
+    accent_color = accent_colors.get(workflow_result)
 
     fields = [
         field("📦 *Repository*", f"`{repo}`"),
@@ -45,11 +51,12 @@ def main() -> None:
         commit_url = f"{server_url}/{repo}/commit/{sha}"
         fields.append(field("🔗 *Commit*", f"<{commit_url}|`{sha}`>"))
         buttons.append(button("🔍 View commit", commit_url))
-        footer = f"{status_emoji} stock-nse-india CI · run #{run_number}"
+        footer = f"stock-nse-india CI · run #{run_number}"
     else:
-        footer = f"{status_emoji} {workflow_name} · run #{run_number}"
+        footer = f"{workflow_name} · run #{run_number}"
 
-    text = f"{header} — {summary} on {repo}@{ref}"
+    # Minimal preview line — full status and details are inside the card.
+    text = f"`{repo}@{ref}`"
     body = compose(
         text=text,
         header=header,
@@ -57,6 +64,8 @@ def main() -> None:
         fields=fields,
         buttons=buttons,
         footer=footer,
+        primary="header",
+        accent_color=accent_color,
     )
 
     out_path = os.environ.get("SLACK_PAYLOAD_PATH", "slack-payload.json")
