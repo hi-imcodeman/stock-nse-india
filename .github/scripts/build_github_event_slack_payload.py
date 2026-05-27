@@ -80,7 +80,7 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
         return event_compose(
             header,
             summary,
-            text=title,
+            text=f"`{repo}@{head}`",
             accent_color=accent_color,
             fields=fields,
             buttons=[button("🔍 View PR", pr_url)],
