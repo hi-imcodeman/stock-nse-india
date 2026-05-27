@@ -27,6 +27,19 @@ def quote_block(body: str) -> str:
     return f"\n{quoted}\n"
 
 
+def header_block(text: str) -> dict:
+    """Large plain-text title block (Slack's biggest text style)."""
+    return {
+        "type": "header",
+        "text": {"type": "plain_text", "text": text[:150], "emoji": True},
+    }
+
+
+def strip_mrkdwn(text: str) -> str:
+    """Remove common mrkdwn markers for plain-text headers."""
+    return (text or "").strip().replace("*", "").replace("_", "")
+
+
 def compose(
     text: str,
     header: str,
@@ -35,20 +48,25 @@ def compose(
     quote: Optional[str] = None,
     buttons: Optional[List[dict]] = None,
     footer: Optional[str] = None,
+    primary: str = "summary",
 ) -> dict:
     """Build a Slack message with dividers and two-column fields."""
-    blocks: List[dict] = [
-        {"type": "header", "text": {"type": "plain_text", "text": header}},
-        DIVIDER,
-    ]
+    blocks: List[dict] = []
 
     if summary:
+        title = header if primary == "header" else summary
+        subtitle = summary if primary == "header" else header
+        blocks.append(header_block(strip_mrkdwn(title)))
+        blocks.append(DIVIDER)
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"\n{summary.strip()}\n"},
+                "text": {"type": "mrkdwn", "text": subtitle},
             }
         )
+        blocks.append(DIVIDER)
+    else:
+        blocks.append(header_block(header))
         blocks.append(DIVIDER)
 
     if quote:

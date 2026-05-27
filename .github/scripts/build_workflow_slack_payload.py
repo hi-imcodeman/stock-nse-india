@@ -57,6 +57,7 @@ def main() -> None:
         fields=fields,
         buttons=buttons,
         footer=footer,
+        primary="header",
     )
 
     out_path = os.environ.get("SLACK_PAYLOAD_PATH", "slack-payload.json")
