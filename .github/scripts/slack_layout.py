@@ -48,6 +48,14 @@ def strip_mrkdwn(text: str) -> str:
     return (text or "").strip().replace("*", "").replace("_", "")
 
 
+def format_event_header(text: str) -> str:
+    """Uppercase event label while preserving a leading emoji."""
+    parts = (text or "").strip().split(" ", 1)
+    if len(parts) == 2 and not parts[0].isascii():
+        return f"{parts[0]} {parts[1].upper()}"
+    return text.upper()
+
+
 def compose(
     text: str,
     header: str,

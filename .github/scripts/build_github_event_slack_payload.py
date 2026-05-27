@@ -6,7 +6,13 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from slack_layout import button, compose, field  # noqa: E402
+from slack_layout import button, compose, field, format_event_header  # noqa: E402
+
+COLOR_BLUE = "#439FE0"
+COLOR_GREEN = "#2eb886"
+COLOR_RED = "#e01e5a"
+COLOR_YELLOW = "#ecb22e"
+COLOR_PURPLE = "#9B59B6"
 
 
 def truncate(text: str, max_len: int = 200) -> str:
@@ -14,6 +20,24 @@ def truncate(text: str, max_len: int = 200) -> str:
     if len(text) <= max_len:
         return text
     return text[: max_len - 1] + "…"
+
+
+def event_compose(
+    header: str,
+    summary: str,
+    *,
+    text: str,
+    accent_color: str,
+    **kwargs,
+) -> dict:
+    return compose(
+        text=text,
+        header=format_event_header(header),
+        summary=summary,
+        primary="header",
+        accent_color=accent_color,
+        **kwargs,
+    )
 
 
 def build(event_name: str, action: str, event: dict, repo: str, server_url: str) -> dict:
@@ -27,12 +51,20 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
 
         if action == "opened":
             header = "🔀 PR opened"
+            accent_color = COLOR_BLUE
         elif action == "edited":
             header = "✏️ PR updated"
+            accent_color = COLOR_BLUE
         elif action == "closed":
-            header = "🎉 PR merged" if pr.get("merged") else "🚫 PR closed"
+            if pr.get("merged"):
+                header = "🎉 PR merged"
+                accent_color = COLOR_GREEN
+            else:
+                header = "🚫 PR closed"
+                accent_color = COLOR_RED
         else:
             header = f"🔀 PR {action}"
+            accent_color = COLOR_BLUE
 
         fields = [
             field("👤 *Author*", f"@{author}"),
@@ -45,10 +77,11 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
             fields[1] = field("🌿 *Into*", f"`{base}`")
 
         summary = f"*{title}*" if action != "closed" or pr.get("merged") else f"*{title}* (not merged)"
-        return compose(
-            text=f"{header}: {title}",
-            header=header,
-            summary=summary,
+        return event_compose(
+            header,
+            summary,
+            text=title,
+            accent_color=accent_color,
             fields=fields,
             buttons=[button("🔍 View PR", pr_url)],
         )
@@ -67,11 +100,13 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
             "reopened": "🔁 Issue reopened",
         }
         header = action_labels.get(action, f"📌 Issue {action}")
+        accent_color = COLOR_GREEN if action == "closed" else COLOR_BLUE
 
-        return compose(
-            text=f"{header}: {title}",
-            header=header,
-            summary=f"*{title}*",
+        return event_compose(
+            header,
+            f"*{title}*",
+            text=title,
+            accent_color=accent_color,
             fields=[
                 field("👤 *Author*", f"@{author}"),
                 field("🏷️ *Labels*", labels),
@@ -90,10 +125,11 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
         target = "PR" if issue.get("pull_request") is not None else "issue"
         header = f"💬 Comment on {target}"
 
-        return compose(
-            text=f"{header}: {issue_title}",
-            header=header,
-            summary=f"*{issue_title}*",
+        return event_compose(
+            header,
+            f"*{issue_title}*",
+            text=issue_title,
+            accent_color=COLOR_YELLOW,
             quote=body,
             fields=[
                 field("👤 *Author*", f"@{author}"),
@@ -121,10 +157,11 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
         }
         header = action_headers.get(action, "📝 Inline review comment")
 
-        return compose(
-            text=f"{header}: {pr_title}",
-            header=header,
-            summary=f"*{pr_title}*",
+        return event_compose(
+            header,
+            f"*{pr_title}*",
+            text=pr_title,
+            accent_color=COLOR_YELLOW,
             quote=body,
             fields=[
                 field("👤 *Author*", f"@{author}"),
@@ -161,10 +198,11 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
         else:
             header = state_headers.get(state, f"📋 PR review ({state.lower()})")
 
-        return compose(
-            text=f"{header}: {pr_title}",
-            header=header,
-            summary=f"*{pr_title}*",
+        return event_compose(
+            header,
+            f"*{pr_title}*",
+            text=pr_title,
+            accent_color=COLOR_YELLOW,
             quote=body or None,
             fields=[
                 field("👤 *Reviewer*", f"@{author}"),
@@ -184,10 +222,11 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
         fork_full = fork.get("full_name", fork.get("name", ""))
         header = "🍴 Repository forked"
 
-        return compose(
-            text=f"{header}: {repo} → {fork_full}",
-            header=header,
-            summary=f"@{forker} forked `{repo}`",
+        return event_compose(
+            header,
+            f"@{forker} forked `{repo}`",
+            text=f"`{repo}`",
+            accent_color=COLOR_PURPLE,
             fields=[
                 field("👤 *Forker*", f"@{forker}"),
                 field("📦 *Fork*", f"`{fork_full}`"),
@@ -202,10 +241,11 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
         repo_url = repository.get("html_url", f"{server_url}/{repo}")
         header = "⭐ New star"
 
-        return compose(
-            text=f"{header}: {repo} ({stargazers} stars)",
-            header=header,
-            summary=f"@{sender} starred `{repo}`",
+        return event_compose(
+            header,
+            f"@{sender} starred `{repo}`",
+            text=f"`{repo}`",
+            accent_color=COLOR_PURPLE,
             fields=[
                 field("👤 *User*", f"@{sender}"),
                 field("⭐ *Stars*", str(stargazers)),
@@ -215,10 +255,11 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
         )
 
     header = f"📣 GitHub {event_name}"
-    return compose(
-        text=f"{header} ({action}) on {repo}",
-        header=header,
-        summary=f"Event `{event_name}` / `{action}`",
+    return event_compose(
+        header,
+        f"Event `{event_name}` / `{action}`",
+        text=f"`{repo}`",
+        accent_color=COLOR_BLUE,
     )
 
 
