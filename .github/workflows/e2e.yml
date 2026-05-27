@@ -1,0 +1,50 @@
+name: E2E
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+      - name: Install dependencies
+        run: npm install
+      - name: E2E Tests
+        run: npm run test:e2e
+
+  notify:
+    name: Slack notification
+    runs-on: ubuntu-latest
+    needs: [e2e]
+    if: always() && !cancelled()
+    env:
+      WORKFLOW_RESULT: ${{ needs.e2e.result }}
+      STATUS_EMOJI: ${{ needs.e2e.result == 'success' && '✅' || '❌' }}
+      RESULT_EMOJI: ${{ needs.e2e.result == 'success' && '🟢' || needs.e2e.result == 'failure' && '🔴' || '🟡' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Slack payload
+        env:
+          NOTIFY_KIND: ci
+          WORKFLOW_NAME: E2E ${{ needs.e2e.result == 'success' && 'passed' || 'failed' }}
+          STATUS_EMOJI: ${{ env.STATUS_EMOJI }}
+          RESULT_EMOJI: ${{ env.RESULT_EMOJI }}
+          WORKFLOW_RESULT: ${{ env.WORKFLOW_RESULT }}
+          SUMMARY_LINE: 🌐 *E2E Tests* finished with ${{ env.RESULT_EMOJI }} *${{ env.WORKFLOW_RESULT }}*
+        run: python3 .github/scripts/build_workflow_slack_payload.py
+
+      - name: Post to Slack
+        uses: ./.github/actions/slack-notify
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload-file: slack-payload.json
