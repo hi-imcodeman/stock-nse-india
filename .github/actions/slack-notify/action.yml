@@ -1,0 +1,20 @@
+name: Slack Notify
+description: Post a JSON payload to Slack via incoming webhook
+
+inputs:
+  webhook-url:
+    description: Slack incoming webhook URL
+    required: true
+  payload-file:
+    description: Path to the Slack message payload JSON file
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Post to Slack
+      uses: slackapi/slack-github-action@v2.0.0
+      with:
+        webhook: ${{ inputs.webhook-url }}
+        webhook-type: incoming-webhook
+        payload-file-path: ${{ inputs.payload-file }}
