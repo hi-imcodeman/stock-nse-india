@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>stock-nse-india - v1.3.0</title><meta name="description" content="Documentation for stock-nse-india"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/search.js" id="tsd-search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>stock-nse-india - v1.4.0</title><meta name="description" content="Documentation for stock-nse-india"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/search.js" id="tsd-search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base=".">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -6,12 +6,12 @@
 <div id="tsd-toolbar-links"></div></div>
 <ul class="results">
 <li class="state loading">Preparing search index...</li>
-<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">stock-nse-india - v1.3.0</a></div>
+<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">stock-nse-india - v1.4.0</a></div>
 <div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
 <div class="container container-main">
 <div class="col-content">
 <div class="tsd-page-title">
-<h2>stock-nse-india - v1.3.0</h2></div>
+<h2>stock-nse-india - v1.4.0</h2></div>
 <div class="tsd-panel tsd-typography"><p><a href="https://nodei.co/npm/stock-nse-india/"><img src="https://nodei.co/npm/stock-nse-india.png" alt="NPM"></a></p>
 <a id="md:national-stock-exchange---india-unofficial" class="tsd-anchor"></a><h1><a href="#md:national-stock-exchange---india-unofficial">National Stock Exchange - India (Unofficial)</a></h1><p><img src="https://github.com/hi-imcodeman/stock-nse-india/workflows/CI/badge.svg" alt=""> <img src="https://img.shields.io/npm/dt/stock-nse-india" alt="npm"> <img src="https://img.shields.io/npm/l/stock-nse-india" alt="NPM"> <img src="https://img.shields.io/npm/v/stock-nse-india" alt="GitHub Release Date - Published_At"> <img src="https://img.shields.io/github/languages/top/hi-imcodeman/stock-nse-india" alt="GitHub top language"></p>
 <p>A comprehensive package and API server for accessing equity/index details and historical data from the National Stock Exchange of India. This project provides both an NPM package for direct integration and a full-featured GraphQL/REST API server.</p>
@@ -136,9 +136,13 @@
 <li><code>GET /</code> - Market status</li>
 <li><code>GET /api/marketStatus</code> - Market status information</li>
 <li><code>GET /api/glossary</code> - NSE glossary</li>
-<li><code>GET /api/equity/:symbol</code> - Equity details</li>
+<li><code>GET /api/equity/:symbol</code> - Equity details (uses NSE <code>quote-equity</code> when available; otherwise pre-open data enriched from charting/corporate APIs; failures return 403/502 with a message, not an empty 400)</li>
+<li><code>GET /api/equity/tradeInfo/:symbol</code> - Trade info / order book (same <code>quote-equity</code> fallback via pre-open when blocked)</li>
+<li><code>GET /api/equity/intraday/:symbol</code> - Intraday chart (<code>GetQuoteApi</code> when available; otherwise charting.nseindia.com OHLC)</li>
 <li><code>GET /api/equity/:symbol/historical</code> - Historical data</li>
 <li><code>GET /api/indices</code> - Market indices</li>
+<li><code>GET /api/charts/equity-historical-data</code> - Charting OHLC historical data</li>
+<li><code>GET /api/charts/symbol-info</code> - Charting symbol/token lookup</li>
 <li><code>GET /api-docs</code> - Interactive API documentation</li>
 </ul>
 <a id="md:mcp-client-endpoints" class="tsd-anchor"></a><h3><a href="#md:mcp-client-endpoints">MCP Client Endpoints</a></h3><ul>
@@ -146,6 +150,26 @@
 <li><code>POST /api/mcp/query-multiple</code> - Multi-step natural language queries</li>
 </ul>
 <a id="md:api-documentation" class="tsd-anchor"></a><h3><a href="#md:api-documentation">API Documentation</a></h3><p>Visit <code>http://localhost:3000/api-docs</code> for complete interactive API documentation powered by Swagger UI.</p>
+<a id="md:charting-apis" class="tsd-anchor"></a><h3><a href="#md:charting-apis">Charting APIs</a></h3><a id="md:npm-package-methods" class="tsd-anchor"></a><h4><a href="#md:npm-package-methods">NPM Package Methods</a></h4><pre><code class="language-javascript"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">NseIndia</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&quot;stock-nse-india&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">nseIndia</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">NseIndia</span><span class="hl-1">();</span><br/><br/><span class="hl-7">// Optional date range and optional token.</span><br/><span class="hl-7">// If token is omitted, it is auto-fetched internally using getEquitySymbolInfo().</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">chartData</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">nseIndia</span><span class="hl-1">.</span><span class="hl-0">getEquityChartHistoricalData</span><span class="hl-1">(</span><br/><span class="hl-1">  </span><span class="hl-2">&quot;ONGC&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  {</span><br/><span class="hl-1">    </span><span class="hl-4">start:</span><span class="hl-1"> </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">Date</span><span class="hl-1">(</span><span class="hl-2">&quot;2026-04-10&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">    </span><span class="hl-4">end:</span><span class="hl-1"> </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">Date</span><span class="hl-1">(</span><span class="hl-2">&quot;2026-04-12&quot;</span><span class="hl-1">)</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">);</span><br/><br/><span class="hl-7">// You can also fetch symbol info/token explicitly.</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">symbolInfo</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">nseIndia</span><span class="hl-1">.</span><span class="hl-0">getEquitySymbolInfo</span><span class="hl-1">(</span><span class="hl-2">&quot;ONGC&quot;</span><span class="hl-1">);</span><br/><span class="hl-4">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-4">symbolInfo</span><span class="hl-1">.</span><span class="hl-4">scripcode</span><span class="hl-1">);</span>
+</code><button>Copy</button></pre>
+<a id="md:rest-endpoints" class="tsd-anchor"></a><h4><a href="#md:rest-endpoints">REST Endpoints</a></h4><ul>
+<li><p><strong><code>GET /api/charts/equity-historical-data</code></strong></p>
+<ul>
+<li>Required: <code>symbol</code></li>
+<li>Optional: <code>start</code>, <code>end</code> (<code>YYYY-MM-DD</code>, <code>YYYY-MM-DD HH:MM:SS</code>, or unix timestamp), <code>token</code>, <code>symbolType</code>, <code>chartType</code>, <code>timeInterval</code></li>
+<li>If <code>token</code> is omitted, the API auto-fetches it.</li>
+<li>If both <code>start</code> and <code>end</code> are omitted, default range is used.</li>
+<li>If only one date is provided, the other date is auto-derived.</li>
+</ul>
+</li>
+<li><p><strong><code>GET /api/charts/symbol-info</code></strong></p>
+<ul>
+<li>Required: <code>symbol</code></li>
+<li>Optional: <code>segment</code></li>
+<li>Returns charting symbol details including <code>scripcode</code> (token).</li>
+</ul>
+</li>
+</ul>
 <a id="md:💻-cli-usage" class="tsd-anchor"></a><h2><a href="#md:💻-cli-usage">💻 CLI Usage</a></h2><a id="md:basic-commands" class="tsd-anchor"></a><h3><a href="#md:basic-commands">Basic Commands</a></h3><pre><code class="language-bash"><span class="hl-7"># Get help</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-5">--help</span><br/><br/><span class="hl-7"># Get market status</span><br/><span class="hl-0">nseindia</span><br/><br/><span class="hl-7"># Get equity details</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-2">equity</span><span class="hl-1"> </span><span class="hl-2">IRCTC</span><br/><br/><span class="hl-7"># Get historical data</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-2">historical</span><span class="hl-1"> </span><span class="hl-2">IRCTC</span><br/><br/><span class="hl-7"># Get indices information</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-2">index</span><br/><br/><span class="hl-7"># Get specific index details</span><br/><span class="hl-0">nseindia</span><span class="hl-1"> </span><span class="hl-2">index</span><span class="hl-1"> </span><span class="hl-2">&quot;NIFTY AUTO&quot;</span>
 </code><button>Copy</button></pre>
 <a id="md:cli-features" class="tsd-anchor"></a><h3><a href="#md:cli-features">CLI Features</a></h3><ul>
@@ -184,6 +208,10 @@
 <li><strong><code>getEquityCorporateInfo(symbol)</code></strong> - Corporate information</li>
 <li><strong><code>getEquityTradeInfo(symbol)</code></strong> - Trading statistics</li>
 </ul>
+<a id="md:charting-methods" class="tsd-anchor"></a><h3><a href="#md:charting-methods">Charting Methods</a></h3><ul>
+<li><strong><code>getEquityChartHistoricalData(symbol, range?, token?, symbolType?, chartType?, timeInterval?)</code></strong> - Get charting OHLC historical data</li>
+<li><strong><code>getEquitySymbolInfo(symbol, segment?)</code></strong> - Resolve charting symbol/token (<code>scripcode</code>)</li>
+</ul>
 <a id="md:index-methods" class="tsd-anchor"></a><h3><a href="#md:index-methods">Index Methods</a></h3><ul>
 <li><strong><code>getEquityStockIndices()</code></strong> - Get all market indices</li>
 <li><strong><code>getIndexIntradayData(index)</code></strong> - Index intraday data</li>
@@ -204,7 +232,8 @@
 <li><strong><code>npm start</code></strong> - Start production server</li>
 <li><strong><code>npm run start:dev</code></strong> - Development mode with auto-reload</li>
 <li><strong><code>npm run build</code></strong> - Build TypeScript to JavaScript</li>
-<li><strong><code>npm test</code></strong> - Run test suite with coverage</li>
+<li><strong><code>npm test</code></strong> - Run unit/mock test suite with coverage</li>
+<li><strong><code>npm run test:e2e</code></strong> - Run live NSE e2e tests</li>
 <li><strong><code>npm run docs</code></strong> - Generate TypeDoc documentation</li>
 <li><strong><code>npm run lint</code></strong> - Run ESLint</li>
 </ul>
@@ -212,7 +241,7 @@
 <li><strong><code>npm run start:mcp</code></strong> - Start stdio MCP server</li>
 <li><strong><code>npm run test:mcp</code></strong> - Test stdio MCP server</li>
 </ul>
-<a id="md:🧪-testing" class="tsd-anchor"></a><h2><a href="#md:🧪-testing">🧪 Testing</a></h2><pre><code class="language-bash"><span class="hl-7"># Run all tests</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">test</span><br/><br/><span class="hl-7"># Run tests with coverage</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">test</span><span class="hl-1"> </span><span class="hl-5">--</span><span class="hl-1"> </span><span class="hl-5">--coverage</span><br/><br/><span class="hl-7"># Run specific test file</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">test</span><span class="hl-1"> </span><span class="hl-5">--</span><span class="hl-1"> </span><span class="hl-2">utils.spec.ts</span>
+<a id="md:🧪-testing" class="tsd-anchor"></a><h2><a href="#md:🧪-testing">🧪 Testing</a></h2><pre><code class="language-bash"><span class="hl-7"># Run unit/mock tests (default CI)</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">test</span><br/><br/><span class="hl-7"># Run tests with coverage</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">test</span><span class="hl-1"> </span><span class="hl-5">--</span><span class="hl-1"> </span><span class="hl-5">--coverage</span><br/><br/><span class="hl-7"># Run live NSE e2e tests (requires network; runs daily in CI)</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">test:e2e</span><br/><br/><span class="hl-7"># Run specific test file</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">test</span><span class="hl-1"> </span><span class="hl-5">--</span><span class="hl-1"> </span><span class="hl-2">utils.spec.ts</span>
 </code><button>Copy</button></pre>
 <a id="md:📚-documentation" class="tsd-anchor"></a><h2><a href="#md:📚-documentation">📚 Documentation</a></h2><ul>
 <li><strong>📖 <a href="https://hi-imcodeman.github.io/stock-nse-india">API Reference</a></strong> - Complete API documentation</li>
@@ -312,7 +341,12 @@
 <ul>
 <li><a href="#md:core-endpoints"><span>Core <wbr/>Endpoints</span></a></li>
 <li><a href="#md:mcp-client-endpoints"><span>MCP <wbr/>Client <wbr/>Endpoints</span></a></li>
-<li><a href="#md:api-documentation"><span>API <wbr/>Documentation</span></a></li></ul></li>
+<li><a href="#md:api-documentation"><span>API <wbr/>Documentation</span></a></li>
+<li><a href="#md:charting-apis"><span>Charting APIs</span></a></li>
+<li>
+<ul>
+<li><a href="#md:npm-package-methods"><span>NPM <wbr/>Package <wbr/>Methods</span></a></li>
+<li><a href="#md:rest-endpoints"><span>REST <wbr/>Endpoints</span></a></li></ul></li></ul></li>
 <li><a href="#md:💻-cli-usage"><span>💻 CLI <wbr/>Usage</span></a></li>
 <li>
 <ul>
@@ -334,6 +368,7 @@
 <ul>
 <li><a href="#md:core-methods"><span>Core <wbr/>Methods</span></a></li>
 <li><a href="#md:equity-methods"><span>Equity <wbr/>Methods</span></a></li>
+<li><a href="#md:charting-methods"><span>Charting <wbr/>Methods</span></a></li>
 <li><a href="#md:index-methods"><span>Index <wbr/>Methods</span></a></li>
 <li><a href="#md:commodity-methods"><span>Commodity <wbr/>Methods</span></a></li>
 <li><a href="#md:helper-methods"><span>Helper <wbr/>Methods</span></a></li></ul></li>
@@ -353,11 +388,14 @@
 <li><a href="#md:👥-contributors"><span>👥 <wbr/>Contributors</span></a></li>
 <li><a href="#md:🔗-links"><span>🔗 <wbr/>Links</span></a></li></ul></li></ul></li></ul></div></details></div>
 <div class="site-menu">
-<nav class="tsd-navigation"><a href="modules.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>stock-<wbr/>nse-<wbr/>india -<wbr/> v1.3.0</span></a>
+<nav class="tsd-navigation"><a href="modules.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>stock-<wbr/>nse-<wbr/>india -<wbr/> v1.4.0</span></a>
 <ul class="tsd-small-nested-navigation">
 <li><a href="enums/ApiList.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-8"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-enum)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.45 16V7.24H14.49V8.224H10.518V10.936H14.07V11.908H10.518V15.016H14.49V16H9.45Z" fill="var(--color-text)"></path></g></svg><span>Api<wbr/>List</span></a></li>
 <li><a href="classes/NseIndia.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-128"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)"></path></g></svg><span>Nse<wbr/>India</span></a></li>
 <li><a href="interfaces/AllIndicesData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-256"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)"></path></g></svg><span>All<wbr/>Indices<wbr/>Data</span></a></li>
+<li><a href="interfaces/ChartingOHLCItem.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>ChartingOHLCItem</span></a></li>
+<li><a href="interfaces/ChartingOHLCResponse.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>ChartingOHLCResponse</span></a></li>
+<li><a href="interfaces/ChartingSymbolInfo.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Charting<wbr/>Symbol<wbr/>Info</span></a></li>
 <li><a href="interfaces/CircularsData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Circulars<wbr/>Data</span></a></li>
 <li><a href="interfaces/CommodityOptionChainData.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Commodity<wbr/>Option<wbr/>Chain<wbr/>Data</span></a></li>
 <li><a href="interfaces/CommodityRecords.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Commodity<wbr/>Records</span></a></li>
