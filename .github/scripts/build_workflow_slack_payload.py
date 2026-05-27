@@ -51,11 +51,12 @@ def main() -> None:
         commit_url = f"{server_url}/{repo}/commit/{sha}"
         fields.append(field("🔗 *Commit*", f"<{commit_url}|`{sha}`>"))
         buttons.append(button("🔍 View commit", commit_url))
-        footer = f"{status_emoji} stock-nse-india CI · run #{run_number}"
+        footer = f"stock-nse-india CI · run #{run_number}"
     else:
-        footer = f"{status_emoji} {workflow_name} · run #{run_number}"
+        footer = f"{workflow_name} · run #{run_number}"
 
-    text = f"{header} — {summary} on {repo}@{ref}"
+    # Minimal preview line — full status and details are inside the card.
+    text = f"`{repo}@{ref}`"
     body = compose(
         text=text,
         header=header,

@@ -66,7 +66,6 @@ def compose(
         title = header if primary == "header" else summary
         subtitle = summary if primary == "header" else header
         blocks.append(title_block(title))
-        blocks.append(DIVIDER)
         blocks.append(subtitle_block(subtitle))
         blocks.append(DIVIDER)
     else:
