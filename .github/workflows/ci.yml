@@ -48,91 +48,21 @@ jobs:
       CI_EVENT_EMOJI: ${{ github.event_name == 'push' && '🚀' || '⏰' }}
       CI_RESULT_EMOJI: ${{ (needs.build.result != 'skipped' && needs.build.result || needs.integration.result) == 'success' && '🟢' || (needs.build.result != 'skipped' && needs.build.result || needs.integration.result) == 'failure' && '🔴' || '🟡' }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Slack payload
+        env:
+          NOTIFY_KIND: ci
+          WORKFLOW_NAME: CI ${{ env.CI_STATUS_LABEL }}
+          STATUS_EMOJI: ${{ env.CI_STATUS_EMOJI }}
+          RESULT_EMOJI: ${{ env.CI_RESULT_EMOJI }}
+          WORKFLOW_RESULT: ${{ env.CI_RESULT }}
+          SUMMARY_LINE: ${{ env.CI_JOB_EMOJI }} *${{ env.CI_JOB_NAME }}* finished with ${{ env.CI_RESULT_EMOJI }} *${{ env.CI_RESULT }}*
+        run: python3 .github/scripts/build_workflow_slack_payload.py
+
       - name: Post to Slack
-        uses: slackapi/slack-github-action@v2.0.0
+        uses: ./.github/actions/slack-notify
         with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "text": "${{ env.CI_STATUS_EMOJI }} CI ${{ env.CI_STATUS_LABEL }} — ${{ env.CI_JOB_EMOJI }} ${{ env.CI_JOB_NAME }} (${{ env.CI_EVENT_EMOJI }} ${{ github.event_name }}) on ${{ github.repository }}@${{ github.ref_name }}",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "${{ env.CI_STATUS_EMOJI }} CI ${{ env.CI_STATUS_LABEL }}"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "${{ env.CI_JOB_EMOJI }} *${{ env.CI_JOB_NAME }}* finished with ${{ env.CI_RESULT_EMOJI }} *${{ env.CI_RESULT }}*"
-                  }
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "${{ env.CI_EVENT_EMOJI }} *Event*\n`${{ github.event_name }}`"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "📦 *Repository*\n`${{ github.repository }}`"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "🌿 *Ref*\n`${{ github.ref_name }}`"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "👤 *Actor*\n@${{ github.actor }}"
-                    }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "🔗 *Commit*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|`${{ github.sha }}`>"
-                  }
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "📋 View workflow run",
-                        "emoji": true
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    },
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "🔍 View commit",
-                        "emoji": true
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
-                    }
-                  ]
-                },
-                {
-                  "type": "context",
-                  "elements": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "${{ env.CI_STATUS_EMOJI }} stock-nse-india CI · run #${{ github.run_number }}"
-                    }
-                  ]
-                }
-              ]
-            }
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload-file: slack-payload.json

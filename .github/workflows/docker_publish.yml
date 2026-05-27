@@ -60,47 +60,20 @@ jobs:
       STATUS_EMOJI: ${{ needs.docker.result == 'success' && '✅' || '❌' }}
       RESULT_EMOJI: ${{ needs.docker.result == 'success' && '🟢' || needs.docker.result == 'failure' && '🔴' || '🟡' }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Slack payload
+        env:
+          STATUS_EMOJI: ${{ env.STATUS_EMOJI }}
+          RESULT_EMOJI: ${{ env.RESULT_EMOJI }}
+          WORKFLOW_RESULT: ${{ env.WORKFLOW_RESULT }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          SUMMARY_LINE: 🐳 *Docker publish* finished with ${{ env.RESULT_EMOJI }} *${{ env.WORKFLOW_RESULT }}*
+        run: python3 .github/scripts/build_workflow_slack_payload.py
+
       - name: Post to Slack
-        uses: slackapi/slack-github-action@v2.0.0
+        uses: ./.github/actions/slack-notify
         with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "text": "${{ env.STATUS_EMOJI }} ${{ github.workflow }} finished with ${{ env.WORKFLOW_RESULT }} on ${{ github.repository }}@${{ github.ref_name }}",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "${{ env.STATUS_EMOJI }} ${{ github.workflow }}"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "🐳 *Docker publish* finished with ${{ env.RESULT_EMOJI }} *${{ env.WORKFLOW_RESULT }}*"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    { "type": "mrkdwn", "text": "📦 *Repository*\n`${{ github.repository }}`" },
-                    { "type": "mrkdwn", "text": "🌿 *Ref*\n`${{ github.ref_name }}`" },
-                    { "type": "mrkdwn", "text": "🎯 *Event*\n`${{ github.event_name }}`" },
-                    { "type": "mrkdwn", "text": "👤 *Actor*\n@${{ github.actor }}" }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": { "type": "plain_text", "text": "📋 View workflow run", "emoji": true },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload-file: slack-payload.json
