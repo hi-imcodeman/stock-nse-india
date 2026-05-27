@@ -61,6 +61,9 @@ git clone https://github.com/hi-imcodeman/stock-nse-india.git
 cd stock-nse-india
 npm install
 
+# Create local environment file
+cp .env.example .env
+
 # Start the server
 npm start
 ```
@@ -69,6 +72,8 @@ npm start
 - **Main App:** http://localhost:3000
 - **GraphQL Playground:** http://localhost:3000/graphql
 - **API Documentation:** http://localhost:3000/api-docs
+
+> To use Safari with Apollo Studio, run this server on HTTPS and use `https://localhost:3000/graphql`.
 
 ## 📦 Installation
 
@@ -94,6 +99,7 @@ npm install -g stock-nse-india
 git clone https://github.com/hi-imcodeman/stock-nse-india.git
 cd stock-nse-india
 npm install
+cp .env.example .env
 npm start
 ```
 
@@ -106,7 +112,7 @@ The project now includes a powerful GraphQL API for flexible data querying:
 ```graphql
 # Get equity information
 query GetEquity {
-  equities(symbolFilter: { symbols: ["IRCTC", "RELIANCE"] }) {
+  equities(symbolFilter: { in : ["IRCTC","TCS"] }) {
     symbol
     details {
       info {
@@ -406,11 +412,20 @@ docker build -t nseindia . && docker run --rm -d -p 3001:3001 nseindia:latest
 
 ### Environment Variables
 
+Create your local env file first:
+
+```bash
+cp .env.example .env
+```
+
 ```bash
 # Server Configuration
 PORT=3000
 HOST_URL=http://localhost:3000
 NODE_ENV=development
+HTTPS_ENABLED=false
+SSL_KEY_PATH=./certs/localhost-key.pem
+SSL_CERT_PATH=./certs/localhost.pem
 
 # CORS Configuration
 CORS_ORIGINS=https://myapp.com,https://admin.myapp.com
@@ -418,6 +433,29 @@ CORS_METHODS=GET,POST,OPTIONS
 CORS_HEADERS=Content-Type,Authorization,X-Requested-With
 CORS_CREDENTIALS=true
 ```
+
+`HTTPS_ENABLED` decides whether server URLs use `http` or `https`.  
+If `HOST_URL` is provided, its protocol part is auto-aligned to `HTTPS_ENABLED`.
+
+### Local HTTPS Setup (Safari + Apollo Studio)
+
+```bash
+# Install mkcert once (macOS)
+brew install mkcert
+mkcert -install
+
+# Create local certs for localhost
+mkdir -p certs
+mkcert -key-file certs/localhost-key.pem -cert-file certs/localhost.pem localhost 127.0.0.1 ::1
+
+# Enable HTTPS in .env, then start
+# HTTPS_ENABLED=true
+# HOST_URL=https://localhost:3000
+npm start
+```
+
+GraphQL endpoint for Apollo Studio:
+- `https://localhost:3000/graphql`
 
 ### CORS Settings
 

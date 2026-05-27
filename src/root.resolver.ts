@@ -18,9 +18,9 @@ interface ObjectFilter {
     regex?: string
 }
 
-function stringArrayFilter(input: string[], filter: StringArrayFilter) {
+function stringArrayFilter(input: string[], filter?: StringArrayFilter) {
     let data = [...input]
-    const { offset, limit, eq, neq, in: inside, nin, startsWith, regex } = filter
+    const { offset, limit, eq, neq, in: inside, nin, startsWith, regex } = filter || {}
     if (startsWith) {
         data = data.filter(item => item.startsWith(startsWith))
     }
@@ -49,10 +49,10 @@ function stringArrayFilter(input: string[], filter: StringArrayFilter) {
     return data
 }
 
-function objectFilter(input: any, filterBy: string, filter: ObjectFilter) {
-    const { regex } = filter
+function objectFilter(input: any, filterBy?: string, filter?: ObjectFilter) {
+    const { regex } = filter || {}
     let data = [...input]
-    if (regex) {
+    if (regex && filterBy) {
         const re = new RegExp(regex)
         data = data.filter((item: { [x: string]: string }) => re.test(item[filterBy]))
     }

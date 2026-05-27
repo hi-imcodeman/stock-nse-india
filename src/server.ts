@@ -1,6 +1,9 @@
 /* eslint-disable no-console */
+import 'dotenv/config'
 import express from 'express'
 import http from 'http';
+import https from 'https';
+import fs from 'fs';
 import swaggerUi from 'swagger-ui-express'
 import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
@@ -16,7 +19,12 @@ import cors from 'cors';
 
 const app = express()
 const port = process.env.PORT || 3000
-const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
+const isHttpsEnabled = process.env.HTTPS_ENABLED === 'true'
+const protocol = isHttpsEnabled ? 'https' : 'http'
+const configuredHostUrl = process.env.HOST_URL?.trim()
+const hostUrl = configuredHostUrl
+  ? configuredHostUrl.replace(/^https?:\/\//, `${protocol}://`)
+  : `${protocol}://localhost:${port}`
 
 // CORS Configuration from environment variables
 // CORS_ORIGINS: Comma-separated list of allowed origins
@@ -40,8 +48,11 @@ const corsHeaders = process.env.CORS_HEADERS ?
 app.use(cors({
   origin: [
     ...corsOrigins,
+    /^https:\/\/studio\.apollographql\.com$/, // Allow Apollo Studio
     /^http:\/\/localhost:\d+$/,  // Allow any localhost port
-    /^http:\/\/127\.0\.0\.1:\d+$/ // Allow any 127.0.0.1 port
+    /^https:\/\/localhost:\d+$/, // Allow any localhost HTTPS port
+    /^http:\/\/127\.0\.0\.1:\d+$/, // Allow any 127.0.0.1 port
+    /^https:\/\/127\.0\.0\.1:\d+$/ // Allow any 127.0.0.1 HTTPS port
   ],
   methods: corsMethods,
   allowedHeaders: corsHeaders,
@@ -71,21 +82,39 @@ if (process.env.NODE_ENV === 'development') {
 
 const resolvers = mergeResolvers(loadedResolvers)
 
-const httpServer = http.createServer(app);
+const sslKeyPath = process.env.SSL_KEY_PATH || path.resolve(process.cwd(), 'certs/localhost-key.pem')
+const sslCertPath = process.env.SSL_CERT_PATH || path.resolve(process.cwd(), 'certs/localhost.pem')
+
+const networkServer = isHttpsEnabled
+  ? (() => {
+      if (!fs.existsSync(sslKeyPath) || !fs.existsSync(sslCertPath)) {
+        throw new Error(`HTTPS cert files not found. Checked key: ${sslKeyPath}, cert: ${sslCertPath}`)
+      }
+
+      return https.createServer(
+        {
+          key: fs.readFileSync(sslKeyPath),
+          cert: fs.readFileSync(sslCertPath),
+        },
+        app
+      )
+    })()
+  : http.createServer(app)
 
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer: networkServer as unknown as http.Server })]
 });
 
 server.start().then(() => {
     server.applyMiddleware({ app });
-    app.listen(port, () => {
+    networkServer.listen(port, () => {
         console.log(`NseIndia App started in port ${port}`);
         console.log(`For API docs: ${hostUrl}/api-docs`);
         console.log(`Open ${hostUrl} in browser.`);
         console.log(`For graphql: ${hostUrl}${server.graphqlPath}`);
+        console.log(`Server mode: ${isHttpsEnabled ? 'HTTPS' : 'HTTP'}`);
         
         // Log CORS configuration
         if (corsOrigins.length > 0) {
