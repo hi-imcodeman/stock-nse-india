@@ -49,3 +49,58 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  notify:
+    name: Slack notification
+    runs-on: ubuntu-latest
+    needs: [docker]
+    if: always() && !cancelled()
+    env:
+      WORKFLOW_RESULT: ${{ needs.docker.result }}
+      STATUS_EMOJI: ${{ needs.docker.result == 'success' && '✅' || '❌' }}
+      RESULT_EMOJI: ${{ needs.docker.result == 'success' && '🟢' || needs.docker.result == 'failure' && '🔴' || '🟡' }}
+    steps:
+      - name: Post to Slack
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "${{ env.STATUS_EMOJI }} ${{ github.workflow }} finished with ${{ env.WORKFLOW_RESULT }} on ${{ github.repository }}@${{ github.ref_name }}",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ env.STATUS_EMOJI }} ${{ github.workflow }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🐳 *Docker publish* finished with ${{ env.RESULT_EMOJI }} *${{ env.WORKFLOW_RESULT }}*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    { "type": "mrkdwn", "text": "📦 *Repository*\n`${{ github.repository }}`" },
+                    { "type": "mrkdwn", "text": "🌿 *Ref*\n`${{ github.ref_name }}`" },
+                    { "type": "mrkdwn", "text": "🎯 *Event*\n`${{ github.event_name }}`" },
+                    { "type": "mrkdwn", "text": "👤 *Actor*\n@${{ github.actor }}" }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": { "type": "plain_text", "text": "📋 View workflow run", "emoji": true },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
