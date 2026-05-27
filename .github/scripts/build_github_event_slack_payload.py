@@ -158,6 +158,102 @@ def build(event_name: str, action: str, event: dict, repo: str, server_url: str)
         ]
         return payload(text, blocks)
 
+    if event_name == "pull_request_review_comment":
+        comment = event["comment"]
+        pr = event["pull_request"]
+        author = comment.get("user", {}).get("login", "unknown")
+        body = truncate(comment.get("body", ""))
+        comment_url = comment.get("html_url", "")
+        pr_title = pr.get("title", "")
+        pr_url = pr.get("html_url", "")
+        path = comment.get("path", "")
+        line = comment.get("line") or comment.get("original_line")
+        location = f"`{path}`" + (f" (line {line})" if line else "") if path else "—"
+
+        action_headers = {
+            "created": "📝 Inline review comment",
+            "edited": "✏️ Inline review comment updated",
+            "deleted": "🗑️ Inline review comment deleted",
+        }
+        header = action_headers.get(action, "📝 Inline review comment")
+
+        text = f"{header}: {pr_title}"
+        blocks = [
+            {"type": "header", "text": {"type": "plain_text", "text": header}},
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*{pr_title}*\n\n>{body}"},
+            },
+            {"type": "divider"},
+            {
+                "type": "section",
+                "fields": [
+                    field("👤 *Author*", f"@{author}"),
+                    field("📍 *Location*", location),
+                    field("📦 *Repository*", f"`{repo}`"),
+                ],
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    button("🔍 View comment", comment_url),
+                    button("🔀 View PR", pr_url),
+                ],
+            },
+        ]
+        return payload(text, blocks)
+
+    if event_name == "pull_request_review":
+        review = event["review"]
+        pr = event["pull_request"]
+        author = review.get("user", {}).get("login", "unknown")
+        body = truncate(review.get("body", "") or "")
+        review_url = review.get("html_url", "")
+        pr_title = pr.get("title", "")
+        pr_url = pr.get("html_url", "")
+        state = (review.get("state") or "").upper()
+
+        state_headers = {
+            "APPROVED": "✅ PR approved",
+            "CHANGES_REQUESTED": "🔄 Changes requested",
+            "COMMENTED": "💬 Review submitted",
+            "DISMISSED": "🚫 Review dismissed",
+            "PENDING": "⏳ Review pending",
+        }
+        if action == "dismissed":
+            header = "🚫 Review dismissed"
+        elif action == "edited":
+            header = "✏️ Review updated"
+        else:
+            header = state_headers.get(state, f"📋 PR review ({state.lower()})")
+
+        summary = f"*{pr_title}*"
+        if body:
+            summary += f"\n\n>{body}"
+
+        text = f"{header}: {pr_title}"
+        blocks = [
+            {"type": "header", "text": {"type": "plain_text", "text": header}},
+            {"type": "section", "text": {"type": "mrkdwn", "text": summary}},
+            {"type": "divider"},
+            {
+                "type": "section",
+                "fields": [
+                    field("👤 *Reviewer*", f"@{author}"),
+                    field("📊 *State*", state or action),
+                    field("📦 *Repository*", f"`{repo}`"),
+                ],
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    button("🔍 View review", review_url),
+                    button("🔀 View PR", pr_url),
+                ],
+            },
+        ]
+        return payload(text, blocks)
+
     if event_name == "fork":
         fork = event.get("forkee", {})
         forker = event.get("sender", {}).get("login", "unknown")
