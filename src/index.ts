@@ -328,7 +328,7 @@ export class NseIndia {
                     await this.warmEquityQuotePage(refererSymbol)
                     apiHeaders.Referer =
                         `${this.baseUrl}/get-quotes/equity?symbol=${encodeURIComponent(refererSymbol)}`
-                } else if (url.includes('/api/equity-stockIndices')) {
+                } else if (url.includes('/api/equity-stock-indices')) {
                     const indexMatch = url.match(/[?&]index=([^&]+)/)
                     const index = indexMatch ? decodeURIComponent(indexMatch[1]) : 'NIFTY%2050'
                     const indexPath = `/market-data/live-equity-market?symbol=${encodeURIComponent(index)}`
@@ -752,24 +752,9 @@ export class NseIndia {
      */
     async getEquityStockIndices(index: string): Promise<IndexDetails> {
         const indexParam = encodeURIComponent(index.toUpperCase())
-        const legacyUrl = `${this.baseUrl}/api/equity-stockIndices?index=${indexParam}`
-        const summaryUrl = `${this.baseUrl}/api/equity-stockIndex?index=${indexParam}`
-
-        try {
-            const legacy = await this.getData(legacyUrl)
-            const normalized = this.normalizeIndexDetails(legacy)
-            if (normalized.data?.length) {
-                return normalized
-            }
-        } catch (legacyError) {
-            const message = legacyError instanceof Error ? legacyError.message : ''
-            if (!message.includes('404')) {
-                throw legacyError
-            }
-        }
-
-        const summary = await this.getData(summaryUrl)
-        return this.normalizeIndexDetails(summary)
+        const url = `${this.baseUrl}/api/equity-stock-indices?index=${indexParam}`
+        const response = await this.getData(url)
+        return this.normalizeIndexDetails(response)
     }
     /**
      * 

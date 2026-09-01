@@ -89,16 +89,19 @@ describe('Class: NseIndia (mocked)', () => {
         expect(getDataByEndpointSpy).toHaveBeenCalledWith('/api/top-corp-info?symbol=ITC&market=equities')
     })
 
-    test('getEquityStockIndices returns index metadata', async () => {
+    test('getEquityStockIndices calls the current index constituents endpoint', async () => {
         const indexData = {
             metadata: { indexName: 'NIFTY AUTO' },
-            data: []
+            data: [{ symbol: 'TCS' }]
         }
-        getDataByEndpointSpy.mockResolvedValue(indexData)
+        const getDataSpy = jest.spyOn(nseIndia, 'getData').mockResolvedValue(indexData)
 
         const result = await nseIndia.getEquityStockIndices('NIFTY AUTO')
 
         expect(result.metadata.indexName).toBe('NIFTY AUTO')
+        expect(getDataSpy).toHaveBeenCalledWith(
+            'https://www.nseindia.com/api/equity-stock-indices?index=NIFTY%20AUTO'
+        )
     })
 
     test('getGlossary delegates to ApiList endpoint', async () => {
@@ -180,16 +183,6 @@ describe('Class: NseIndia (mocked)', () => {
         getDataByEndpointSpy.mockResolvedValue(['EQ', 'BE'])
         const data = await nseIndia.getEquitySeries('TCS')
         expect(data.data).toEqual(['EQ', 'BE'])
-    })
-
-    test('getEquityStockIndices falls back to summary endpoint on 404 legacy response', async () => {
-        const getDataSpy = jest.spyOn(nseIndia, 'getData')
-        getDataSpy
-            .mockRejectedValueOnce(new Error('Request failed with status code 404'))
-            .mockResolvedValueOnce({ data: [{ symbol: 'TCS' }] })
-
-        const data = await nseIndia.getEquityStockIndices('NIFTY 50')
-        expect(data.data.length).toBe(1)
     })
 
     test('getIndexIntradayData returns response.data when wrapped payload exists', async () => {
@@ -309,6 +302,23 @@ describe('Class: NseIndia (mocked)', () => {
         )
     })
 
+    test('getData throws when no request attempts are allowed', async () => {
+        const anyNse = nseIndia as any
+        anyNse.maxRetries = 0
+
+        await expect(nseIndia.getData('https://www.nseindia.com/api/marketStatus')).rejects.toThrow(
+            'NSE request failed after 0 attempts'
+        )
+    })
+
+    test('getData converts non-auth request failures to HTTP errors', async () => {
+        const anyNse = nseIndia as any
+        jest.spyOn(anyNse, 'ensureNseSession').mockResolvedValue('cookie=1')
+        anyNse.nseClient = { get: jest.fn().mockRejectedValue(new Error('request failed')) }
+
+        await expect(nseIndia.getData('https://www.nseindia.com/api/marketStatus')).rejects.toThrow('request failed')
+    })
+
     test('getData sets quote referer path for equity endpoints', async () => {
         const anyNse = nseIndia as any
         jest.spyOn(anyNse, 'ensureNseSession').mockResolvedValue('cookie=1')
@@ -320,13 +330,13 @@ describe('Class: NseIndia (mocked)', () => {
         expect(warmSpy).toHaveBeenCalledWith('TCS')
     })
 
-    test('getData sets index referer path for equity-stockIndices endpoint', async () => {
+    test('getData sets index referer path for equity-stock-indices endpoint', async () => {
         const anyNse = nseIndia as any
         jest.spyOn(anyNse, 'ensureNseSession').mockResolvedValue('cookie=1')
         const warmSpy = jest.spyOn(anyNse, 'warmNsePage').mockResolvedValue(undefined)
         anyNse.nseClient = { get: jest.fn().mockResolvedValue({ data: { ok: true } }) }
 
-        await nseIndia.getData('https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050')
+        await nseIndia.getData('https://www.nseindia.com/api/equity-stock-indices?index=NIFTY%2050')
         expect(warmSpy).toHaveBeenCalled()
     })
 
@@ -388,7 +398,7 @@ describe('Class: NseIndia (mocked)', () => {
         expect(result[0].meta.series).toEqual(['EQ'])
     })
 
-    test('getEquityStockIndices keeps legacy response when it has data and throws for non-404 errors', async () => {
+    test('getEquityStockIndices normalizes records response and propagates errors', async () => {
         const getDataSpy = jest.spyOn(nseIndia, 'getData')
         getDataSpy.mockResolvedValueOnce({ records: [{ symbol: 'X' }] } as never)
         const data = await nseIndia.getEquityStockIndices('NIFTY NEXT 50')
@@ -562,7 +572,7 @@ describe('Class: NseIndia (mocked)', () => {
         anyNse.nseClient = { get: jest.fn().mockResolvedValue({ data: { ok: true } }) }
 
         await nseIndia.getData('https://www.nseindia.com/api/quote-equity')
-        await nseIndia.getData('https://www.nseindia.com/api/equity-stockIndices')
+        await nseIndia.getData('https://www.nseindia.com/api/equity-stock-indices')
         expect(warmQuoteSpy).toHaveBeenCalledWith('TCS')
         expect(warmIndexSpy).toHaveBeenCalled()
     })
@@ -692,10 +702,10 @@ describe('Class: NseIndia (mocked)', () => {
         expect(result[0].meta.series).toEqual(['EQ'])
     })
 
-    test('getEquityStockIndices rethrows non-Error legacy failures', async () => {
+    test('getEquityStockIndices rethrows non-Error failures', async () => {
         const getDataSpy = jest.spyOn(nseIndia, 'getData')
-        getDataSpy.mockRejectedValueOnce('legacy-raw')
-        await expect(nseIndia.getEquityStockIndices('NIFTY 50')).rejects.toBe('legacy-raw')
+        getDataSpy.mockRejectedValueOnce('raw-failure')
+        await expect(nseIndia.getEquityStockIndices('NIFTY 50')).rejects.toBe('raw-failure')
     })
 
     test('isAuthError returns false for axios error without status', async () => {
@@ -815,15 +825,6 @@ describe('Class: NseIndia (mocked)', () => {
         await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: chart-raw')
     })
 
-    test('stock indices falls back when normalized legacy has undefined data', async () => {
-        const getDataSpy = jest.spyOn(nseIndia, 'getData')
-        getDataSpy
-            .mockResolvedValueOnce({ records: null } as never)
-            .mockResolvedValueOnce({ data: [{ symbol: 'SUMMARY' }] } as never)
-        const data = await nseIndia.getEquityStockIndices('NIFTY 50')
-        expect(data.data).toEqual([{ symbol: 'SUMMARY' }])
-    })
-
     test('fetch enrichment charting field assignment branches', async () => {
         jest.spyOn(nseIndia, 'getDataByEndpoint').mockResolvedValue([] as never)
 
@@ -866,15 +867,6 @@ describe('Class: NseIndia (mocked)', () => {
         getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
         jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValueOnce(undefined as never)
         await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: empty data')
-    })
-
-    test('stock indices legacy empty-array branch triggers summary fallback', async () => {
-        const getDataSpy = jest.spyOn(nseIndia, 'getData')
-        getDataSpy
-            .mockResolvedValueOnce({ data: [] } as never)
-            .mockResolvedValueOnce({ data: [{ symbol: 'SUM2' }] } as never)
-        const data = await nseIndia.getEquityStockIndices('NIFTY 50')
-        expect(data.data).toEqual([{ symbol: 'SUM2' }])
     })
 
     test('fetch enrichment uses description when companyName is absent', async () => {
@@ -978,18 +970,24 @@ describe('Class: NseIndia (mocked)', () => {
         await expect(nseIndia.getEquityDetails('TCS')).rejects.toThrow('symbol not found in market-data-pre-open')
     })
 
-    test('getEquityStockIndices falls back when normalized legacy data is undefined', async () => {
+    test('getEquityStockIndices returns normalized current endpoint data', async () => {
         const getDataSpy = jest.spyOn(nseIndia, 'getData')
         const normalizeSpy = jest.spyOn(nseIndia as any, 'normalizeIndexDetails')
-        getDataSpy
-            .mockResolvedValueOnce({ legacy: true } as never)
-            .mockResolvedValueOnce({ data: [{ symbol: 'FROM_SUMMARY' }] } as never)
+        getDataSpy.mockResolvedValueOnce({ data: [{ symbol: 'FROM_CURRENT_ENDPOINT' }] } as never)
         normalizeSpy
-            .mockReturnValueOnce({ data: undefined } as never)
-            .mockReturnValueOnce({ data: [{ symbol: 'FROM_SUMMARY' }] } as never)
+            .mockReturnValueOnce({ data: [{ symbol: 'FROM_CURRENT_ENDPOINT' }] } as never)
 
         const data = await nseIndia.getEquityStockIndices('NIFTY 50')
-        expect(data.data).toEqual([{ symbol: 'FROM_SUMMARY' }])
+        expect(data.data).toEqual([{ symbol: 'FROM_CURRENT_ENDPOINT' }])
+        expect(getDataSpy).toHaveBeenCalledTimes(1)
+    })
+
+    test('getEquityStockIndices defaults missing constituent data to an empty list', async () => {
+        jest.spyOn(nseIndia, 'getData').mockResolvedValue({} as never)
+
+        const data = await nseIndia.getEquityStockIndices('NIFTY 50')
+
+        expect(data.data).toEqual([])
     })
 
     describe('ApiList', () => {
