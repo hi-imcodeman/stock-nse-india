@@ -1,7 +1,8 @@
+import 'dotenv/config'
 import swaggerJsDoc from 'swagger-jsdoc'
+import { getServerHostUrl } from './serverConfig'
 
-const port = process.env.PORT || 3000
-const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
+const hostUrl = getServerHostUrl()
 export const swaggerDocOptions = {
     definition: {
         "openapi": "3.0.0",

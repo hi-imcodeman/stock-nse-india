@@ -369,13 +369,55 @@ describe('Class: NseIndia (mocked)', () => {
 
     test('getEquityIntradayData falls back to charting map and then throws when empty', async () => {
         getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
-        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValue({ data: [{ t: 1 }] } as never)
+        jest.spyOn(nseIndia, 'getEquityDetails').mockRejectedValueOnce(new Error('details unavailable'))
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValue({
+            data: [{ time: 1, close: 1 }]
+        } as never)
         const mapped = await nseIndia.getEquityIntradayData('TCS')
         expect(mapped.name).toBe('TCS')
 
         getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityDetails').mockRejectedValueOnce(new Error('details unavailable'))
         jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValueOnce({ data: [] } as never)
         await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('No intraday data available for TCS')
+    })
+
+    test('getEquityIntradayData falls back to chart-databyindex via equity identifier', async () => {
+        getDataByEndpointSpy
+            .mockRejectedValueOnce(new Error('Request failed with status code 404'))
+            .mockRejectedValueOnce(new Error('Request failed with status code 404'))
+            .mockResolvedValueOnce({ grapthData: [[1, 100, 'NM']], closePrice: 100 })
+        jest.spyOn(nseIndia, 'getEquityDetails').mockResolvedValueOnce({
+            info: { identifier: 'TCSEQN' }
+        } as never)
+        const intraday = await nseIndia.getEquityIntradayData('TCS')
+        expect(intraday.name).toBe('TCS')
+        expect(intraday.grapthData).toHaveLength(1)
+    })
+
+    test('getEquityIntradayData skips invalid chart-databyindex shape before charting fallback', async () => {
+        getDataByEndpointSpy
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({})
+            .mockResolvedValueOnce({ notIntraday: true })
+        jest.spyOn(nseIndia, 'getEquityDetails').mockResolvedValueOnce({
+            info: { identifier: 'TCSEQN' }
+        } as never)
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValueOnce({
+            data: [{ time: 1000, close: 9.5 }]
+        } as never)
+        const intraday = await nseIndia.getEquityIntradayData('TCS')
+        expect(intraday.grapthData).toEqual([[1000, 9.5, 'NM']])
+    })
+
+    test('getEquityIntradayData captures non-Error chart-databyindex failure', async () => {
+        getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityDetails').mockRejectedValueOnce('chart-databyindex-raw')
+        jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValueOnce({
+            data: [{ time: 2000, close: 10 }]
+        } as never)
+        const intraday = await nseIndia.getEquityIntradayData('TCS')
+        expect(intraday.grapthData).toEqual([[2000, 10, 'NM']])
     })
 
     test('getEquityHistoricalData range mode falls back to EQ when series lookup fails', async () => {
@@ -508,6 +550,7 @@ describe('Class: NseIndia (mocked)', () => {
 
     test('intraday fallback captures charting error and historical range picks non-EQ series', async () => {
         getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityDetails').mockRejectedValueOnce(new Error('details unavailable'))
         jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockRejectedValueOnce(new Error('charting down'))
         await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('No intraday data available for TCS')
 
@@ -678,6 +721,7 @@ describe('Class: NseIndia (mocked)', () => {
         getDataByEndpointSpy
             .mockRejectedValueOnce(new Error('Request failed with status code 403'))
             .mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityDetails').mockRejectedValueOnce(new Error('details unavailable'))
         jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValue({ data: [] } as never)
         await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: empty data')
     })
@@ -767,6 +811,7 @@ describe('Class: NseIndia (mocked)', () => {
 
     test('intraday fallback handles chart object without data and range mode keeps EQ series', async () => {
         getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityDetails').mockRejectedValueOnce(new Error('details unavailable'))
         jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValueOnce({} as never)
         await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: empty data')
 
@@ -811,6 +856,7 @@ describe('Class: NseIndia (mocked)', () => {
 
     test('intraday fallback captures non-Error charting failure message', async () => {
         getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityDetails').mockRejectedValueOnce(new Error('details unavailable'))
         jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockRejectedValueOnce('chart-raw')
         await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: chart-raw')
     })
@@ -864,6 +910,7 @@ describe('Class: NseIndia (mocked)', () => {
 
     test('intraday fallback handles undefined chart response branch', async () => {
         getDataByEndpointSpy.mockResolvedValueOnce({}).mockResolvedValueOnce({})
+        jest.spyOn(nseIndia, 'getEquityDetails').mockRejectedValueOnce(new Error('details unavailable'))
         jest.spyOn(nseIndia, 'getEquityChartHistoricalData').mockResolvedValueOnce(undefined as never)
         await expect(nseIndia.getEquityIntradayData('TCS')).rejects.toThrow('charting: empty data')
     })

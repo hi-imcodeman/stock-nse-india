@@ -656,6 +656,20 @@ export class NseIndia {
         }
 
         try {
+            const details = await this.getEquityDetails(upper)
+            const raw = await this.getDataByEndpoint(
+                `/api/chart-databyindex?index=${encodeURIComponent(details.info.identifier)}`
+            )
+            if (isIntradayDataShape(raw)) {
+                return mapIntradayApiResponse(raw, upper)
+            }
+            attempts.push('chart-databyindex: unexpected response shape')
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            attempts.push(`chart-databyindex: ${message}`)
+        }
+
+        try {
             const chart = await this.getEquityChartHistoricalData(
                 upper,
                 undefined,

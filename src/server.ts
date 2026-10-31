@@ -15,16 +15,13 @@ import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { openapiSpecification } from './swaggerDocOptions'
 import path from 'path';
 import { mainRouter } from './routes'
+import { getServerHostUrl } from './serverConfig'
 import cors from 'cors';
 
 const app = express()
 const port = process.env.PORT || 3000
 const isHttpsEnabled = process.env.HTTPS_ENABLED === 'true'
-const protocol = isHttpsEnabled ? 'https' : 'http'
-const configuredHostUrl = process.env.HOST_URL?.trim()
-const hostUrl = configuredHostUrl
-  ? configuredHostUrl.replace(/^https?:\/\//, `${protocol}://`)
-  : `${protocol}://localhost:${port}`
+const hostUrl = getServerHostUrl()
 
 // CORS Configuration from environment variables
 // CORS_ORIGINS: Comma-separated list of allowed origins
